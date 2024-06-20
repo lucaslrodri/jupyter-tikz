@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "jupyter-tikz"
+version = "0.1.0"
+description = ""
+authors = ["lucaslrodri <lucaslrodri@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+ipython = "^8.25.0"
+pytest-mock = "^3.14.0"
+
+[tool.pytest.ini_options]
+pythonpath = "./jupyter_tikz"
+addopts = "--doctest-modules"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
