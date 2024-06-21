@@ -12,10 +12,11 @@ python = "^3.11"
 pytest = "^8.2.2"
 ipython = "^8.25.0"
 pytest-mock = "^3.14.0"
+pytest-cov = "^5.0.0"
 
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
-addopts = "--doctest-modules"
+addopts = "--cov=jupyter_tikz --cov-report lcov"
 
 [build-system]
 requires = ["poetry-core"]
