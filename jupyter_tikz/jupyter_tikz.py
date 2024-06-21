@@ -82,67 +82,66 @@ def run_latex(
     pdftocairo_path: str = "pdftocairo",
 ) -> Image | SVG | None:
     current_dir = os.getcwd()  # get current working directory
-    working_dir = os.path.join(tempfile.gettempdir(), "itikz")
-    os.makedirs(working_dir, exist_ok=True)
+    with tempfile.TemporaryDirectory() as working_dir:
+        os.makedirs(working_dir, exist_ok=True)
 
-    src_hash = md5(src.encode()).hexdigest()
+        src_hash = md5(src.encode()).hexdigest()
 
-    env = os.environ.copy()
-    if "TEXINPUTS" in env:
-        env["TEXINPUTS"] = os.path.join(current_dir, env["TEXINPUTS"])
-    else:
-        env["TEXINPUTS"] = current_dir  # add current directory to TEXINPUTS
+        env = os.environ.copy()
+        if "TEXINPUTS" in env:
+            env["TEXINPUTS"] = os.path.join(current_dir, env["TEXINPUTS"])
+        else:
+            env["TEXINPUTS"] = current_dir  # add current directory to TEXINPUTS
 
-    output_path = os.path.join(working_dir, src_hash)
-    tex_path = f"{output_path}.tex"
+        output_path = os.path.join(working_dir, src_hash)
+        tex_path = f"{output_path}.tex"
 
-    with open(tex_path, "w") as f:
-        f.write(src)
+        with open(tex_path, "w") as f:
+            f.write(src)
 
-    print("File written", tex_path)
+        tex_filename = os.path.basename(tex_path)
+        image_format = "svg" if not rasterize else "png"
 
-    tex_filename = os.path.basename(tex_path)
-    image_format = "svg" if not rasterize else "png"
+        pdftocairo_command = [pdftocairo_path, f"-{image_format}"]
+        if rasterize:
+            pdftocairo_command.extend(["-singlefile", "-r", f"{dpi}"])
+        pdftocairo_command.append(f"{output_path}.pdf")
+        pdftocairo_command.append(
+            f"{output_path}.svg" if not rasterize else output_path
+        )
 
-    pdftocairo_command = [pdftocairo_path, f"-{image_format}"]
-    if rasterize:
-        pdftocairo_command.extend(["-singlefile", "-r", f"{dpi}"])
-    pdftocairo_command.append(f"{output_path}.pdf")
-    pdftocairo_command.append(f"{output_path}.svg" if not rasterize else output_path)
+        try:
+            check_output([tex_program, tex_filename], env=env, cwd=working_dir)
+        except CalledProcessError as e:
+            err_msg = e.output.decode()
+            if not full_err:  # tail -n 20
+                err_msg = "\n".join(err_msg.splitlines()[-20:])
 
-    try:
-        check_output([tex_program, tex_filename], env=env, cwd=working_dir)
-    except CalledProcessError as e:
-        err_msg = e.output.decode()
-        if not full_err:  # tail -n 20
-            err_msg = "\n".join(err_msg.splitlines()[-20:])
+            print(err_msg, file=sys.stderr)
+            return None
 
-        print(err_msg, file=sys.stderr)
-        return None
-    print("File compiled", tex_path)
+        try:
+            check_output(pdftocairo_command, cwd=working_dir)
+        except CalledProcessError as e:
+            err_msg = e.output.decode()
+            if not full_err:  # tail -n 20
+                err_msg = "\n".join(err_msg.splitlines()[-20:])
 
-    try:
-        check_output(pdftocairo_command, cwd=working_dir)
-    except CalledProcessError as e:
-        err_msg = e.output.decode()
-        if not full_err:  # tail -n 20
-            err_msg = "\n".join(err_msg.splitlines()[-20:])
+            print(err_msg, file=sys.stderr)
+            return None
 
-        print(err_msg, file=sys.stderr)
-        return None
-
-    image_path = f"{output_path}.{image_format}"
-    if not rasterize:
-        with open(image_path, "r") as f:
-            image = f.read()
-            if scale != 1.0:
-                (doc,) = minidom.parseString(image).getElementsByTagName("svg")
-                doc.setAttribute("style", f"transform: scale({scale});")
-                return SVG(doc.toxml())
-            else:
-                return SVG(image)
-    else:
-        return Image(filename=image_path)
+        image_path = f"{output_path}.{image_format}"
+        if not rasterize:
+            with open(image_path, "r") as f:
+                image = f.read()
+                if scale != 1.0:
+                    (doc,) = minidom.parseString(image).getElementsByTagName("svg")
+                    doc.setAttribute("style", f"transform: scale({scale});")
+                    return SVG(doc.toxml())
+                else:
+                    return SVG(image)
+        else:
+            return Image(filename=image_path)
 
 
 # The class MUST call this class decorator at creation time
@@ -329,8 +328,6 @@ class TikZMagics(Magics):
         if not self.args.full_document:
             extras = self.build_template_extras()
             self.src = build_tex_string(self.src, self.args.implicit_pic, extras)
-
-        print(self.src)
 
         image = run_latex(
             self.src,
