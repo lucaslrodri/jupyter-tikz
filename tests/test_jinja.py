@@ -1,5 +1,5 @@
 import pytest
-from jupyter_tikz.jupyter_tikz import render_jinja
+from jupyter_tikz import render_jinja
 from unittest.mock import patch
 
 

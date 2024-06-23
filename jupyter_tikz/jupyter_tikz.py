@@ -9,7 +9,6 @@ from IPython.display import SVG, Image
 from string import Template
 from textwrap import indent
 from shutil import copy
-import pathlib
 
 
 def build_template_extras(
@@ -21,14 +20,14 @@ def build_template_extras(
     """
     This function constructs a LaTeX preamble string for TikZ diagrams, including any additional LaTeX packages or libraries specified.
 
-    Parameters:
-    - no_tikz (bool): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported.
-    - tex_packages (str): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
-    - tikz_libraries (str): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
-    - pgfplots_libraries (str): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
+    Args:
+        no_tikz (bool): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported.
+        tex_packages (str): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
+        tikz_libraries (str): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
+        pgfplots_libraries (str): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
 
     Returns:
-    - str: A LaTeX preamble string that includes the specified packages and libraries, as well as the TikZ package if the `no_tikz` flag is not set.
+        str: A LaTeX preamble string that includes the specified packages and libraries, as well as the TikZ package if the `no_tikz` flag is not set.
     """
     extras = []
 
@@ -91,14 +90,14 @@ def build_tex_string(
 
     It can either wrap the provided TikZ code in a TikZpicture environment or treat the code as standalone. Additional LaTeX commands can be included through the `extras` parameter.
 
-    Parameters:
-    - src (str): The TikZ code to be included in the LaTeX string. This code is either wrapped in a TikZpicture environment or left as is, based on the `implicit_pic` flag.
-    - implicit_pic (bool): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class.
-    - extras (str): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
-    - scale (float): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command.
+    Args:
+        src (str): The TikZ code to be included in the LaTeX string. This code is either wrapped in a TikZpicture environment or left as is, based on the `implicit_pic` flag.
+        implicit_pic (bool): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class.
+        extras (str): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
+        scale (float): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command.
 
     Returns:
-    - str: A LaTeX string ready for compilation. This string includes the TikZ code (optionally wrapped in a TikZpicture environment) and any additional LaTeX commands specified in `extras`.
+        str: A LaTeX string ready for compilation. This string includes the TikZ code (optionally wrapped in a TikZpicture environment) and any additional LaTeX commands specified in `extras`.
     """
     if implicit_pic:
         if len(src):
@@ -124,14 +123,14 @@ def build_tex_string(
 
 def render_jinja(src: str, ns):
     """
-    Render the Jinja template with the provided namespace.
+    Renders the Jinja template with the provided namespace.
 
-    Parameters:
-    - src (str): The Jinja template source code.
-    - ns (dict): The namespace to use for rendering the template.
+    Args:
+        src (str): The Jinja template source code.
+        ns (dict): The namespace to use for rendering the template.
 
     Returns:
-    - str: The rendered template.
+        str: The rendered template.
     """
 
     try:
@@ -150,11 +149,14 @@ def render_jinja(src: str, ns):
 
 def save(src: str, dest: str, format: Literal["svg", "png", "code"] = "code") -> str:
     """
-    Save the source code or image to the destination path.
+    Saves the source code or image to the specified destination path.
 
-    Parameters:
-    - src (str): The source code or image path.
-    - dest (str): The destination path.
+    Args:
+        src (str): The source code or image path.
+        dest (str): The destination path.
+
+    Returns:
+        str: The path to the saved file.
     """
 
     if dest is None:
@@ -191,6 +193,7 @@ def run_latex(
     src: str,
     rasterize: bool = False,
     tex_program: Literal["pdflatex", "xelatex", "lualatex"] = "pdflatex",
+    tex_args: str = "",
     dpi: int = 96,
     full_err: bool = False,
     save_image: str = None,
@@ -206,6 +209,7 @@ def run_latex(
     - dpi (int): The DPI (dots per inch) to use for rasterizing the output. This parameter is only used when `rasterize` is True.
     - full_err (bool): A flag indicating whether the full error message should be displayed. If True, the full error message is displayed; if False, only the last 20 lines of the error message are displayed.
     - save_image (str): The path to save the output image. If None, the image is not saved to disk.
+    - tex_args (str): Additional arguments to pass to the TeX program.
 
     Returns:
     - Image | SVG | None: An Image (PNG) or SVG object representing the compiled TikZ diagram, or None if an error occurred during compilation.
@@ -229,6 +233,21 @@ def run_latex(
             f.write(src)
 
         tex_filename = os.path.basename(tex_path)
+
+        tex_command = [tex_program]
+        if tex_args:
+            tex_command.extend(tex_args.split())
+        tex_command.append(tex_filename)
+        try:
+            check_output(tex_command, env=env, cwd=working_dir)
+        except CalledProcessError as e:
+            err_msg = e.output.decode()
+            if not full_err:  # tail -n 20
+                err_msg = "\n".join(err_msg.splitlines()[-20:])
+
+            print(err_msg, file=sys.stderr)
+            return None
+
         image_format = "svg" if not rasterize else "png"
 
         if os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH"):
@@ -243,17 +262,6 @@ def run_latex(
         pdftocairo_command.append(
             f"{output_path}.svg" if not rasterize else output_path
         )
-
-        try:
-            check_output([tex_program, tex_filename], env=env, cwd=working_dir)
-        except CalledProcessError as e:
-            err_msg = e.output.decode()
-            if not full_err:  # tail -n 20
-                err_msg = "\n".join(err_msg.splitlines()[-20:])
-
-            print(err_msg, file=sys.stderr)
-            return None
-
         try:
             check_output(pdftocairo_command, cwd=working_dir)
         except CalledProcessError as e:
@@ -391,6 +399,13 @@ class TikZMagics(Magics):
         help='TeX program to use for rendering, e.g., "-lp groupplots,external"',
     )
     @argument(
+        "-ta",
+        "--tex-args",
+        dest="tex_args",
+        default="",
+        help='Additional arguments to pass to the TeX program, e.g., "--enable-write18 --extra-mem-top=10000000"',
+    )
+    @argument(
         "-s",
         "--save-tex",
         dest="save_tex",
@@ -410,20 +425,22 @@ class TikZMagics(Magics):
     @needs_local_scope
     def tikz(self, line, cell=None, local_ns=None) -> Image | SVG | None:
         r"""
-        Renders a TikZ diagram in a Jupyter notebook cell. Works as both as %tikz and %%tikz.
+        Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
 
-        When used as %tikz, the code argument is required:
-            In [1]: %tikz \draw (0,0) rectangle (1,1);
+        When used as a line magic, the `code` argument is required:
+            Example:
+                In [1]: %tikz \draw (0,0) rectangle (1,1);
 
+        When used as a cell magic, it runs a block of TikZ code:
+            Example:
+                In [2]: %%tikz
+                        \draw (0,0) rectangle (1,1);
 
-        As a cell, this will run a block of TikZ code:
-            In [2]: %%tikz
-                \draw (0,0) rectangle (1,1);
-
-        Additional options can be passed to the magic command:
-            In [3]: %%tikz --rasterize --dpi=1200 -l arrows,automata
-                \draw (0,0) rectangle (1,1);
-                \filldraw (0.5,0.5) circle (.1);
+        Additional options can be passed to the magic command to control the output:
+            Example:
+                In [3]: %%tikz --rasterize --dpi=1200 -l arrows,automata
+                        \draw (0,0) rectangle (1,1);
+                        \filldraw (0.5,0.5) circle (.1);
         """
 
         args = parse_argstring(self.tikz, line)

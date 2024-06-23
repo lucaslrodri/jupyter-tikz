@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest.mock import patch, mock_open, MagicMock
-from jupyter_tikz.jupyter_tikz import save, run_latex
+from jupyter_tikz import save, run_latex
 from pathlib import Path
 from tempfile import TemporaryDirectory
 

@@ -1,4 +1,4 @@
-from jupyter_tikz.jupyter_tikz import build_tex_string
+from jupyter_tikz import build_tex_string
 
 EXAMPLE_SRC_PIC = r"""
 \node[draw, circle] at (0, 0) {Hello};

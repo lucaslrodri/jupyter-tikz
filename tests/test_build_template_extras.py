@@ -1,4 +1,4 @@
-from jupyter_tikz.jupyter_tikz import build_template_extras
+from jupyter_tikz import build_template_extras
 
 
 def test_build_template_extras_no_params():
