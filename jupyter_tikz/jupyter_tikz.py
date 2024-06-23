@@ -1,4 +1,3 @@
-from argparse import Namespace
 import sys
 import os
 from subprocess import CalledProcessError, check_output
@@ -9,8 +8,43 @@ from IPython.core.magic_arguments import argument, magic_arguments, parse_argstr
 from IPython.display import SVG, Image
 from string import Template
 from textwrap import indent
-from xml.dom import minidom
-from hashlib import md5
+from shutil import copy
+import pathlib
+
+
+def build_template_extras(
+    no_tikz: bool = False,
+    tex_packages: str = "",
+    tikz_libraries: str = "",
+    pgfplots_libraries: str = "",
+) -> str:
+    """
+    This function constructs a LaTeX preamble string for TikZ diagrams, including any additional LaTeX packages or libraries specified.
+
+    Parameters:
+    - no_tikz (bool): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported.
+    - tex_packages (str): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
+    - tikz_libraries (str): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
+    - pgfplots_libraries (str): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
+
+    Returns:
+    - str: A LaTeX preamble string that includes the specified packages and libraries, as well as the TikZ package if the `no_tikz` flag is not set.
+    """
+    extras = []
+
+    if not no_tikz:
+        extras.append(r"\usepackage{tikz}")
+    if tex_packages:
+        extras.append(r"\usepackage{" + tex_packages + "}")
+    if tikz_libraries:
+        extras.append(r"\usetikzlibrary{" + tikz_libraries + "}")
+    if pgfplots_libraries:
+        extras.append(r"\usepgfplotslibrary{" + pgfplots_libraries + "}")
+    if len(extras) > 0:
+        extras = "\n".join(extras) + "\n"
+    else:
+        extras = ""
+    return extras
 
 
 IMPLICIT_PIC_TMPL = Template(
@@ -23,11 +57,12 @@ $src	\end{tikzpicture}
 
 IMPLICIT_PIC_SCALE_TMPL = Template(
     r"""\documentclass{standalone}
+\usepackage{graphicx}
 $extras\begin{document}
+	\scalebox{$scale}{
 	\begin{tikzpicture}
-		\scalebox{$scale}{
-$src		}
-	\end{tikzpicture}
+$src	\end{tikzpicture}
+	}
 \end{document}"""
 )
 
@@ -40,6 +75,7 @@ $src
 
 IMPLICIT_STANDALONE_SCALE_TMPL = Template(
     r"""\documentclass{standalone}
+\usepackage{graphicx}
 $extras\begin{document}
 	\scalebox{$scale}{
 $src	}
@@ -47,17 +83,19 @@ $src	}
 )
 
 
-def build_tex_string(src: str, implicit_pic: bool, extras: str) -> str:
+def build_tex_string(
+    src: str, implicit_pic: bool = False, extras: str = "", scale: float = 1
+) -> str:
     """
     This function prepares a LaTeX string for rendering TikZ diagrams.
-    Constructs a LaTeX string for TikZ diagrams, optionally wrapped in a TikZpicture environment.
 
-    This function prepares a LaTeX string for rendering TikZ diagrams. It can either wrap the provided TikZ code in a TikZpicture environment or treat the code as standalone. Additional LaTeX commands can be included through the `extras` parameter.
+    It can either wrap the provided TikZ code in a TikZpicture environment or treat the code as standalone. Additional LaTeX commands can be included through the `extras` parameter.
 
     Parameters:
     - src (str): The TikZ code to be included in the LaTeX string. This code is either wrapped in a TikZpicture environment or left as is, based on the `implicit_pic` flag.
     - implicit_pic (bool): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class.
     - extras (str): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
+    - scale (float): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command.
 
     Returns:
     - str: A LaTeX string ready for compilation. This string includes the TikZ code (optionally wrapped in a TikZpicture environment) and any additional LaTeX commands specified in `extras`.
@@ -65,35 +103,100 @@ def build_tex_string(src: str, implicit_pic: bool, extras: str) -> str:
     if implicit_pic:
         if len(src):
             src = indent(src.strip(), "\t\t") + "\n"
-        return IMPLICIT_PIC_TMPL.substitute(src=src, extras=extras)
+        if scale == 1:
+            return IMPLICIT_PIC_TMPL.substitute(src=src, extras=extras)
+        else:
+            return IMPLICIT_PIC_SCALE_TMPL.substitute(
+                src=src, extras=extras, scale=scale
+            )
     else:
         if len(src):
             src = indent(src.strip(), "\t")
-        return IMPLICIT_STANDALONE_TMPL.substitute(src=src, extras=extras)
+            if scale != 1:
+                src += "\n"
+        if scale == 1:
+            return IMPLICIT_STANDALONE_TMPL.substitute(src=src, extras=extras)
+        else:
+            return IMPLICIT_STANDALONE_SCALE_TMPL.substitute(
+                src=src, extras=extras, scale=scale
+            )
+
+
+def save(src: str, dest: str, format: Literal["svg", "png", "code"] = "code") -> str:
+    """
+    Save the source code or image to the destination path.
+
+    Parameters:
+    - src (str): The source code or image path.
+    - dest (str): The destination path.
+    """
+
+    if dest is None:
+        return None
+
+    if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
+        save_path = os.path.join(os.environ.get("JUPYTER_TIKZ_SAVEDIR"), dest)
+    else:
+        save_path = dest
+
+    if format != "code" and (not save_path.endswith(f".{format}")):
+        save_path += f".{format}"
+    elif format == "code" and not (
+        save_path.endswith(".tex")
+        or save_path.endswith(".tikz")
+        or save_path.endswith(".pgf")
+        or save_path.endswith(".txt")
+    ):
+        save_path += ".tex"
+
+    save_folder = os.path.dirname(save_path)
+    if save_folder:
+        os.makedirs(save_folder, exist_ok=True)
+
+    if format == "code":
+        with open(save_path, "w") as f:
+            f.write(src)
+    else:
+        copy(src, save_path)
+    return save_path
 
 
 def run_latex(
     src: str,
     rasterize: bool = False,
     tex_program: Literal["pdflatex", "xelatex", "lualatex"] = "pdflatex",
-    dpi: int = 150,
-    scale: float = 1,
+    dpi: int = 96,
     full_err: bool = False,
-    pdftocairo_path: str = "pdftocairo",
+    save_image: str = None,
 ) -> Image | SVG | None:
+    """
+    This function compiles a LaTeX string containing TikZ code and returns an SVG or rasterized image.
+
+    Parameters:
+
+    - src (str): The LaTeX string containing the TikZ code to be compiled.
+    - rasterize (bool): A flag indicating whether the output should be rasterized. If True, the output is rasterized; if False, the output is an SVG image.
+    - tex_program (str): The TeX program to use for rendering the TikZ code. This can be one of "pdflatex", "xelatex", or "lualatex".
+    - dpi (int): The DPI (dots per inch) to use for rasterizing the output. This parameter is only used when `rasterize` is True.
+    - full_err (bool): A flag indicating whether the full error message should be displayed. If True, the full error message is displayed; if False, only the last 20 lines of the error message are displayed.
+    - save_image (str): The path to save the output image. If None, the image is not saved to disk.
+
+    Returns:
+    - Image | SVG | None: An Image (PNG) or SVG object representing the compiled TikZ diagram, or None if an error occurred during compilation.
+    """
     current_dir = os.getcwd()  # get current working directory
     with tempfile.TemporaryDirectory() as working_dir:
-        os.makedirs(working_dir, exist_ok=True)
-
-        src_hash = md5(src.encode()).hexdigest()
-
         env = os.environ.copy()
-        if "TEXINPUTS" in env:
-            env["TEXINPUTS"] = os.path.join(current_dir, env["TEXINPUTS"])
+        if "JUPYTER_TIKZ_TEXINPUTS" in env:
+            env["JUPYTER_TIKZ_TEXINPUTS"] = os.path.join(
+                current_dir, env["JUPYTER_TIKZ_TEXINPUTS"]
+            )
         else:
-            env["TEXINPUTS"] = current_dir  # add current directory to TEXINPUTS
+            env["JUPYTER_TIKZ_TEXINPUTS"] = (
+                current_dir  # add current directory to TEXINPUTS
+            )
 
-        output_path = os.path.join(working_dir, src_hash)
+        output_path = os.path.join(working_dir, "tikz")
         tex_path = f"{output_path}.tex"
 
         with open(tex_path, "w") as f:
@@ -102,9 +205,14 @@ def run_latex(
         tex_filename = os.path.basename(tex_path)
         image_format = "svg" if not rasterize else "png"
 
+        if os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH"):
+            pdftocairo_path = os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH")
+        else:
+            pdftocairo_path = "pdftocairo"
+
         pdftocairo_command = [pdftocairo_path, f"-{image_format}"]
         if rasterize:
-            pdftocairo_command.extend(["-singlefile", "-r", f"{dpi}"])
+            pdftocairo_command.extend(["-singlefile", "-transp", "-r", f"{dpi}"])
         pdftocairo_command.append(f"{output_path}.pdf")
         pdftocairo_command.append(
             f"{output_path}.svg" if not rasterize else output_path
@@ -131,47 +239,22 @@ def run_latex(
             return None
 
         image_path = f"{output_path}.{image_format}"
+
         if not rasterize:
             with open(image_path, "r") as f:
                 image = f.read()
-                if scale != 1.0:
-                    (doc,) = minidom.parseString(image).getElementsByTagName("svg")
-                    doc.setAttribute("style", f"transform: scale({scale});")
-                    return SVG(doc.toxml())
-                else:
-                    return SVG(image)
+                if save_image:
+                    save(image_path, save_image, format="svg")
+                return SVG(image)
         else:
+            if save_image:
+                save(image_path, save_image, format="png")
             return Image(filename=image_path)
 
 
 # The class MUST call this class decorator at creation time
 @magics_class
 class TikZMagics(Magics):
-    args = Namespace()
-    src = ""
-
-    def build_template_extras(self):
-        extras = []
-
-        if self.args.latex_preamble:
-            extras.append(self.args.latex_preamble)
-        else:
-            if not self.args.no_tikz:
-                extras.append(r"\usepackage{tikz}")
-            if self.args.tex_packages:
-                extras.append(r"\usepackage{" + self.args.tex_packages + "}")
-            if self.args.tikz_libraries:
-                extras.append(r"\usetikzlibrary{" + self.args.tikz_libraries + "}")
-            if self.args.pgfplots_libraries:
-                extras.append(
-                    r"\usepgfplotslibrary{" + self.args.pgfplots_libraries + "}"
-                )
-        if len(extras) > 0:
-            extras = "\n".join(extras) + "\n"
-        else:
-            extras = ""
-        return extras
-
     @line_cell_magic
     @magic_arguments()
     @argument(
@@ -247,8 +330,8 @@ class TikZMagics(Magics):
         "--dpi",
         dest="dpi",
         type=int,
-        default=150,
-        help='DPI of rasterized output images. Default is "--dpi 150"',
+        default=96,
+        help='DPI of rasterized output image (png). Default is "--dpi 96"',
     )
     @argument(
         "-e",
@@ -266,11 +349,20 @@ class TikZMagics(Magics):
         help='TeX program to use for rendering, e.g., "-lp groupplots,external"',
     )
     @argument(
-        "-ptc",
-        "--pdftocairo-path",
-        dest="pdftocairo_path",
-        default="pdftocairo",
-        help='PDF to Cairo command to use for rasterizing, e.g., "-pc path_to_pdftocairo.exe". Default is "-pc pdftocairo"',
+        "-s",
+        "--save-tex",
+        dest="save_tex",
+        type=str,
+        default=None,
+        help="Save the TikZ or TeX code to file, e.g., -s filename.tikz. Default is None",
+    )
+    @argument(
+        "-S",
+        "--save-image",
+        dest="save_image",
+        type=str,
+        default=None,
+        help="Save the output image to file, e.g., -s filename. Default is None",
     )
     @argument("code", nargs="?", help="the variable in IPython with the string source")
     @needs_local_scope
@@ -292,32 +384,34 @@ class TikZMagics(Magics):
                 \filldraw (0.5,0.5) circle (.1);
         """
 
-        self.args = parse_argstring(self.tikz, line)
-        self.src = cell
+        args = parse_argstring(self.tikz, line)
+        src = cell
 
         if local_ns is None:
             local_ns = {}
 
         if cell is None:
-            if self.args.code is None:
+            if args.code is None:
                 print('Use "%tikz?" for help', file=sys.stderr)
                 return
 
-            if self.args.code not in local_ns:
-                self.src = self.args.code
+            if args.code not in local_ns:
+                src = args.code
             else:
-                self.src = local_ns[self.args.code]
+                src = local_ns[args.code]
 
-        if self.args.implicit_pic and self.args.full_document:
+            save_code = src
+        else:
+            save_code = cell
+
+        if args.implicit_pic and args.full_document:
             print(
                 "Can't use --full-document and --implicit-pic together", file=sys.stderr
             )
             return None
 
-        if self.args.latex_preamble and (
-            self.args.tikz_libraries
-            or self.args.tex_packages
-            or self.args.pgfplots_libraries
+        if args.latex_preamble and (
+            args.tikz_libraries or args.tex_packages or args.pgfplots_libraries
         ):
             print(
                 "Packages and libraries should be passed in the preamble or as arguments, not both",
@@ -325,21 +419,37 @@ class TikZMagics(Magics):
             )
             return None
 
-        if not self.args.full_document:
-            extras = self.build_template_extras()
-            self.src = build_tex_string(self.src, self.args.implicit_pic, extras)
+        if not args.full_document:
+            if args.latex_preamble:
+                extras = args.latex_preamble + "\n"
+            else:
+                extras = build_template_extras(
+                    no_tikz=args.no_tikz,
+                    tex_packages=args.tex_packages,
+                    tikz_libraries=args.tikz_libraries,
+                    pgfplots_libraries=args.pgfplots_libraries,
+                )
+
+            src = build_tex_string(
+                src,
+                implicit_pic=args.implicit_pic,
+                extras=extras,
+                scale=args.scale,
+            )
 
         image = run_latex(
-            self.src,
-            rasterize=self.args.rasterize,
-            tex_program=self.args.tex_program,
-            dpi=self.args.dpi,
-            scale=self.args.scale,
-            full_err=self.args.full_err,
-            pdftocairo_path=self.args.pdftocairo_path,
+            src,
+            rasterize=args.rasterize,
+            tex_program=args.tex_program,
+            dpi=args.dpi,
+            full_err=args.full_err,
+            save_image=args.save_image,
         )
 
         if image is None:
             return None
+
+        if args.save_tex and save_code:
+            save(save_code, args.save_tex, format="code")
 
         return image

@@ -1,85 +1,61 @@
-import pytest
-from jupyter_tikz.jupyter_tikz import TikZMagics
+from jupyter_tikz.jupyter_tikz import build_template_extras
 
 
-@pytest.fixture
-def jupyter_tikz_magic(mocker, monkeypatch):
-    obj = TikZMagics()
-    shell = mocker.MagicMock()
-    shell.user_ns = {}
-    monkeypatch.setattr(obj, "shell", shell)
-    return obj
+def test_build_template_extras_no_params():
+    res = build_template_extras()
+    expected_res = "\\usepackage{tikz}\n"
+
+    assert res == expected_res
 
 
-def test_build_template_extras_no_extras_tikz_false(jupyter_tikz_magic):
-    src = "code"
-    jupyter_tikz_magic.tikz("--no-tikz", src)
+def test_build_template_extras_no_extras_no_tikz():
+    no_tikz = True
 
-    res = jupyter_tikz_magic.build_template_extras()
+    res = build_template_extras(no_tikz=no_tikz)
     expected_res = ""
 
     assert res == expected_res
 
 
-def test_build_template_extras_no_extras_line(jupyter_tikz_magic):
-    src = "code"
-    jupyter_tikz_magic.tikz(src)
+def test_build_template_extras_with_packages():
+    tex_packages = "a,b"
 
-    res = jupyter_tikz_magic.build_template_extras()
-    expected_res = "\\usepackage{tikz}\n"
-
-    assert res == expected_res
-
-
-def test_build_template_extras_no_extras_no_extras_cell(jupyter_tikz_magic):
-    src = "code"
-    jupyter_tikz_magic.tikz("", src)
-
-    res = jupyter_tikz_magic.build_template_extras()
-    expected_res = "\\usepackage{tikz}\n"
-
-    assert res == expected_res
-
-
-def test_build_template_extras_package_line(jupyter_tikz_magic):
-    src = "code"
-    jupyter_tikz_magic.tikz(f"-t=a,b {src}")
-
-    res = jupyter_tikz_magic.build_template_extras()
+    res = build_template_extras(tex_packages=tex_packages)
     expected_res = "\\usepackage{tikz}\n\\usepackage{a,b}\n"
 
     assert res == expected_res
 
 
-def test_build_template_extras_package_tikz_library_line(jupyter_tikz_magic):
-    src = "code"
-    jupyter_tikz_magic.tikz(f"-t=a,b -l=c,d", src)
+def test_build_template_extras_with_packages_no_tikz():
+    tex_packages = "a,b"
+    no_tikz = True
 
-    res = jupyter_tikz_magic.build_template_extras()
+    res = build_template_extras(tex_packages=tex_packages, no_tikz=no_tikz)
+    expected_res = "\\usepackage{a,b}\n"
+
+    assert res == expected_res
+
+
+def test_build_template_extras_with_packages_and_libraries():
+    tex_packages = "a,b"
+    tiz_libraries = "c,d"
+
+    res = build_template_extras(tex_packages=tex_packages, tikz_libraries=tiz_libraries)
     expected_res = "\\usepackage{tikz}\n\\usepackage{a,b}\n\\usetikzlibrary{c,d}\n"
 
     assert res == expected_res
 
 
-def test_build_template_extras_package_library_tikz_and_pgfplots_line(
-    jupyter_tikz_magic,
-):
-    src = "code"
-    jupyter_tikz_magic.tikz(f"-sc 3 -t=a,b -l=c,d -lp=e,f", src)
+def test_build_template_extras_with_packages_libraries_and_pgfplots_libraries():
+    tex_packages = "a,b"
+    tiz_libraries = "c,d"
+    pgfplots_libraries = "e,f"
 
-    res = jupyter_tikz_magic.build_template_extras()
+    res = build_template_extras(
+        tex_packages=tex_packages,
+        tikz_libraries=tiz_libraries,
+        pgfplots_libraries=pgfplots_libraries,
+    )
     expected_res = "\\usepackage{tikz}\n\\usepackage{a,b}\n\\usetikzlibrary{c,d}\n\\usepgfplotslibrary{e,f}\n"
-
-    assert res == expected_res
-
-
-def test_build_template_extras_preamble_line(
-    jupyter_tikz_magic,
-):
-    src = "code"
-    jupyter_tikz_magic.tikz(f"-p preamble", src)
-
-    res = jupyter_tikz_magic.build_template_extras()
-    expected_res = "preamble\n"
 
     assert res == expected_res
