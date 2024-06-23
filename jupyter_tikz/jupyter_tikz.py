@@ -122,6 +122,32 @@ def build_tex_string(
             )
 
 
+def render_jinja(src: str, ns):
+    """
+    Render the Jinja template with the provided namespace.
+
+    Parameters:
+    - src (str): The Jinja template source code.
+    - ns (dict): The namespace to use for rendering the template.
+
+    Returns:
+    - str: The rendered template.
+    """
+
+    try:
+        import jinja2
+    except ImportError:  # pragma no cover
+        print("Please install jinja2", file=sys.stderr)
+        print("$ pip install jinja2", file=sys.stderr)
+        return None
+
+    fs_loader = jinja2.FileSystemLoader(os.getcwd())
+    tmpl_env = jinja2.Environment(loader=fs_loader)
+    tmpl = tmpl_env.from_string(src)
+
+    return tmpl.render(**ns)
+
+
 def save(src: str, dest: str, format: Literal["svg", "png", "code"] = "code") -> str:
     """
     Save the source code or image to the destination path.
@@ -310,6 +336,22 @@ class TikZMagics(Magics):
         help="Use entire LaTeX document as input",
     )
     @argument(
+        "-j",
+        "--as-jinja",
+        dest="as_jinja",
+        action="store_true",
+        default=False,
+        help="Render the cell as a Jinja2 template",
+    )
+    @argument(
+        "-pj",
+        "--print-jinja",
+        dest="print_jinja",
+        action="store_true",
+        default=False,
+        help="Print the rendered Jinja2 template",
+    )
+    @argument(
         "-sc",
         "--scale",
         dest="scale",
@@ -409,6 +451,12 @@ class TikZMagics(Magics):
                 "Can't use --full-document and --implicit-pic together", file=sys.stderr
             )
             return None
+
+        if args.as_jinja:
+            src = render_jinja(src, local_ns)
+            save_code = src
+            if args.print_jinja:
+                print(src)
 
         if args.latex_preamble and (
             args.tikz_libraries or args.tex_packages or args.pgfplots_libraries
