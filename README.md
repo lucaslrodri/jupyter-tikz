@@ -1,6 +1,10 @@
 [![PyPI version](https://badge.fury.io/py/jupyter-tikz.svg)](https://badge.fury.io/py/jupyter-tikz)
 
-Jupyter TikZ is an IPython Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
+Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
+
+# Demonstration notebook
+
+A complete guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
 
 # Installation
 
@@ -90,9 +94,7 @@ Furthermore, additional arguments can be passed to the magic command:
 \filldraw (0.5,0.5) circle (.1);
 ```
 
-# Getting Started Notebook
-
-A complete guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
+Don't forget visit the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb) to learn more.
 
 # Additional Arguments
 
@@ -113,10 +115,8 @@ All additional arguments are listed below:
 - `-e` or `--full-err`: Show the full error message.
 - `-tp` or `--tex-program`: TeX program to use for rendering, e.g., `-tp lualatex`.
 - `-ta` or `--tex-args` (`str`): Additional arguments to pass to the TeX program, e.g., `-ta "$tex_args_ipython_variable"`.
-- `-nc` or `--no-compile`: Do not compile the LaTeX code.
 - `-s` or `--save-tex` (`str`): Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.
 - `-S` or `--save-image` (`str`): Save the output image to file, e.g., `-S filename.svg`. Default is None.
-- `-sv` or `--save-var` (`str`): Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.
 
 # Adding TikZ Syntax highlight
 

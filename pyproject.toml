@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "jupyter-tikz"
-version = "0.2.0"
-description = "Magic command for rendering PGF/TikZ in Jupyter Notebooks"
+version = "0.2.1"
+description = "IPython Magics for rendering TeX/TikZ in Jupyter Notebooks"
 license = "MIT"
 authors = ["lucaslrodri"]
 readme = "README.md"
