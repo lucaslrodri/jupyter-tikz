@@ -90,9 +90,9 @@ Furthermore, additional arguments can be passed to the magic command:
 \filldraw (0.5,0.5) circle (.1);
 ```
 
-# Getting Started Guide
+# Getting Started Notebook
 
-The full guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
+A complete guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
 
 # Additional Arguments
 
