@@ -1,4 +1,4 @@
-<img src="logo_wide.svg" style="zoom: 150%;" />
+[![PyPI version](https://badge.fury.io/py/jupyter-tikz.svg)](https://badge.fury.io/py/jupyter-tikz)
 
 Jupyter TikZ is an IPython Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
 
@@ -90,6 +90,10 @@ Furthermore, additional arguments can be passed to the magic command:
 \filldraw (0.5,0.5) circle (.1);
 ```
 
+# Getting Started Guide
+
+The full guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
+
 # Additional Arguments
 
 All additional arguments are listed below:
@@ -112,11 +116,7 @@ All additional arguments are listed below:
 - `-s` or `--save-tex` (`str`): Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.
 - `-S` or `--save-image` (`str`): Save the output image to file, e.g., `-S filename.svg`. Default is None.
 
-# Getting Started Guide
-
-The full guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
-
-## Adding TikZ Syntax highlight
+# Adding TikZ Syntax highlight
 
 If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab-lsp](https://jupyterlab-lsp.readthedocs.io/en/latest/Installation.html) and editing [this part of the code](https://github.com/jupyter-lsp/jupyterlab-lsp/blob/b159ae2736b26463d8cc8f0ef78f4b2ce9913370/packages/jupyterlab-lsp/src/transclusions/ipython/extractors.ts#L68-L74) in the file `extractor.ts`:
 
@@ -130,9 +130,7 @@ If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab
     }),
 ```
 
-It will result as shown below:
-
-![Demonstration of TikZ LaTeX syntax highlight](./assets/highlight_cell_tikz.png)
+For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).
 
 # Contribute
 
