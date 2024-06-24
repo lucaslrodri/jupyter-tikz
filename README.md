@@ -147,4 +147,5 @@ I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it do
 
 # License
 
-Distributed under the terms of the [MIT](./LICENSE) license, pytest is free and open source software.
+Distributed under the terms of the [MIT](./LICENSE) license, Jupyter TikZ is free and open source software.
+
