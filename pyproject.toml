@@ -3,7 +3,7 @@ name = "jupyter-tikz"
 version = "0.1.0"
 description = "Magic command for rendering PGF/TikZ in Jupyter Notebooks"
 license = "MIT"
-authors = ["lucaslrodri <lucaslrodri@gmail.com>"]
+authors = ["lucaslrodri"]
 readme = "README.md"
 packages = [{include = "jupyter_tikz"}]
 classifiers = [
@@ -25,7 +25,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.urls]
 "Repository" = "https://github.com/lucaslrodri/jupyter-tikz"
-"Documentation" = "https://jupyter-tikz.readthedocs.io"
+"Documentation" = "https://github.com/lucaslrodri/jupyter-tikz"
 
 
 [tool.poetry.dependencies]
