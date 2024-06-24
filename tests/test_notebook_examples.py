@@ -226,6 +226,26 @@ def test_rasterize():
 
 # Jinja2 tests are implemented in the test_jinja.py file
 
+# ============== VARIABLES =============
+
+EXAMPLE_NO_COMPILE = r"""
+\usetikzlibrary{arrows,automata}
+\definecolor{mymagenta}{RGB}{226,0,116}
+"""
+
+
+def test_no_compile():
+    line = "-nc"
+    cell = EXAMPLE_NO_COMPILE
+
+    res = ipy.run_cell_magic("tikz", line, cell)
+
+    assert res == None
+
+
+# Other tests are implemented in the test_env_and_user_ns.py file
+
+
 # ============== TEX PROGRAMS =============
 
 # Tex programs test are implemented in run_latex.py
@@ -234,6 +254,16 @@ def test_rasterize():
 # =========== DEBUGGING AND ERROR =============
 
 # If you write an invalid Tikz code, it will show a LaTeX error message limited in 20 lines
+
+
+def test_rasterize():
+    line = "-r --dpi=150"
+    cell = EXAMPLE_RASTERIZE
+
+    res = ipy.run_cell_magic("tikz", line, cell)
+
+    assert isinstance(res, Image)
+
 
 EXAMPLE_SHOW_ERROR = r"""
 % Error: Comma after the first coordinate

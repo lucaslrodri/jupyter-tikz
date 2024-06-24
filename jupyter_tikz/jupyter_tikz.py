@@ -221,14 +221,15 @@ def run_latex(
     current_dir = os.getcwd()  # get current working directory
     with tempfile.TemporaryDirectory() as working_dir:
         env = os.environ.copy()
-        if "JUPYTER_TIKZ_TEXINPUTS" in env:
-            env["JUPYTER_TIKZ_TEXINPUTS"] = os.path.join(
-                current_dir, env["JUPYTER_TIKZ_TEXINPUTS"]
-            )
+        # TEXINPUTS is a environment variable that tells LaTeX where to look for files
+        # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
+        if "TEXINPUTS" in env:
+            env["TEXINPUTS"] = current_dir + os.pathsep + env["TEXINPUTS"]
         else:
-            env["JUPYTER_TIKZ_TEXINPUTS"] = (
-                current_dir  # add current directory to TEXINPUTS
-            )
+            env["TEXINPUTS"] = "." + os.pathsep + current_dir + os.pathsep * 2
+            # note that the trailing double pathsep will insert the standard
+            # search path (otherwise we would lose access to all packages)
+            # TEXINPUTS=.;C:\Users\joseph\Documents\LaTeX\local\\;
 
         output_path = os.path.join(working_dir, "tikz")
         tex_path = f"{output_path}.tex"
@@ -410,6 +411,14 @@ class TikZMagics(Magics):
         help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
     )
     @argument(
+        "-nc",
+        "--no-compile",
+        dest="no_compile",
+        action="store_true",
+        default=False,
+        help="Do not compile the LaTeX code.",
+    )
+    @argument(
         "-s",
         "--save-tex",
         dest="save_tex",
@@ -424,6 +433,14 @@ class TikZMagics(Magics):
         type=str,
         default=None,
         help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
+    )
+    @argument(
+        "-sv",
+        "--save-var",
+        dest="save_var",
+        type=str,
+        default=None,
+        help="Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the string source")
     @needs_local_scope
@@ -508,6 +525,14 @@ class TikZMagics(Magics):
                 scale=args.scale,
             )
 
+        if args.no_compile:
+            if save_code:
+                if args.save_var:
+                    local_ns[args.save_var] = save_code
+                if args.save_tex:
+                    save(save_code, args.save_tex, format="code")
+            return None
+
         image = run_latex(
             src,
             rasterize=args.rasterize,
@@ -520,7 +545,10 @@ class TikZMagics(Magics):
         if image is None:
             return None
 
-        if args.save_tex and save_code:
-            save(save_code, args.save_tex, format="code")
+        if save_code:
+            if args.save_var:
+                local_ns[args.save_var] = save_code
+            if args.save_tex:
+                save(save_code, args.save_tex, format="code")
 
         return image
