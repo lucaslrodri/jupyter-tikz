@@ -1,22 +1,54 @@
 [tool.poetry]
 name = "jupyter-tikz"
 version = "0.1.0"
-description = ""
+description = "Magic command for rendering PGF/TikZ in Jupyter Notebooks"
+license = "MIT"
 authors = ["lucaslrodri <lucaslrodri@gmail.com>"]
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.2.2"
-ipython = "^8.25.0"
-pytest-mock = "^3.14.0"
-jinja2 = "^3.1.4"
-
-[tool.pytest.ini_options]
-pythonpath = "./jupyter_tikz"
+packages = [{include = "jupyter_tikz"}]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Framework :: IPython",
+    "Framework :: Jupyter",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Text Processing :: Markup :: LaTeX",
+]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.urls]
+"Repository" = "https://github.com/lucaslrodri/jupyter-tikz"
+"Documentation" = "https://jupyter-tikz.readthedocs.io"
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ipython = "^8.25.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+jinja2 = "^3.1.4"
+isort = "^5.13.2"
+black = "^24.4.2"
+taskipy = "^1.13.0"
+pytest-cov = "^5.0.0"
+
+[tool.pytest.ini_options]
+pythonpath = "./jupyter_tikz"
+addopts = "--no-cov"
+
+[tool.isort]
+profile = "black"
+
+[tool.taskipy.tasks]
+lint = "black . && isort ."
+test = "pytest -vv --cov=jupyter_tikz --cov-report lcov"
+post_test = "coverage lcov"
+publish = "poetry publish -u __token__ -p $JUPYTER_TIKZ_PYPI_TOKEN"

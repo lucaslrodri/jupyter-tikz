@@ -1,7 +1,6 @@
-import pytest
-from jupyter_tikz import render_jinja
 from unittest.mock import patch
 
+from jupyter_tikz import render_jinja
 
 # Test rendering a simple TikZ template
 

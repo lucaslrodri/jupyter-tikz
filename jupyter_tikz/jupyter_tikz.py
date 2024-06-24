@@ -1,14 +1,15 @@
-import sys
 import os
-from subprocess import CalledProcessError, check_output
+import sys
 import tempfile
-from typing import Literal
-from IPython.core.magic import Magics, magics_class, line_cell_magic, needs_local_scope
+from shutil import copy
+from string import Template
+from subprocess import CalledProcessError, check_output
+from textwrap import indent
+from typing import Literal, Union
+
+from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 from IPython.display import SVG, Image
-from string import Template
-from textwrap import indent
-from shutil import copy
 
 
 def build_template_extras(
@@ -21,10 +22,10 @@ def build_template_extras(
     This function constructs a LaTeX preamble string for TikZ diagrams, including any additional LaTeX packages or libraries specified.
 
     Args:
-        no_tikz (bool): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported.
-        tex_packages (str): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
-        tikz_libraries (str): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
-        pgfplots_libraries (str): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
+        no_tikz (bool, optional): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported. Default is False.
+        tex_packages (str, optional): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
+        tikz_libraries (str, optional): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
+        pgfplots_libraries (str, optional): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
 
     Returns:
         str: A LaTeX preamble string that includes the specified packages and libraries, as well as the TikZ package if the `no_tikz` flag is not set.
@@ -92,9 +93,9 @@ def build_tex_string(
 
     Args:
         src (str): The TikZ code to be included in the LaTeX string. This code is either wrapped in a TikZpicture environment or left as is, based on the `implicit_pic` flag.
-        implicit_pic (bool): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class.
-        extras (str): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
-        scale (float): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command.
+        implicit_pic (bool, optional): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class. Default is False.
+        extras (str, optional): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
+        scale (float, optional): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command. Default is 1.
 
     Returns:
         str: A LaTeX string ready for compilation. This string includes the TikZ code (optionally wrapped in a TikZpicture environment) and any additional LaTeX commands specified in `extras`.
@@ -121,16 +122,17 @@ def build_tex_string(
             )
 
 
-def render_jinja(src: str, ns):
+def render_jinja(src: str, ns: dict[str, str]) -> Union[str, None]:
     """
     Renders the Jinja template with the provided namespace.
 
     Args:
         src (str): The Jinja template source code.
         ns (dict): The namespace to use for rendering the template.
+            Example: `locals()` or `globals()`.
 
     Returns:
-        str: The rendered template.
+        str | None: The rendered template, or None if jinja2 is not installed.
     """
 
     try:
@@ -147,7 +149,9 @@ def render_jinja(src: str, ns):
     return tmpl.render(**ns)
 
 
-def save(src: str, dest: str, format: Literal["svg", "png", "code"] = "code") -> str:
+def save(
+    src: str, dest: str, format: Literal["svg", "png", "code"] = "code"
+) -> Union[str, None]:
     """
     Saves the source code or image to the specified destination path.
 
@@ -156,7 +160,7 @@ def save(src: str, dest: str, format: Literal["svg", "png", "code"] = "code") ->
         dest (str): The destination path.
 
     Returns:
-        str: The path to the saved file.
+        str | None: The path to the saved file, or None if destination is None.
     """
 
     if dest is None:
@@ -197,19 +201,19 @@ def run_latex(
     dpi: int = 96,
     full_err: bool = False,
     save_image: str = None,
-) -> Image | SVG | None:
+) -> Union[Image | SVG | None]:
     """
     This function compiles a LaTeX string containing TikZ code and returns an SVG or rasterized image.
 
     Parameters:
 
     - src (str): The LaTeX string containing the TikZ code to be compiled.
-    - rasterize (bool): A flag indicating whether the output should be rasterized. If True, the output is rasterized; if False, the output is an SVG image.
-    - tex_program (str): The TeX program to use for rendering the TikZ code. This can be one of "pdflatex", "xelatex", or "lualatex".
-    - dpi (int): The DPI (dots per inch) to use for rasterizing the output. This parameter is only used when `rasterize` is True.
-    - full_err (bool): A flag indicating whether the full error message should be displayed. If True, the full error message is displayed; if False, only the last 20 lines of the error message are displayed.
-    - save_image (str): The path to save the output image. If None, the image is not saved to disk.
-    - tex_args (str): Additional arguments to pass to the TeX program.
+    - rasterize (bool, optional): A flag indicating whether the output should be rasterized. If True, the output is rasterized; if False, the output is an SVG image. Default is False.
+    - tex_program (str, optional): The TeX program to use for rendering the TikZ code. This can be one of "pdflatex", "xelatex", or "lualatex". Default is "pdflatex".
+    - tex_args (str, optional): Additional arguments to pass to the TeX program.
+    - dpi (int, optional): The DPI (dots per inch) to use for rasterizing the output. This parameter is only used when `rasterize` is True. Default is 96.
+    - full_err (bool, optional): A flag indicating whether the full error message should be displayed. If True, the full error message is displayed; if False, only the last 20 lines of the error message are displayed. Default is False.
+    - save_image (str, optional): The path to save the output image. If None, the image is not saved to disk. Default is None.
 
     Returns:
     - Image | SVG | None: An Image (PNG) or SVG object representing the compiled TikZ diagram, or None if an error occurred during compilation.
@@ -296,14 +300,14 @@ class TikZMagics(Magics):
         "--latex_preamble",
         dest="latex_preamble",
         default="",
-        help='LaTeX preamble to insert before document, e.g., -x "$preamble", with preamble some IPython variable',
+        help='LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
     )
     @argument(
         "-t",
         "--tex-packages",
         dest="tex_packages",
         default="",
-        help='Comma separated list of tex packages, e.g., "-t amsfonts,amsmath"',
+        help="Comma-separated list of TeX packages, e.g., `-t=amsfonts,amsmath`.",
     )
     @argument(
         "-nt",
@@ -311,21 +315,21 @@ class TikZMagics(Magics):
         dest="no_tikz",
         action="store_true",
         default=False,
-        help="Do not import tikz package, useful when using other enviroments like pgfplots",
+        help="Force to not import the TikZ package.",
     )
     @argument(
         "-l",
         "--tikz-libraries",
         dest="tikz_libraries",
         default="",
-        help='Comma separated list of tikz libraries, e.g., "-l arrows,automata"',
+        help="Comma-separated list of TikZ libraries, e.g., `-l=arrows,automata`.",
     )
     @argument(
         "-lp",
         "--pgfplots-libraries",
         dest="pgfplots_libraries",
         default="",
-        help='Comman separated list of pgfplots libraries, e.g., "-lp groupplots,external"',
+        help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
     )
     @argument(
         "-i",
@@ -333,7 +337,7 @@ class TikZMagics(Magics):
         dest="implicit_pic",
         action="store_true",
         default=False,
-        help="Implicitly wrap the code in a standalone document with a tikzpicture environment",
+        help="Implicitly wrap the code in a standalone document with a `tikzpicture` environment.",
     )
     @argument(
         "-f",
@@ -341,7 +345,7 @@ class TikZMagics(Magics):
         dest="full_document",
         action="store_true",
         default=False,
-        help="Use entire LaTeX document as input",
+        help="Use a full LaTeX document as input.",
     )
     @argument(
         "-j",
@@ -349,7 +353,7 @@ class TikZMagics(Magics):
         dest="as_jinja",
         action="store_true",
         default=False,
-        help="Render the cell as a Jinja2 template",
+        help="Render the input as a Jinja2 template.",
     )
     @argument(
         "-pj",
@@ -357,7 +361,7 @@ class TikZMagics(Magics):
         dest="print_jinja",
         action="store_true",
         default=False,
-        help="Print the rendered Jinja2 template",
+        help="Print the rendered Jinja2 template.",
     )
     @argument(
         "-sc",
@@ -365,7 +369,7 @@ class TikZMagics(Magics):
         dest="scale",
         type=float,
         default=1.0,
-        help='Scale the SVG output using CSS. Default is "--scale 1"',
+        help="The scale factor to apply to the TikZ diagram. Default is `-sc=1`.",
     )
     @argument(
         "-r",
@@ -373,7 +377,7 @@ class TikZMagics(Magics):
         dest="rasterize",
         action="store_true",
         default=False,
-        help="Output a rasterized image instead of SVG",
+        help="Output a rasterized image (PNG) instead of SVG.",
     )
     @argument(
         "-d",
@@ -381,7 +385,7 @@ class TikZMagics(Magics):
         dest="dpi",
         type=int,
         default=96,
-        help='DPI of rasterized output image (png). Default is "--dpi 96"',
+        help="DPI of the rasterized output image. Default is `-d=96`.",
     )
     @argument(
         "-e",
@@ -396,14 +400,14 @@ class TikZMagics(Magics):
         "--tex-program",
         dest="tex_program",
         default="pdflatex",
-        help='TeX program to use for rendering, e.g., "-lp groupplots,external"',
+        help="TeX program to use for rendering, e.g., `-tp=lualatex`.",
     )
     @argument(
         "-ta",
         "--tex-args",
         dest="tex_args",
         default="",
-        help='Additional arguments to pass to the TeX program, e.g., "--enable-write18 --extra-mem-top=10000000"',
+        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
     )
     @argument(
         "-s",
@@ -411,7 +415,7 @@ class TikZMagics(Magics):
         dest="save_tex",
         type=str,
         default=None,
-        help="Save the TikZ or TeX code to file, e.g., -s filename.tikz. Default is None",
+        help="Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.",
     )
     @argument(
         "-S",
@@ -419,26 +423,28 @@ class TikZMagics(Magics):
         dest="save_image",
         type=str,
         default=None,
-        help="Save the output image to file, e.g., -s filename. Default is None",
+        help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the string source")
     @needs_local_scope
-    def tikz(self, line, cell=None, local_ns=None) -> Image | SVG | None:
+    def tikz(self, line, cell=None, local_ns=None) -> Union[Image, SVG, None]:
         r"""
         Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
 
-        When used as a line magic, the `code` argument is required:
+        When used as cell magic, it executes the TeX/TikZ code within the cell:
             Example:
-                In [1]: %tikz \draw (0,0) rectangle (1,1);
+                In [3]: %%tikz
+                        \begin{tikzpicture}
+                            \draw (0,0) rectangle (1,1);
+                        \end{tikzpicture}
 
-        When used as a cell magic, it runs a block of TikZ code:
+        When used as line magic, the TeX/TikZ code is passed as an IPython string variable:
             Example:
-                In [2]: %%tikz
-                        \draw (0,0) rectangle (1,1);
+                In [4]: %tikz "$ipython_string_variable_with_code"
 
         Additional options can be passed to the magic command to control the output:
             Example:
-                In [3]: %%tikz --rasterize --dpi=1200 -l arrows,automata
+                In [5]: %%tikz -i --rasterize --dpi=1200 -l arrows,automata
                         \draw (0,0) rectangle (1,1);
                         \filldraw (0.5,0.5) circle (.1);
         """

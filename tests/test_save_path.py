@@ -1,9 +1,11 @@
 import os
-import pytest
-from unittest.mock import patch, mock_open, MagicMock
-from jupyter_tikz import save, run_latex
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
+
+from jupyter_tikz import run_latex, save
 
 EXAMPLE_RECTANGLE_TIKZ = r"""
 \documentclass[tikz]{standalone}
@@ -40,8 +42,8 @@ def test_run_latex_save_image_rasterize(tmp_path):
 
 
 # Test environment variable handling
-def test_save_with_env_var(monkeypatch):
-    custom_dir = "custom_dir"
+def test_save_with_env_var(monkeypatch, tmp_path):
+    custom_dir = os.path.join(tmp_path, "custom_dir")
     file_name = "test.tex"
 
     expected_file = os.path.join(custom_dir, file_name)

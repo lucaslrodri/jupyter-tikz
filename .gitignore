@@ -162,5 +162,7 @@ cython_debug/
 # Tests
 *.lcov
 
-# Jupyter
-/.jupyter
+# Others
+.jupyter/
+.virtual_documents/
+cornway*

@@ -1,6 +1,8 @@
-from jupyter_tikz import run_latex
 import os
+
 from IPython.display import SVG, Image
+
+from jupyter_tikz import run_latex
 
 EXAMPLE_BAD_TIKZ = "HELLO WORLD"
 

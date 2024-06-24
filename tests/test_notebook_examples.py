@@ -1,5 +1,5 @@
-from IPython.testing.globalipapp import get_ipython
 from IPython.display import SVG, Image
+from IPython.testing.globalipapp import get_ipython
 
 ipy = get_ipython()
 ipy.run_line_magic("load_ext", "jupyter_tikz")
@@ -30,7 +30,7 @@ def test_example_simple_tikzpicture():
     assert isinstance(res, SVG)
 
 
-# Or write full document by passing parameter `-f` (or `--full-document`):
+# Alternatively, generate TikZ output using a complete document by using the `-f` (or `--full-document`) parameter:
 
 EXAMPLE_FULL_DOCUMENT = r"""
 \documentclass[tikz]{standalone}
@@ -56,7 +56,7 @@ def test_example_full_document():
     assert isinstance(res, SVG)
 
 
-# You can implictly wrap the code in a standalone document with `tikzpicture` enviroment:
+# Or, write only the content inside the `tikzpicture` environment by using the `-i` (or `--implicit-pic`) parameter. This will generate a standalone document with the `tikzpicture` environment:
 
 EXAMPLE_IMPLICIT_PIC = r"""
 \draw[help lines] grid (5, 5);
@@ -77,9 +77,14 @@ def test_example_implicit_pic():
     assert isinstance(res, SVG)
 
 
+# ================= USING PREAMBLE =================
+
+# Not testesd because it's not possible to access the IPython strings from the line magic
+
+
 # ================= LOADING PACKAGES AND LIBRARIES =================
 
-# If you not using the flag `-f` (or `--full-document`), it's often usefull to use ...
+# If you are not using the `-f` (or `--full-document`) flag, it's often useful to: ...
 
 EXAMPLE_LOADING_PACKAGES_AND_LIBRARIES = r"""
 % Example from Paul Gaborit
@@ -87,7 +92,11 @@ EXAMPLE_LOADING_PACKAGES_AND_LIBRARIES = r"""
 \draw
     (3,-1) coordinate (a) node[right] {a}
     -- (0,0) coordinate (b) node[left] {b}
-    -- (2,2) coordinate (c) node[above right] {c};
+    -- (2,2) coordinate (c) node[above right] {c}
+    pic["$\alpha$", draw=orange, <->, angle eccentricity=1.2, angle radius=1cm]
+    {angle=a--b--c};
+    
+\node[rotate=10] (r) at (2.5, 0.65) {Something about in $\mathbb{R}^2$};
 """
 
 
@@ -100,7 +109,7 @@ def test_example_loading_packages_and_libraries():
     assert isinstance(res, SVG)
 
 
-# If you don't want to import `tikz` package you can use the flag `-nt` (or `--no-tikz`):
+# If you don't want to import the `tikz` package, you can use the flag `-nt` (or `--no-tikz`):
 
 EXAMPLE_PGFPLOTS_NO_TIKZ = r"""
 \begin{axis}[
@@ -133,10 +142,6 @@ def test_example_pgfplots_no_tikz():
     assert isinstance(res, SVG)
 
 
-# ================= PREAMBLE =================
-
-# Cannot test the preamble because it's not possible to access the preamble from the cell magic
-
 # ================= SCALE =================
 
 # You can scale the Tikz image using the `-sc` (or `--scale`) parameter:
@@ -144,10 +149,11 @@ def test_example_pgfplots_no_tikz():
 
 EXAMPLE_SCALE = r"""
 \draw[help lines] grid (5, 5);
-\draw[fill=my_color] (1, 1) rectangle (2, 2);
-\draw[fill=my_color] (3, 1) rectangle (4, 2);
-\draw[fill=my_color] (2, 2) rectangle (3, 3);
-\draw[fill=my_color] (2, 3) rectangle (3, 4);
+\draw[fill=black!10] (1, 1) rectangle (2, 2);
+\draw[fill=black!10] (2, 1) rectangle (3, 2);
+\draw[fill=black!10] (3, 1) rectangle (4, 2);
+\draw[fill=black!10] (3, 2) rectangle (4, 3);
+\draw[fill=black!10] (2, 3) rectangle (3, 4);
 """
 
 
@@ -160,7 +166,7 @@ def test_example_scale():
     assert isinstance(res, SVG)
 
 
-# Also works in standalone output:
+# Which also works with standalone documents:
 # Note: not applicable with the `-f` (or `--full-document`) parameter
 
 EXAMPLE_STANDALONE_SCALE = r"""
@@ -184,9 +190,46 @@ def test_example_scale():
     assert isinstance(res, SVG)
 
 
+# ================= RASTERIZE =================
+
+# It is also possible to set the resolution (dots per inch) by using `-d=<dpi_of_image>` (or `--dpi=<dpi_of_image>`):
+
+EXAMPLE_RASTERIZE = r"""
+\begin{tikzpicture}
+    \draw[help lines] grid (5, 5);
+    \draw[fill=black!50] (1, 1) rectangle (2, 2);
+    \draw[fill=black!50] (2, 1) rectangle (3, 2);
+    \draw[fill=black!50] (3, 1) rectangle (4, 2);
+\end{tikzpicture}
+"""
+
+
+def test_rasterize():
+    line = "-r --dpi=150"
+    cell = EXAMPLE_RASTERIZE
+
+    res = ipy.run_cell_magic("tikz", line, cell)
+
+    assert isinstance(res, Image)
+
+
+# ================= SAVE ======================
+
+# Saves tests are implemented in the test_save_path.py file
+
+
 # ============= IPYTHON STRINGS ===============
 
 # Cannot test the IPython strings because it's not possible to access the IPython strings from the cell magic
+
+# ============= JINJA ===============
+
+# Jinja2 tests are implemented in the test_jinja.py file
+
+# ============== TEX PROGRAMS =============
+
+# Tex programs test are implemented in run_latex.py
+
 
 # =========== DEBUGGING AND ERROR =============
 
@@ -223,3 +266,8 @@ def test_example_show_full_error(capsys):
     assert res is None
     assert "error" in err.lower()
     assert len(err.splitlines()) > 20
+
+
+# ================== USE AS PACKAGE ==================
+
+# The package functions are tested in they own files. i.e. test_save_path.py, test_run_latex.py...
