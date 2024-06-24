@@ -139,8 +139,12 @@ It will result as shown below:
 Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here’s how you can contribute:
 
 1. If you encounter any issues or have suggestions for improvements, please report them using the [issues page](https://github.com/lucaslrodri/jupyter-tikz/issues).
-2. If you're interested in developing the software further, please refer to [contributing guide](). 
+2. If you're interested in developing the software further, please refer to [contributing guide](./DEVELOPMENT.md). 
 
 # Thanks
 
 I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
+
+# License
+
+Distributed under the terms of the [MIT](./LICENSE) license, pytest is free and open source software.
