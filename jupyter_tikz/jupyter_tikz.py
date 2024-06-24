@@ -410,6 +410,14 @@ class TikZMagics(Magics):
         help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
     )
     @argument(
+        "-nc",
+        "--no-compile",
+        dest="no_compile",
+        action="store_true",
+        default=False,
+        help="Do not compile the LaTeX code.",
+    )
+    @argument(
         "-s",
         "--save-tex",
         dest="save_tex",
@@ -424,6 +432,14 @@ class TikZMagics(Magics):
         type=str,
         default=None,
         help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
+    )
+    @argument(
+        "-sv",
+        "--save-var",
+        dest="save_var",
+        type=str,
+        default=None,
+        help="Save the TikZ or TeX code to a IPython variable, e.g., `-sv varname`. Default is None.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the string source")
     @needs_local_scope
@@ -508,6 +524,14 @@ class TikZMagics(Magics):
                 scale=args.scale,
             )
 
+        if args.no_compile:
+            if save_code:
+                if args.save_var:
+                    local_ns[args.save_var] = save_code
+                if args.save_tex:
+                    save(save_code, args.save_tex, format="code")
+            return None
+
         image = run_latex(
             src,
             rasterize=args.rasterize,
@@ -520,7 +544,10 @@ class TikZMagics(Magics):
         if image is None:
             return None
 
-        if args.save_tex and save_code:
-            save(save_code, args.save_tex, format="code")
+        if save_code:
+            if args.save_var:
+                local_ns[args.save_var] = save_code
+            if args.save_tex:
+                save(save_code, args.save_tex, format="code")
 
         return image
