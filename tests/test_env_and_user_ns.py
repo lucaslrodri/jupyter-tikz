@@ -21,8 +21,7 @@ def test_user_ns_save_parameter_var_name():
     # assert EXAMPLE_LINE_TIKZ == ipy.user_ns[var_name].value
 
 
-@pytest.mark.skip(reason="Not implemented yet")
-def test_user_ns_local_folder(tmpdir):
+def test_env_tex_inputs(tmpdir):
     local_folder = tmpdir.mkdir("local_folder")
     with local_folder.as_cwd():
         with open("component.tikz", "w") as f:

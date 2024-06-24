@@ -113,8 +113,10 @@ All additional arguments are listed below:
 - `-e` or `--full-err`: Show the full error message.
 - `-tp` or `--tex-program`: TeX program to use for rendering, e.g., `-tp lualatex`.
 - `-ta` or `--tex-args` (`str`): Additional arguments to pass to the TeX program, e.g., `-ta "$tex_args_ipython_variable"`.
+- `-nc` or `--no-compile`: Do not compile the LaTeX code.
 - `-s` or `--save-tex` (`str`): Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.
 - `-S` or `--save-image` (`str`): Save the output image to file, e.g., `-S filename.svg`. Default is None.
+- `-sv` or `--save-var` (`str`): Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.
 
 # Adding TikZ Syntax highlight
 

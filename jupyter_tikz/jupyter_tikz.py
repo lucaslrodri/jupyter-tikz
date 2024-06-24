@@ -221,14 +221,15 @@ def run_latex(
     current_dir = os.getcwd()  # get current working directory
     with tempfile.TemporaryDirectory() as working_dir:
         env = os.environ.copy()
-        if "JUPYTER_TIKZ_TEXINPUTS" in env:
-            env["JUPYTER_TIKZ_TEXINPUTS"] = os.path.join(
-                current_dir, env["JUPYTER_TIKZ_TEXINPUTS"]
-            )
+        # TEXINPUTS is a environment variable that tells LaTeX where to look for files
+        # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
+        if "TEXINPUTS" in env:
+            env["TEXINPUTS"] = current_dir + os.pathsep + env["TEXINPUTS"]
         else:
-            env["JUPYTER_TIKZ_TEXINPUTS"] = (
-                current_dir  # add current directory to TEXINPUTS
-            )
+            env["TEXINPUTS"] = "." + os.pathsep + current_dir + os.pathsep * 2
+            # note that the trailing double pathsep will insert the standard
+            # search path (otherwise we would lose access to all packages)
+            # TEXINPUTS=.;C:\Users\joseph\Documents\LaTeX\local\\;
 
         output_path = os.path.join(working_dir, "tikz")
         tex_path = f"{output_path}.tex"
@@ -439,7 +440,7 @@ class TikZMagics(Magics):
         dest="save_var",
         type=str,
         default=None,
-        help="Save the TikZ or TeX code to a IPython variable, e.g., `-sv varname`. Default is None.",
+        help="Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the string source")
     @needs_local_scope

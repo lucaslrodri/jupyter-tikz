@@ -243,7 +243,7 @@ def test_no_compile():
     assert res == None
 
 
-# Other tests are implemented in the test_user_ns.py file
+# Other tests are implemented in the test_env_and_user_ns.py file
 
 
 # ============== TEX PROGRAMS =============
@@ -263,13 +263,6 @@ def test_rasterize():
     res = ipy.run_cell_magic("tikz", line, cell)
 
     assert isinstance(res, Image)
-
-
-# TODO: Add a test for \input{file.tex} and \include{file.tex} commands (local_ns)
-
-# TODO: Add a test for no_compile param
-
-# TODO: Add test for save_var param
 
 
 EXAMPLE_SHOW_ERROR = r"""
