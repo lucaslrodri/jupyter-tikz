@@ -12,11 +12,11 @@ A complete guide is available in the [Getting Started Notebook](https://github.c
 pip install jupyter-tikz
 ```
 
-## Dependencies
+# Dependencies
 
 Before installation, you should verify the dependencies.
 
-### LaTeX
+## LaTeX
 
 LaTeX must be installed using one of the following distributions:
 
@@ -24,7 +24,7 @@ LaTeX must be installed using one of the following distributions:
 - [MikTeX](https://miktex.org/) (Windows)
 - [MacTeX](https://www.tug.org/mactex/) (Mac)
 
-### Poppler
+## Poppler
 
 This application requires Poppler’s `pdftocairo`. You must install it beforehand.
 
@@ -50,7 +50,7 @@ Install using `brew`:
 brew install poppler
 ```
 
-### Jinja2 (Optional)
+## Jinja2 (Optional)
 
 Jinja2 is only necessary if you plan to use [Jinja2 templates](http://jinja.pocoo.org/docs/latest/templates/). To install it, use:
 
