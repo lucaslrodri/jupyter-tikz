@@ -44,8 +44,8 @@ pytest-cov = "^5.0.0"
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
 markers = [
-    "needs_latex: marks tests that needs LaTeX enviroment with TikZ package installed",
-    "needs_pdftocairo: marks tests that needs pdftocairo installed",
+    "needs_latex: marks tests that require a LaTeX environment with the TikZ package installed.",
+    "needs_pdftocairo: marks tests that require `pdftocairo` (Poppler) installed.",
 ]
 
 # addopts = "--no-cov"

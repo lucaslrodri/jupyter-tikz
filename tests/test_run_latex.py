@@ -189,7 +189,7 @@ class TemporaryDirectoryMock:
 
 
 @pytest.fixture
-def tex_document_mock__run_latex(mocker, tex_document, tmpdir, request):
+def tex_document_mock__run_latex(mocker, tex_document, tmpdir):
     # current_dir = request.fspath.dirname
     # # env = {"TEXINPUTS": "." + os.pathsep + f"{current_dir}" + os.pathsep * 2}
     # # mocker.patch.object(
@@ -297,6 +297,37 @@ def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path):
     # Assert
     spy.assert_called_with(expected_command, tmp_path, full_err)
     assert res == "Image"
+
+
+# ========================= texinputs env - no mocks =========================
+
+EXAMPLE_VIEWBOX_CODE_INPUT = r"""
+\draw (-2.5,-2.5) rectangle (5,5);
+"""
+EXAMPLE_PARENT_WITH_INPUT_COMMANDT = r"""
+\documentclass[tikz]{standalone}
+\begin{document}
+    \begin{tikzpicture}
+        \input{viewbox.tex}
+        \node[draw] at (0,0) {Hello, World!};
+    \end{tikzpicture}
+\end{document}    
+"""
+
+
+def test_texinputs_no_mocks(monkeypatch, tmpdir):
+    # Arrange
+    monkeypatch.chdir(tmpdir)
+    viewbox_code = EXAMPLE_VIEWBOX_CODE_INPUT
+    child = tmpdir / "viewbox.tex"
+    child.write(viewbox_code)
+
+    # Act
+    tex_document = TexDocument(EXAMPLE_PARENT_WITH_INPUT_COMMANDT)
+    res = tex_document.run_latex()
+
+    # Assert
+    assert isinstance(res, display.SVG)
 
 
 # =========================== run_latex - no mocks ===========================
@@ -550,3 +581,67 @@ def test_run_latex_save_image_relative_tmp_path(
 
     # Assert
     assert image_path.exists()
+
+
+# =========================== jinja - no mocks ===========================
+
+EXAMPLE_JINJA_TEMPLATE = r"""
+\documentclass[tikz]{standalone}
+\begin{document}
+    \begin{tikzpicture}
+        {% for person in people %}
+        \node[draw] at (0,{{ person.y }}) {Hello, {{ person.name }}!};
+        {% endfor %}
+    \end{tikzpicture}
+\end{document}"""
+
+
+def test_jinja_template():
+    # Arrange
+    people = [
+        {"name": "Alice", "y": 0},
+        {"name": "Bob", "y": 2},
+        {"name": "Charlie", "y": 4},
+    ]
+
+    # Act
+    tex_document = TexDocument(
+        EXAMPLE_JINJA_TEMPLATE, use_jinja=True, ns={"people": people}
+    )
+    res = tex_document.run_latex()
+
+    # Assert
+    assert isinstance(res, display.SVG)
+
+
+EXAMPLE_JINJA_PARENT_TEMPLATE = r"""
+\documentclass[tikz]{standalone}
+\begin{document}
+	\begin{tikzpicture}
+        \draw (-2.5,-2.5) rectangle (5,5);
+        {% block content %}{% endblock %}
+	\end{tikzpicture}
+\end{document}"""
+
+EXAMPLE_JINJA_CHILD_TEMPLATE = """{% extends 'parent_tmpl.tex' %}
+{% block content %}
+    \node[draw] at (0,0) {Hello, {{ name }}!};
+{% endblock %}
+"""
+
+
+def test_jinja_extends_template(tmpdir, monkeypatch):
+    # Arrange
+    monkeypatch.chdir(tmpdir)
+    parent_code = EXAMPLE_JINJA_PARENT_TEMPLATE
+    parent = tmpdir / "parent_tmpl.tex"
+    parent.write(parent_code)
+
+    # Act
+    tex_document = TexDocument(
+        EXAMPLE_JINJA_CHILD_TEMPLATE, use_jinja=True, ns={"name": "World"}
+    )
+    res = tex_document.run_latex()
+
+    # Assert
+    assert isinstance(res, display.SVG)

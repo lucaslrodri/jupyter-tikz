@@ -12,16 +12,21 @@ from shutil import copy
 
 
 class TexDocument:
-    def __init__(self, code: str, as_jinja=False, ns: dict[str, str] = None):
+    def __init__(
+        self, code: str, use_jinja: bool = False, ns: Optional[dict[str, str]] = None
+    ):
         self.code = code
-        self.as_jinja = as_jinja
-        self.ns = ns
+        self.use_jinja = use_jinja
+        if self.use_jinja and not ns:
+            raise ValueError(
+                'Namespace must be provided when using Jinja2, i.e.: `ns=locals()` or `ns={"my_var": value}`'
+            )
 
-        if self.as_jinja:
-            self._render_jinja()
-        self._build_tex_str()
+        if self.use_jinja:
+            self._render_jinja(ns)
+        self._build_latex_str()
 
-    def _build_tex_str(self) -> str:
+    def _build_latex_str(self) -> str:
         self.latex_str = self.code
 
     def __repr__(self) -> str:
@@ -108,7 +113,7 @@ class TexDocument:
         tex_args: str = "",
         rasterize: bool = False,
         full_err: bool = False,
-        save_image: str = None,
+        save_image: Optional[str] = None,
         dpi: int = 96,
     ) -> Optional[display.Image | display.SVG]:
         current_dir = os.getcwd()  # get current working directory
@@ -158,66 +163,114 @@ class TexDocument:
                     self.save(save_image, f"{output_stem}.png", "png")
                 return display.Image(f"{output_stem}.png")
 
-    def _render_jinja(self) -> None:
+    def _render_jinja(self, ns) -> None:
         try:
             import jinja2
-        except ImportError:  # pragma no cover
-            print("Please install jinja2", file=sys.stderr)
-            print("$ pip install jinja2", file=sys.stderr)
-            return
+        except ImportError:
+            raise ImportError(
+                "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
+            )
 
         fs_loader = jinja2.FileSystemLoader(os.getcwd())
         tmpl_env = jinja2.Environment(loader=fs_loader)
 
         tmpl = tmpl_env.from_string(self.code)
-        ns = locals() if self.ns is None else self.ns
 
         self.code = tmpl.render(**ns)
 
 
-class StandaloneDocument(TexDocument):
+class TexTemplate(TexDocument):
     TMPL = Template(
-        "\\documentclass{standalone}\n"
-        + "\\usepackage{tikz}\n"
-        + "$extras"
+        "$preamble"
         + "\\begin{document}\n"
-        + "\t$tikzpicture\n"
+        + "$scale_begin"
+        + "$tikzpicture_begin"
+        + "$code"
+        + "$tikzpicture_end"
+        + "$scale_end"
         + "\\end{document}"
     )
-    TMPL_SCALE = Template(
+    TMPL_STANDALONE_PREAMBLE = Template(
         "\\documentclass{standalone}\n"
-        + "\\usepackage{graphicx}\n"
-        + "\\usepackage{tikz}\n"
-        + "$extras"
-        + "\\begin{document}\n"
-        + "\t\\scalebox{$scale}{\n"
-        + "\t$tikzpicture\n"
-        + "\t}\n"
-        + "\\end{document}"
+        + "$graphicx_package"
+        + "$tikz_package"
+        + "$tex_packages"
+        + "$tikz_libraries"
+        + "$pgfplots_libraries"
     )
 
+    def __init__(
+        self,
+        code: str,
+        implicit_tikzpicture: bool = False,
+        scale: float = 1.0,
+        preamble: Optional[str] = None,
+        tex_packages: Optional[str] = None,
+        tikz_libraries: Optional[str] = None,
+        pgfplots_libraries: Optional[str] = None,
+        no_tikz: bool = False,
+        **kargs,
+    ):
+        self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
+        self.scale = scale
+        if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
+            raise ValueError(
+                "You cannot provide both `preamble` and (`tex_packages`, `tikz_libraries`, or `pgfplots_libraries`)."
+            )
+        if preamble:
+            self.preamble = preamble
+        else:
+            self.preamble = self._build_standalone_preamble(
+                tex_packages, tikz_libraries, pgfplots_libraries, no_tikz
+            )
 
-class Tikzpicture(StandaloneDocument):
-    TMPL = Template(
-        "\\documentclass{standalone}\n"
-        + "$extras"
-        + "\\begin{document}\n"
-        + "\t\begin{tikzpicture}\n"
-        + "$src"
-        + "\t\\end{tikzpicture}\n"
-        + "\\end{document}"
-    )
-    TMPL_SCALE = Template(
-        "\\documentclass{standalone}\n"
-        + "$extras"
-        + "\\begin{document}\n"
-        + "\t\scalebox{$scale}{\n"
-        + "\t\begin{tikzpicture}\n"
-        + "$src"
-        + "\t\\end{tikzpicture}\n"
-        + "\t}\n"
-        + "\\end{document}"
-    )
+        super().__init__(code, **kargs)
+
+    def _build_standalone_preamble(
+        self,
+        tex_packages: Optional[str] = None,
+        tikz_libraries: Optional[str] = None,
+        pgfplot_libraries: Optional[str] = None,
+        no_tikz: bool = False,
+    ) -> str:
+        tikz_package = "" if no_tikz else "\\usepackage{tikz}\n"
+
+        if self.scale != 1:
+            graphicx_package = "\\usepackage{graphicx}\n"
+        else:
+            graphicx_package = ""
+
+        return self.TMPL_STANDALONE_PREAMBLE.substitute(
+            graphicx_package=graphicx_package,
+            tikz_package=tikz_package,
+            tex_packages=tex_packages or "",
+            tikz_libraries=tikz_libraries or "",
+            pgfplots_libraries=pgfplot_libraries or "",
+        )
+
+    def _build_latex_str(self) -> None:
+        if self.scale != 1:
+            scale_begin = "\\scalebox{%.2f}{\n" % self.scale
+            scale_end = "\n}\n"
+        else:
+            scale_begin = ""
+            scale_end = ""
+
+        if self.template == "tikzpicture":
+            tikzpicture_begin = "\\begin{tikzpicture}\n"
+            tikzpicture_end = "\\end{tikzpicture}\n"
+        else:
+            tikzpicture_begin = ""
+            tikzpicture_end = ""
+
+        self.latex_str = self.TMPL.substitute(
+            preamble=self.preamble,
+            scale_begin=scale_begin,
+            tikzpicture_begin=tikzpicture_begin,
+            code=self.code,
+            tikzpicture_end=tikzpicture_end,
+            scale_end=scale_end,
+        )
 
 
 # as "full-document", "standalone-document", "tikzpicture"
@@ -236,6 +289,7 @@ class TikZMagics(Magics):
 
         return None
 
+    # Path to the pdftocairo executable
     @line_cell_magic
     @magic_arguments()
     @argument(
@@ -244,6 +298,136 @@ class TikZMagics(Magics):
         dest="input_type",
         default="standalone",
         help="Input type. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Default is `standalone-document`.",
+    )
+    @argument(
+        "-p",
+        "--latex_preamble",
+        dest="latex_preamble",
+        default="",
+        help='LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
+    )
+    @argument(
+        "-t",
+        "--tex-packages",
+        dest="tex_packages",
+        default="",
+        help="Comma-separated list of TeX packages, e.g., `-t=amsfonts,amsmath`.",
+    )
+    @argument(
+        "-nt",
+        "--no-tikz",
+        dest="no_tikz",
+        action="store_true",
+        default=False,
+        help="Force to not import the TikZ package.",
+    )
+    @argument(
+        "-l",
+        "--tikz-libraries",
+        dest="tikz_libraries",
+        default="",
+        help="Comma-separated list of TikZ libraries, e.g., `-l=arrows,automata`.",
+    )
+    @argument(
+        "-lp",
+        "--pgfplots-libraries",
+        dest="pgfplots_libraries",
+        default="",
+        help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
+    )
+    @argument(
+        "-j",
+        "--use-jinja",
+        dest="use_jinja",
+        action="store_true",
+        default=False,
+        help="Render the input using Jinja2.",
+    )
+    @argument(
+        "-pj",
+        "--print-jinja",
+        dest="print_jinja",
+        action="store_true",
+        default=False,
+        help="Print the rendered Jinja2 template.",
+    )
+    @argument(
+        "-sc",
+        "--scale",
+        dest="scale",
+        type=float,
+        default=1.0,
+        help="The scale factor to apply to the TikZ diagram. Default is `-sc=1`.",
+    )
+    @argument(
+        "-r",
+        "--rasterize",
+        dest="rasterize",
+        action="store_true",
+        default=False,
+        help="Output a rasterized image (PNG) instead of SVG.",
+    )
+    @argument(
+        "-d",
+        "--dpi",
+        dest="dpi",
+        type=int,
+        default=96,
+        help="DPI of the rasterized output image. Default is `-d=96`.",
+    )
+    @argument(
+        "-e",
+        "--full-err",
+        dest="full_err",
+        action="store_true",
+        default=False,
+        help="Show full error message",
+    )
+    @argument(
+        "-tp",
+        "--tex-program",
+        dest="tex_program",
+        default="pdflatex",
+        help="TeX program to use for rendering, e.g., `-tp=lualatex`.",
+    )
+    @argument(
+        "-ta",
+        "--tex-args",
+        dest="tex_args",
+        default="",
+        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
+    )
+    @argument(
+        "-nc",
+        "--no-compile",
+        dest="no_compile",
+        action="store_true",
+        default=False,
+        help="Do not compile the LaTeX code.",
+    )
+    @argument(
+        "-s",
+        "--save-tex",
+        dest="save_tex",
+        type=str,
+        default=None,
+        help="Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.",
+    )
+    @argument(
+        "-S",
+        "--save-image",
+        dest="save_image",
+        type=str,
+        default=None,
+        help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
+    )
+    @argument(
+        "-sv",
+        "--save-var",
+        dest="save_var",
+        type=str,
+        default=None,
+        help="Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
@@ -255,9 +439,9 @@ class TikZMagics(Magics):
         self.src = cell
         local_ns = local_ns or {}
 
-        input_type = self.get_input_type(args.input_type)
+        self.input_type = self.get_input_type(args.input_type)
 
-        if input_type is None:
+        if self.input_type is None:
             print(
                 f"`{args.input_type}` is not a valid input type.",
                 "Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.",
@@ -275,9 +459,19 @@ class TikZMagics(Magics):
             else:
                 self.src = local_ns[args.code]
 
-        if input_type == "full-document":
-            self.tex_obj = TexDocument(self.src)
-        elif input_type == "standalone-document":
-            self.tex_obj = StandaloneDocument(self.src)
-        elif input_type == "tikzpicture":
-            self.tex_obj = Tikzpicture(self.src)
+        if self.input_type == "full-document":
+            self.tex_obj = TexDocument(self.src, use_jinja=args.use_jinja, ns=local_ns)
+        else:
+            implicit_tikzpicture = self.input_type == "tikzpicture"
+            self.tex_obj = TexTemplate(
+                self.src,
+                implicit_tikzpicture=implicit_tikzpicture,
+                preamble=args.latex_preamble,
+                tex_packages=args.tex_packages,
+                no_tikz=args.no_tikz,
+                tikz_libraries=args.tikz_libraries,
+                pgfplots_libraries=args.pgfplots_libraries,
+                scale=args.scale,
+                use_jinja=args.use_jinja,
+                ns=local_ns,
+            )

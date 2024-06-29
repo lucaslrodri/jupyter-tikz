@@ -1,5 +1,5 @@
 import pytest
-from jupyter_tikz import TikZMagics, Tikzpicture, TexDocument, StandaloneDocument
+from jupyter_tikz import TikZMagics, TexTemplate, TexDocument
 
 
 @pytest.fixture
@@ -68,30 +68,35 @@ def test_valid_input_type(tikz_magic, input_type, expected_input_type):
 
 
 @pytest.mark.parametrize(
-    "input_type, expected_cls",
+    "input_type, expected_input_type",
     [
-        ("full-document", TexDocument),
-        ("full", TexDocument),
-        ("f", TexDocument),
-        ("standalone-document", StandaloneDocument),
-        ("standalone", StandaloneDocument),
-        ("s", StandaloneDocument),
-        ("tikzpicture", Tikzpicture),
-        ("tikz", Tikzpicture),
-        ("t", Tikzpicture),
+        ("full-document", "full-document"),
+        ("full", "full-document"),
+        ("f", "full-document"),
+        ("standalone-document", "standalone-document"),
+        ("standalone", "standalone-document"),
+        ("s", "standalone-document"),
+        ("tikzpicture", "tikzpicture"),
+        ("tikz", "tikzpicture"),
+        ("t", "tikzpicture"),
     ],
 )
-def test_tex_obj_type(tikz_magic, input_type, expected_cls):
+def test_tex_obj_type(tikz_magic, input_type, expected_input_type):
     # Arrange
     line = f"-as={input_type}"
     code = "any code"
 
     # Act
     tikz_magic.tikz(line, code)
-    res = tikz_magic.tex_obj
 
     # Assert
-    assert type(res) == expected_cls
+    assert tikz_magic.input_type == expected_input_type
+
+    if tikz_magic.input_type != "full-document":
+        assert isinstance(tikz_magic.tex_obj, TexTemplate)
+        assert tikz_magic.tex_obj.template == expected_input_type
+    else:
+        assert isinstance(tikz_magic.tex_obj, TexDocument)
 
 
 # =================== Test src content ===================
