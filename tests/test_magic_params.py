@@ -37,7 +37,7 @@ def test_invalid_input_type(input_type, tikz_magic, capsys):
     assert tikz_magic.get_input_type(input_type) is None
     assert (
         err
-        == f"'{input_type}' is not a valid input type. Valid input types are 'full-document', 'standalone-document', or 'tikzpicture'.\n"
+        == f"`{input_type}` is not a valid input type. Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.\n"
     )
 
 
@@ -88,7 +88,7 @@ def test_tex_obj_type(tikz_magic, input_type, expected_cls):
 
     # Act
     tikz_magic.tikz(line, code)
-    res = tikz_magic._tex
+    res = tikz_magic.tex_obj
 
     # Assert
     assert type(res) == expected_cls
@@ -106,7 +106,7 @@ def test_src_is_cell_content(tikz_magic):
     tikz_magic.tikz(line, cell)
 
     # Assert
-    assert tikz_magic._src == cell
+    assert tikz_magic.src == cell
 
 
 def test_src_is_line_code__code_not_in_local_ns(tikz_magic):
@@ -124,7 +124,7 @@ def test_src_is_line_code__code_not_in_local_ns(tikz_magic):
     tikz_magic.tikz(line, local_ns=local_ns)  # magic_line
 
     # Assert
-    assert tikz_magic._src == line
+    assert tikz_magic.src == line
 
 
 def test_src_is_line__code_is_in_in_local_ns(tikz_magic):
@@ -141,4 +141,4 @@ def test_src_is_line__code_is_in_in_local_ns(tikz_magic):
     tikz_magic.tikz(line, local_ns=local_ns)
 
     # Assert
-    assert tikz_magic._src == code
+    assert tikz_magic.src == code
