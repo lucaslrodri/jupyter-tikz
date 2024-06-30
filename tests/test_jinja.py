@@ -1,5 +1,6 @@
 import pytest
 from jupyter_tikz import TexDocument
+from jupyter_tikz.jupyter_tikz import JINJA_NOT_INTALLED_ERR, NS_NOT_PROVIDED_ERR
 
 EXAMPLE_TIKZ_JINJA_TEMPLATE = """\\begin{tikzpicture}
     \\node[draw] at (0,0) {Hello, {{ name }}!};
@@ -26,7 +27,7 @@ def test_init_with_jinja_without_ns_raises_error():
         TexDocument(EXAMPLE_TIKZ_JINJA_TEMPLATE, use_jinja=True)
 
     # Assert
-    assert "Namespace must be provided when using Jinja2" in str(err.value)
+    assert NS_NOT_PROVIDED_ERR in str(err.value)
 
 
 def test_jinja_when_jinja_is_not_installed_raises_error(monkeypatch):
@@ -41,10 +42,7 @@ def test_jinja_when_jinja_is_not_installed_raises_error(monkeypatch):
         # Assert
         assert res is None
 
-    assert (
-        "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
-        in str(err.value)
-    )
+    assert JINJA_NOT_INTALLED_ERR in str(err.value)
 
 
 def test_jinja_using_dict_ns():
@@ -57,7 +55,7 @@ def test_jinja_using_dict_ns():
     )
 
     # Assert
-    assert tex_document.code.strip() == EXAMPLE_TIKZ_RENDERED_TEMPLATE.strip()
+    assert str(tex_document).strip() == EXAMPLE_TIKZ_RENDERED_TEMPLATE.strip()
 
 
 def test_jinja_using_local_ns():
@@ -69,7 +67,7 @@ def test_jinja_using_local_ns():
     tex_document = TexDocument(EXAMPLE_TIKZ_JINJA_TEMPLATE, use_jinja=True, ns=locals())
 
     # Assert
-    assert tex_document.code.strip() == EXAMPLE_TIKZ_RENDERED_TEMPLATE.strip()
+    assert str(tex_document).strip() == EXAMPLE_TIKZ_RENDERED_TEMPLATE.strip()
 
 
 def test_jinja_with_complex_template():
@@ -86,7 +84,7 @@ def test_jinja_with_complex_template():
     )
 
     # Assert
-    res = tex_document.code
+    res = f"{tex_document}"
     assert (
         "Alice" in res
         and "Bob" in res
@@ -133,4 +131,4 @@ def test_jinja_extends_template(tmpdir, monkeypatch):
     )
 
     # Assert
-    assert tex_document.code.strip() == EXAMPLE_TIKZ_JINJA_EXTENDED_TEMPLATE.strip()
+    assert f"{tex_document}".strip() == EXAMPLE_TIKZ_JINJA_EXTENDED_TEMPLATE.strip()

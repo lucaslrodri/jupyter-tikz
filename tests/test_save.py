@@ -37,6 +37,13 @@ def test_save_no_destination(tex_document):
     assert res is None
 
 
+@pytest.mark.parametrize("format", ["svg", "png"])
+def test_save_src_none_format_not_code(tex_document, format):
+    with pytest.raises(ValueError) as excinfo:
+        tex_document.save(dest="output", src=None, format=format)
+    assert "src must be provided when format is not code." in str(excinfo.value)
+
+
 SAVE_TEXT_PARAMETRIZE = {
     "argnames": "ext, expected_ext",
     "argvalues": [
@@ -141,11 +148,11 @@ def test_save_image_with_env_var(
     src_path = Path(f"source.{format}")
     dest_path = Path(destination)
 
-    dummy_image = "svg content" if format == "svg" else b"png content"
-
     if format == "svg":
+        dummy_image = "svg content"
         src_path.write_text(dummy_image)
     else:
+        dummy_image = b"png content"
         src_path.write_bytes(dummy_image)
 
     # Act

@@ -11,30 +11,56 @@ from pathlib import Path
 from shutil import copy
 from textwrap import indent
 
+EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
+JINJA_NOT_INTALLED_ERR = (
+    "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
+)
+NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
+
 
 class TexDocument:
     def __init__(
         self, code: str, use_jinja: bool = False, ns: Optional[dict[str, Any]] = None
     ):
-        self.code = code.strip()
+        self._code = code.strip()
         self.use_jinja = use_jinja
         if self.use_jinja and not ns:
-            raise ValueError(
-                'Namespace must be provided when using Jinja2, i.e.: `ns=locals()` or `ns={"my_var": value}`'
-            )
+            raise ValueError(NS_NOT_PROVIDED_ERR)
 
         if self.use_jinja:
             self._render_jinja(ns)
         self._build_latex_str()
 
     def _build_latex_str(self) -> None:
-        self.latex_str = self.code
+        self.latex_str = self._code
+
+    def arg_head(self, arg, limit=60) -> str:
+        if type(arg) == str:
+            arg = f"{arg[:limit]}..." if len(arg) > limit else arg
+            arg = str(repr(arg))
+        else:
+            arg = str(arg)
+        return arg
 
     def __repr__(self) -> str:
-        return self.__str__()
+        params_dict = self.__dict__
+        if "scale" in params_dict.keys():
+            if params_dict["scale"] == 1.0:
+                del params_dict["scale"]
+
+        params = ", ".join(
+            [
+                f"{k}={self.arg_head(v)}"
+                for k, v in params_dict.items()
+                if k not in ["_code", "latex_str", "ns"] and v
+            ]
+        )
+        if params:
+            params = ", " + params
+        return f"{self.__class__.__name__}({self.arg_head(self._code)}{params})"
 
     def __str__(self) -> str:
-        return self.code
+        return self._code
 
     def _modify_texinputs(self, current_dir: str) -> dict[str, str]:
         env = os.environ.copy()
@@ -84,6 +110,9 @@ class TexDocument:
                 f"`{format}` is not a valid format. Valid formats are `svg`, `png`, and `code`."
             )
 
+        if format != "code" and src is None:
+            raise ValueError("src must be provided when format is not code.")
+
         dest_path = Path(dest)
 
         if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
@@ -104,14 +133,12 @@ class TexDocument:
 
         if format == "code":
             if src is None:
-                src = self.code
+                src = self._code
             dest_path.write_text(src)
         else:
             if src is not None:
                 src_path = Path(src).resolve()
                 copy(src_path, dest_path)
-            else:
-                return None
         return f"{dest_path}"
 
     def run_latex(
@@ -174,16 +201,14 @@ class TexDocument:
         try:
             import jinja2
         except ImportError:
-            raise ImportError(
-                "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
-            )
+            raise ImportError(JINJA_NOT_INTALLED_ERR)
 
         fs_loader = jinja2.FileSystemLoader(os.getcwd())
         tmpl_env = jinja2.Environment(loader=fs_loader)
 
-        tmpl = tmpl_env.from_string(self.code)
+        tmpl = tmpl_env.from_string(self._code)
 
-        self.code = tmpl.render(**ns)
+        self._code = tmpl.render(**ns)
 
 
 class TexTemplate(TexDocument):
@@ -218,12 +243,11 @@ class TexTemplate(TexDocument):
         no_tikz: bool = False,
         **kargs,
     ):
+        if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
+            raise ValueError(EXTRAS_CONFLITS_ERR)
+
         self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
         self.scale = scale
-        if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
-            raise ValueError(
-                "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
-            )
         if preamble:
             self.preamble = preamble.strip()
         else:
@@ -279,7 +303,7 @@ class TexTemplate(TexDocument):
             tikzpicture_end = ""
             code_indent = " " * 4
 
-        code = indent(self.code, code_indent) + "\n" if self.code else ""
+        code = indent(self._code, code_indent) + "\n" if self._code else ""
 
         self.latex_str = self.TMPL.substitute(
             preamble=self.preamble,
@@ -307,12 +331,28 @@ class TikZMagics(Magics):
     # Path to the pdftocairo executable
     @line_cell_magic
     @magic_arguments()
-    @argument(
+    @argument(  # OK | New
         "-as",
         "--input-type",
         dest="input_type",
         default="standalone",
         help="Input type. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Default is `standalone-document`.",
+    )
+    @argument(  # Deprecated
+        "-i",
+        "--implicit-pic",
+        dest="implicit_pic",
+        action="store_true",
+        default=False,
+        help="Deprecated. Use `-as=tikzpicture` instead.",
+    )
+    @argument(  # Deprecated
+        "-f",
+        "--full-document",
+        dest="full_document",
+        action="store_true",
+        default=False,
+        help="Deprecated. Use `-as=full-document` instead.",
     )
     @argument(
         "-p",
@@ -357,6 +397,13 @@ class TikZMagics(Magics):
         action="store_true",
         default=False,
         help="Render the input using Jinja2.",
+    )
+    @argument(  # Deprecated
+        "--as-jinja",
+        dest="as_jinja",
+        action="store_true",
+        default=False,
+        help="Deprecated. Use `--use-jinja` instead.",
     )
     @argument(
         "-pj",
@@ -451,11 +498,23 @@ class TikZMagics(Magics):
     ) -> Optional[display.Image | display.SVG]:
 
         args = parse_argstring(self.tikz, line)
-        self.src = cell or ""
-        local_ns = local_ns or {}
+
+        if args.latex_preamble and (
+            args.tex_packages or args.tikz_libraries or args.pgfplots_libraries
+        ):
+            print(EXTRAS_CONFLITS_ERR, file=sys.stderr)
+            return
+
+        if args.implicit_pic and args.full_document:
+            print("Deprecated: Use `-as` instead of `-i` or `-f`.", file=sys.stderr)
+            return
+
+        if args.implicit_pic:
+            args.input_type = "tikzpicture"
+        if args.full_document:
+            args.input_type = "full-document"
 
         self.input_type = self._get_input_type(args.input_type)
-
         if self.input_type is None:
             print(
                 f"`{args.input_type}` is not a valid input type.",
@@ -463,6 +522,9 @@ class TikZMagics(Magics):
                 file=sys.stderr,
             )
             return
+
+        self.src = cell or ""
+        local_ns = local_ns or {}
 
         if cell is None:
             if args.code is None:
@@ -487,6 +549,30 @@ class TikZMagics(Magics):
                 tikz_libraries=args.tikz_libraries,
                 pgfplots_libraries=args.pgfplots_libraries,
                 scale=args.scale,
-                use_jinja=args.use_jinja,
+                use_jinja=args.use_jinja or args.as_jinja or args.print_jinja,
                 ns=local_ns,
             )
+
+        if args.print_jinja:
+            print(self.tex_obj)
+
+        image = None
+        if not args.no_compile:
+            image = self.tex_obj.run_latex(
+                tex_program=args.tex_program,
+                tex_args=args.tex_args,
+                rasterize=args.rasterize,
+                full_err=args.full_err,
+                save_image=args.save_image,
+                dpi=args.dpi,
+            )
+            if image is None:
+                return None
+
+        if args.save_var:
+            local_ns[args.save_var] = str(self.tex_obj)
+
+        if args.save_tex:
+            self.tex_obj.save(args.save_tex, format="code")
+
+        return image
