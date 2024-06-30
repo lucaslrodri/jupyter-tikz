@@ -8,10 +8,10 @@ def tex_document():
     return TexDocument("any code")
 
 
-def test_save_with_invalid_format(tex_document):
+def test_save_with_invalid_format(tex_document, tmpdir):
     # Arrange
     src = "any_src"
-    dest = "any_dest"
+    dest = str(tmpdir / "any_dest")
     format = "invalid_format"
 
     # Act
