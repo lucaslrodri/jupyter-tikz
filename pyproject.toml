@@ -47,7 +47,7 @@ markers = [
     "needs_latex: marks tests that require a LaTeX environment with the TikZ package installed.",
     "needs_pdftocairo: marks tests that require `pdftocairo` (Poppler) installed.",
 ]
-# addopts = '-m "not needs_latex"'
+# addopts = '-m "not needs_latex and not needs_pdftocairo"'
 # addopts = "--no-cov"
 
 

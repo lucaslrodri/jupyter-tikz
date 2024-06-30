@@ -247,7 +247,7 @@ class TexTemplate(TexDocument):
             raise ValueError(EXTRAS_CONFLITS_ERR)
 
         self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
-        self.scale = scale
+        self.scale = scale or 1.0
         if preamble:
             self.preamble = preamble.strip()
         else:
@@ -505,14 +505,12 @@ class TikZMagics(Magics):
             print(EXTRAS_CONFLITS_ERR, file=sys.stderr)
             return
 
-        if args.implicit_pic and args.full_document:
-            print("Deprecated: Use `-as` instead of `-i` or `-f`.", file=sys.stderr)
+        if args.implicit_pic or args.full_document:
+            print(
+                "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead.",
+                file=sys.stderr,
+            )
             return
-
-        if args.implicit_pic:
-            args.input_type = "tikzpicture"
-        if args.full_document:
-            args.input_type = "full-document"
 
         self.input_type = self._get_input_type(args.input_type)
         if self.input_type is None:
@@ -573,6 +571,6 @@ class TikZMagics(Magics):
             local_ns[args.save_var] = str(self.tex_obj)
 
         if args.save_tex:
-            self.tex_obj.save(args.save_tex, format="code")
+            self.saved_path = self.tex_obj.save(args.save_tex, format="code")
 
         return image

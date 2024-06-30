@@ -285,18 +285,12 @@ def test_pdf_cairo_default_path(tex_document_mock__run_latex, mocker, tmp_path):
     assert res == "SVG"
 
 
-@pytest.mark.parametrize(
-    "save_file",
-    [None, "image"],
-)
-def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path, save_file):
+def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path):
     # Arrange
     output_stem = tmp_path / "tikz"
     full_err = False
     rasterize = True
     dpi = 300
-
-    mocker.patch.object(tex_document_mock__run_latex, "save", return_value=save_file)
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
 
@@ -306,7 +300,7 @@ def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path, sav
 
     # Act
     res = tex_document_mock__run_latex.run_latex(
-        full_err=full_err, rasterize=rasterize, dpi=dpi, save_image=save_file
+        full_err=full_err, rasterize=rasterize, dpi=dpi
     )
 
     # Assert
@@ -364,6 +358,32 @@ def test_passed_latex_but_failed_pdftocairo(
     assert "error" in err.lower()
 
 
+@pytest.mark.parametrize("rasterize", [False, True])
+def test_run_latex_save_image_call(
+    tex_document_mock__run_latex, mocker, tmp_path, rasterize
+):
+    # Arrange
+    def side_effect_save_image(*args, **kwargs):
+        return str(tmp_path / args[0])
+
+    format = "png" if rasterize else "svg"
+
+    expected_path = tmp_path / f"tikz.{format}"
+
+    image = f"image.{format}"
+    mocker.patch.object(
+        tex_document_mock__run_latex, "save", side_effect=side_effect_save_image
+    )
+
+    # Act
+    res = tex_document_mock__run_latex.run_latex(save_image=image, rasterize=rasterize)
+
+    # Assert
+    tex_document_mock__run_latex.save.assert_called_once_with(
+        image, str(expected_path), format
+    )
+
+
 # ========================= texinputs env - no mocks =========================
 
 EXAMPLE_VIEWBOX_CODE_INPUT = r"""
@@ -380,6 +400,8 @@ EXAMPLE_PARENT_WITH_INPUT_COMMANDT = r"""
 """
 
 
+@pytest.mark.needs_latex
+@pytest.mark.needs_pdftocairo
 def test_texinputs_no_mocks(monkeypatch, tmpdir):
     # Arrange
     monkeypatch.chdir(tmpdir)
@@ -652,6 +674,8 @@ EXAMPLE_JINJA_TEMPLATE = r"""
 \end{document}"""
 
 
+@pytest.mark.needs_latex
+@pytest.mark.needs_pdftocairo
 def test_jinja_template():
     # Arrange
     people = [
@@ -686,6 +710,8 @@ EXAMPLE_JINJA_CHILD_TEMPLATE = """{% extends 'parent_tmpl.tex' %}
 """
 
 
+@pytest.mark.needs_latex
+@pytest.mark.needs_pdftocairo
 def test_jinja_extends_template(tmpdir, monkeypatch):
     # Arrange
     monkeypatch.chdir(tmpdir)
