@@ -31,7 +31,7 @@ def test__str__() -> None:
 )
 def test_get_arg_head(code, expected_result):
     tex_document = TexDocument(code)
-    res = tex_document.arg_head(code, limit=20)
+    res = tex_document._arg_head(code, limit=20)
     assert res == expected_result
 
 
@@ -63,7 +63,7 @@ def test_get_arg_head(code, expected_result):
                 "ns": {"name": "World"},
                 "scale": 2,
             },
-            "TexTemplate('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', scale=2, preamble='\\\\documentclass{standalone}\\n\\\\usepackage{graphicx}\\n\\\\usepackage...')",
+            "TexTemplate('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', scale=2, preamble='\\\\usepackage{graphicx}\\n\\\\usepackage{tikz}')",
         ),
     ],
 )

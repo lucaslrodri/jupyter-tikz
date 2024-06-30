@@ -3,7 +3,13 @@ import pytest
 from jupyter_tikz import TikZMagics, TexTemplate, TexDocument
 
 
-from jupyter_tikz.jupyter_tikz import EXTRAS_CONFLITS_ERR
+from jupyter_tikz.jupyter_tikz import (
+    EXTRAS_CONFLITS_ERR,
+    DEPRECATED_I_ERR,
+    DEPRECATED_F_ERR,
+    DEPRECATED_I_AND_F_ERR,
+    DEPRECATED_ASJINJA_ERR,
+)
 
 
 @pytest.fixture
@@ -265,7 +271,7 @@ def test_src_is_line__code_is_in_in_local_ns(tikz_magic_mock):
     assert tikz_magic_mock.src == code
 
 
-# =================== Raise error - Deprecated ===================
+# =================== Raise errors ===================
 @pytest.mark.parametrize(
     "args",
     [
@@ -291,19 +297,26 @@ def test_raise_error_tex_preamble_and_extras_not_allowed_at_same_time(
     assert EXTRAS_CONFLITS_ERR + "\n" == err
 
 
-@pytest.mark.parametrize("args", ["=i -f", "-i -as=f", "-f -as=t"])
-def test_raise_deprecated_error_implicit_pic_and_full_document_at_same_time(
-    tikz_magic_mock, capsys, args
-):
+@pytest.mark.parametrize(
+    "args, expected_err",
+    [
+        ("-i -f", DEPRECATED_I_AND_F_ERR),
+        ("-i -as=f", DEPRECATED_I_ERR),
+        ("-i", DEPRECATED_I_ERR),
+        ("-f -as=t", DEPRECATED_F_ERR),
+        ("-f", DEPRECATED_F_ERR),
+        ("--as-jinja", DEPRECATED_ASJINJA_ERR),
+    ],
+)
+def test_raise_deprecated_args(tikz_magic_mock, capsys, args, expected_err):
     # Arrange
     line = args
     cell = "any cell content"
 
     # Act
-    tikz_magic_mock.tikz(line, cell)
+    res = tikz_magic_mock.tikz(line, cell)
 
     # Assert
     _, err = capsys.readouterr()
-    assert (
-        "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead.\n" == err
-    )
+    assert f"{expected_err}\n" == err
+    assert res is None

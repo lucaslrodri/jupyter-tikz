@@ -13,7 +13,7 @@ def test_preamble():
     tex_template = TexTemplate(code, preamble=preamble)
 
     # Assert
-    assert tex_template.preamble == preamble
+    assert tex_template.preamble == preamble + "\n"
     assert preamble in tex_template.latex_str
 
 

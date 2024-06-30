@@ -16,6 +16,18 @@ JINJA_NOT_INTALLED_ERR = (
     "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
 NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
+DEPRECATED_I_ERR = (
+    "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
+)
+DEPRECATED_F_ERR = (
+    "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
+)
+DEPRECATED_I_AND_F_ERR = (
+    "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
+)
+DEPRECATED_ASJINJA_ERR = (
+    "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
+)
 
 
 class TexDocument:
@@ -34,10 +46,11 @@ class TexDocument:
     def _build_latex_str(self) -> None:
         self.latex_str = self._code
 
-    def arg_head(self, arg, limit=60) -> str:
+    def _arg_head(self, arg, limit=60) -> str:
         if type(arg) == str:
+            arg = arg.strip()
             arg = f"{arg[:limit]}..." if len(arg) > limit else arg
-            arg = str(repr(arg))
+            arg = str(repr(arg.strip()))
         else:
             arg = str(arg)
         return arg
@@ -50,14 +63,14 @@ class TexDocument:
 
         params = ", ".join(
             [
-                f"{k}={self.arg_head(v)}"
+                f"{k}={self._arg_head(v)}"
                 for k, v in params_dict.items()
                 if k not in ["_code", "latex_str", "ns"] and v
             ]
         )
         if params:
             params = ", " + params
-        return f"{self.__class__.__name__}({self.arg_head(self._code)}{params})"
+        return f"{self.__class__.__name__}({self._arg_head(self._code)}{params})"
 
     def __str__(self) -> str:
         return self._code
@@ -213,7 +226,8 @@ class TexDocument:
 
 class TexTemplate(TexDocument):
     TMPL = Template(
-        "$preamble"
+        "\\documentclass{standalone}\n"
+        + "$preamble"
         + "\\begin{document}\n"
         + "$scale_begin"
         + "$tikzpicture_begin"
@@ -223,8 +237,7 @@ class TexTemplate(TexDocument):
         + "\\end{document}"
     )
     TMPL_STANDALONE_PREAMBLE = Template(
-        "\\documentclass{standalone}\n"
-        + "$graphicx_package"
+        "$graphicx_package"
         + "$tikz_package"
         + "$tex_packages"
         + "$tikz_libraries"
@@ -249,7 +262,7 @@ class TexTemplate(TexDocument):
         self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
         self.scale = scale or 1.0
         if preamble:
-            self.preamble = preamble.strip()
+            self.preamble = preamble.strip() + "\n"
         else:
             self.preamble = self._build_standalone_preamble(
                 tex_packages, tikz_libraries, pgfplots_libraries, no_tikz
@@ -331,7 +344,7 @@ class TikZMagics(Magics):
     # Path to the pdftocairo executable
     @line_cell_magic
     @magic_arguments()
-    @argument(  # OK | New
+    @argument(  # New
         "-as",
         "--input-type",
         dest="input_type",
@@ -505,9 +518,27 @@ class TikZMagics(Magics):
             print(EXTRAS_CONFLITS_ERR, file=sys.stderr)
             return
 
-        if args.implicit_pic or args.full_document:
+        if args.implicit_pic and not args.full_document:
             print(
-                "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead.",
+                DEPRECATED_I_ERR,
+                file=sys.stderr,
+            )
+            return
+        elif args.full_document and not args.implicit_pic:
+            print(
+                DEPRECATED_F_ERR,
+                file=sys.stderr,
+            )
+            return
+        elif args.implicit_pic or args.full_document:
+            print(
+                DEPRECATED_I_AND_F_ERR,
+                file=sys.stderr,
+            )
+            return
+        if args.as_jinja:
+            print(
+                DEPRECATED_ASJINJA_ERR,
                 file=sys.stderr,
             )
             return
@@ -547,7 +578,7 @@ class TikZMagics(Magics):
                 tikz_libraries=args.tikz_libraries,
                 pgfplots_libraries=args.pgfplots_libraries,
                 scale=args.scale,
-                use_jinja=args.use_jinja or args.as_jinja or args.print_jinja,
+                use_jinja=args.use_jinja or args.print_jinja,
                 ns=local_ns,
             )
 

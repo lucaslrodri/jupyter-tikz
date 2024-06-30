@@ -2,10 +2,8 @@ import pytest
 from jupyter_tikz import TexTemplate
 from string import Template
 
-TEMPLATE_TEX_PACKAGES = (
-    "\\documentclass{standalone}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
-)
-TEMPLATE_NO_TEX_PACKAGES = "\\documentclass{standalone}\n\\usepackage{tikz}\n"
+TEMPLATE_TEX_PACKAGES = "\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
+TEMPLATE_NO_TEX_PACKAGES = "\\usepackage{tikz}\n"
 
 
 @pytest.mark.parametrize(
@@ -36,8 +34,12 @@ def test_latex_packages(tex_packages):
     assert res == expected_res
 
 
-TEMPLATE_TIKZ_LIBRARIES_NO_TEX_PACKAGES = "\\documentclass{standalone}\n\\usepackage{tikz}\n\\usetikzlibrary{$tikz_libraries}\n"
-TEMPLATE_TIKZ_LIBRARIES_WITH_TEX_PACKAGES = "\\documentclass{standalone}\n\\usepackage{tikz}\n\\usepackage{$package}\n\\usetikzlibrary{$tikz_libraries}\n"
+TEMPLATE_TIKZ_LIBRARIES_NO_TEX_PACKAGES = (
+    "\\usepackage{tikz}\n\\usetikzlibrary{$tikz_libraries}\n"
+)
+TEMPLATE_TIKZ_LIBRARIES_WITH_TEX_PACKAGES = (
+    "\\usepackage{tikz}\n\\usepackage{$package}\n\\usetikzlibrary{$tikz_libraries}\n"
+)
 
 
 @pytest.mark.parametrize(
@@ -72,8 +74,8 @@ def test_tikz_libraries(tex_packages, tikz_libraries, expected_template):
     assert res == expected_res
 
 
-TEMPLATE_PGFPLOTS_LIBRARIES_NO_TIKZ_LIBRARIES = "\\documentclass{standalone}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usepgfplotslibrary{$pgfplots_libraries}\n"
-TEMPLATE_PGFPLOTS_LIBRARIES_TEX_PACKAGES_AND_TIKZ_LIBRARIES = "\\documentclass{standalone}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{$pgfplots_libraries}\n"
+TEMPLATE_PGFPLOTS_LIBRARIES_NO_TIKZ_LIBRARIES = "\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usepgfplotslibrary{$pgfplots_libraries}\n"
+TEMPLATE_PGFPLOTS_LIBRARIES_TEX_PACKAGES_AND_TIKZ_LIBRARIES = "\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{$pgfplots_libraries}\n"
 
 
 @pytest.mark.parametrize(
@@ -136,10 +138,8 @@ def test_pgfplots_libraries(
     assert res == expected_res
 
 
-TEMPLATE_NO_TIKZ_ONLY_PACKAGE = (
-    "\\documentclass{standalone}\n\\usepackage{$tex_packages}\n"
-)
-TEMPLATE_NO_TIKZ_WITH_ALL_EXTRAS = "\\documentclass{standalone}\n\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{polar}\n"
+TEMPLATE_NO_TIKZ_ONLY_PACKAGE = "\\usepackage{$tex_packages}\n"
+TEMPLATE_NO_TIKZ_WITH_ALL_EXTRAS = "\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{polar}\n"
 
 
 @pytest.mark.parametrize(
@@ -176,8 +176,10 @@ def test_no_tikz(tex_packages, tikz_libraries, pgfplots_libraries, expected_temp
     assert res == expected_res
 
 
-TEMPLATE_SCALE_ONLY_PACKAGE = "\\documentclass{standalone}\n\\usepackage{graphicx}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
-TEMPLATE_SCALE_WITH_ALL_EXTRAS = "\\documentclass{standalone}\n\\usepackage{graphicx}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{polar}\n"
+TEMPLATE_SCALE_ONLY_PACKAGE = (
+    "\\usepackage{graphicx}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
+)
+TEMPLATE_SCALE_WITH_ALL_EXTRAS = "\\usepackage{graphicx}\n\\usepackage{tikz}\n\\usepackage{$tex_packages}\n\\usetikzlibrary{$tikz_libraries}\n\\usepgfplotslibrary{polar}\n"
 
 
 @pytest.mark.parametrize(
