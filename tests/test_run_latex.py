@@ -299,6 +299,56 @@ def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path):
     assert res == "Image"
 
 
+def run_command_fail_side_effect_pdf_latex(*args, **kwargs):
+    _ = kwargs
+    if "pdflatex" in args[0]:
+        return subprocess.CompletedProcess("pdflatex", 1, "", "Error")
+    return subprocess.CompletedProcess("pdftocairo", 0, "", "")
+
+
+def test_failed_latex_command(tex_document_mock__run_latex, mocker, capsys):
+    # Arrange
+    mocker.patch.object(
+        subprocess,
+        "run",
+        side_effect=run_command_fail_side_effect_pdf_latex,
+    )
+
+    # Act
+    res = tex_document_mock__run_latex.run_latex()
+
+    # Assert
+    assert res is None
+    _, err = capsys.readouterr()
+    assert "error" in err.lower()
+
+
+def run_command_fail_side_effect_pdftocairo(*args, **kwargs):
+    _ = kwargs
+    if "pdftocairo" in args[0]:
+        return subprocess.CompletedProcess("pdftocairo", 1, "", "Error")
+    return subprocess.CompletedProcess("pdflatex", 0, "", "")
+
+
+def test_passed_latex_but_failed_pdftocairo(
+    tex_document_mock__run_latex, mocker, capsys
+):
+    # Arrange
+    mocker.patch.object(
+        subprocess,
+        "run",
+        side_effect=run_command_fail_side_effect_pdftocairo,
+    )
+
+    # Act
+    res = tex_document_mock__run_latex.run_latex()
+
+    # Assert
+    assert res is None
+    _, err = capsys.readouterr()
+    assert "error" in err.lower()
+
+
 # ========================= texinputs env - no mocks =========================
 
 EXAMPLE_VIEWBOX_CODE_INPUT = r"""

@@ -98,7 +98,7 @@ def test_jinja_with_complex_template():
 
 
 EXAMPLE_TIKZ_JINJA_PARENT_TEMPLATE = """\\begin{tikzpicture}
-    \draw (-2.5,-2.5) rectangle (5,5);
+    \\draw (-2.5,-2.5) rectangle (5,5);
     {% block content %}{% endblock %}
 \\end{tikzpicture}
 """
@@ -109,7 +109,7 @@ EXAMPLE_TIKZ_JINJA_CHILD_TEMPLATE = """{% extends 'parent_tmpl.tex' %}
 {% endblock %}
 """
 EXAMPLE_TIKZ_JINJA_EXTENDED_TEMPLATE = """\\begin{tikzpicture}
-    \draw (-2.5,-2.5) rectangle (5,5);
+    \\draw (-2.5,-2.5) rectangle (5,5);
     
     \node[draw] at (0,0) {Hello, World!};
 

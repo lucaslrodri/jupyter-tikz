@@ -1,6 +1,6 @@
 import subprocess
 from IPython import display
-from typing import Literal, Optional
+from typing import Literal, Optional, Any
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 import sys
@@ -9,13 +9,14 @@ import tempfile
 from string import Template
 from pathlib import Path
 from shutil import copy
+from textwrap import indent
 
 
 class TexDocument:
     def __init__(
-        self, code: str, use_jinja: bool = False, ns: Optional[dict[str, str]] = None
+        self, code: str, use_jinja: bool = False, ns: Optional[dict[str, Any]] = None
     ):
-        self.code = code
+        self.code = code.strip()
         self.use_jinja = use_jinja
         if self.use_jinja and not ns:
             raise ValueError(
@@ -26,16 +27,16 @@ class TexDocument:
             self._render_jinja(ns)
         self._build_latex_str()
 
-    def _build_latex_str(self) -> str:
+    def _build_latex_str(self) -> None:
         self.latex_str = self.code
 
     def __repr__(self) -> str:
-        self.__str__()
+        return self.__str__()
 
     def __str__(self) -> str:
         return self.code
 
-    def _modify_texinputs(self, current_dir: str) -> str:
+    def _modify_texinputs(self, current_dir: str) -> dict[str, str]:
         env = os.environ.copy()
         # TEXINPUTS is a environment variable that tells LaTeX where to look for files
         # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
@@ -70,8 +71,11 @@ class TexDocument:
         return result.returncode
 
     def save(
-        self, dest: str, src: str = None, format: Literal["svg", "png", "code"] = "code"
-    ):
+        self,
+        dest: str,
+        src: Optional[str] = None,
+        format: Literal["svg", "png", "code"] = "code",
+    ) -> Optional[str]:
         if dest is None:
             return None
 
@@ -83,7 +87,7 @@ class TexDocument:
         dest_path = Path(dest)
 
         if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
-            dest_path = os.environ.get("JUPYTER_TIKZ_SAVEDIR") / dest_path
+            dest_path = str(os.environ.get("JUPYTER_TIKZ_SAVEDIR")) / dest_path
         else:
             dest_path = dest_path
 
@@ -103,8 +107,11 @@ class TexDocument:
                 src = self.code
             dest_path.write_text(src)
         else:
-            src_path = Path(src).resolve()
-            copy(src_path, dest_path)
+            if src is not None:
+                src_path = Path(src).resolve()
+                copy(src_path, dest_path)
+            else:
+                return None
         return f"{dest_path}"
 
     def run_latex(
@@ -215,10 +222,10 @@ class TexTemplate(TexDocument):
         self.scale = scale
         if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
             raise ValueError(
-                "You cannot provide both `preamble` and (`tex_packages`, `tikz_libraries`, or `pgfplots_libraries`)."
+                "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
             )
         if preamble:
-            self.preamble = preamble
+            self.preamble = preamble.strip()
         else:
             self.preamble = self._build_standalone_preamble(
                 tex_packages, tikz_libraries, pgfplots_libraries, no_tikz
@@ -230,55 +237,63 @@ class TexTemplate(TexDocument):
         self,
         tex_packages: Optional[str] = None,
         tikz_libraries: Optional[str] = None,
-        pgfplot_libraries: Optional[str] = None,
+        pgfplots_libraries: Optional[str] = None,
         no_tikz: bool = False,
     ) -> str:
         tikz_package = "" if no_tikz else "\\usepackage{tikz}\n"
 
-        if self.scale != 1:
-            graphicx_package = "\\usepackage{graphicx}\n"
-        else:
-            graphicx_package = ""
+        graphicx_package = "" if self.scale == 1 else "\\usepackage{graphicx}\n"
+
+        tex_packages = "\\usepackage{%s}\n" % tex_packages if tex_packages else ""
+        tikz_libraries = (
+            "\\usetikzlibrary{%s}\n" % tikz_libraries if tikz_libraries else ""
+        )
+        pgfplots_libraries = (
+            "\\usepgfplotslibrary{%s}\n" % pgfplots_libraries
+            if pgfplots_libraries
+            else ""
+        )
 
         return self.TMPL_STANDALONE_PREAMBLE.substitute(
             graphicx_package=graphicx_package,
             tikz_package=tikz_package,
-            tex_packages=tex_packages or "",
-            tikz_libraries=tikz_libraries or "",
-            pgfplots_libraries=pgfplot_libraries or "",
+            tex_packages=tex_packages,
+            tikz_libraries=tikz_libraries,
+            pgfplots_libraries=pgfplots_libraries,
         )
 
     def _build_latex_str(self) -> None:
         if self.scale != 1:
-            scale_begin = "\\scalebox{%.2f}{\n" % self.scale
-            scale_end = "\n}\n"
+            scale_begin = indent("\\scalebox{" + str(self.scale) + "}{\n", " " * 4)
+            scale_end = indent("}\n", " " * 4)
         else:
             scale_begin = ""
             scale_end = ""
 
         if self.template == "tikzpicture":
-            tikzpicture_begin = "\\begin{tikzpicture}\n"
-            tikzpicture_end = "\\end{tikzpicture}\n"
+            tikzpicture_begin = indent("\\begin{tikzpicture}\n", " " * 4)
+            tikzpicture_end = indent("\\end{tikzpicture}\n", " " * 4)
+            code_indent = " " * 8
         else:
             tikzpicture_begin = ""
             tikzpicture_end = ""
+            code_indent = " " * 4
+
+        code = indent(self.code, code_indent) + "\n" if self.code else ""
 
         self.latex_str = self.TMPL.substitute(
             preamble=self.preamble,
             scale_begin=scale_begin,
             tikzpicture_begin=tikzpicture_begin,
-            code=self.code,
+            code=code,
             tikzpicture_end=tikzpicture_end,
             scale_end=scale_end,
         )
 
 
-# as "full-document", "standalone-document", "tikzpicture"
-
-
 @magics_class
 class TikZMagics(Magics):
-    def get_input_type(self, input_type: str) -> Optional[str]:
+    def _get_input_type(self, input_type: str) -> Optional[str]:
         VALID_INPUT_TYPES = ["full-document", "standalone-document", "tikzpicture"]
         input_type = input_type.lower()
         input_type_len = len(input_type)
@@ -432,14 +447,14 @@ class TikZMagics(Magics):
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
     def tikz(
-        self, line, cell=None, local_ns=None
+        self, line, cell: Optional[str] = None, local_ns=None
     ) -> Optional[display.Image | display.SVG]:
 
         args = parse_argstring(self.tikz, line)
-        self.src = cell
+        self.src = cell or ""
         local_ns = local_ns or {}
 
-        self.input_type = self.get_input_type(args.input_type)
+        self.input_type = self._get_input_type(args.input_type)
 
         if self.input_type is None:
             print(
@@ -455,9 +470,9 @@ class TikZMagics(Magics):
                 return
 
             if args.code not in local_ns:
-                self.src = args.code
+                self.src: str = args.code
             else:
-                self.src = local_ns[args.code]
+                self.src: str = local_ns[args.code]
 
         if self.input_type == "full-document":
             self.tex_obj = TexDocument(self.src, use_jinja=args.use_jinja, ns=local_ns)

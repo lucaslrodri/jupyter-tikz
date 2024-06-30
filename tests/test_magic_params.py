@@ -34,7 +34,7 @@ def test_invalid_input_type(input_type, tikz_magic, capsys):
 
     # Assert
     _, err = capsys.readouterr()
-    assert tikz_magic.get_input_type(input_type) is None
+    assert tikz_magic._get_input_type(input_type) is None
     assert (
         err
         == f"`{input_type}` is not a valid input type. Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.\n"
@@ -64,7 +64,7 @@ def test_valid_input_type(tikz_magic, input_type, expected_input_type):
     tikz_magic.tikz(line, cell)
 
     # Assert
-    assert tikz_magic.get_input_type(input_type) == expected_input_type
+    assert tikz_magic._get_input_type(input_type) == expected_input_type
 
 
 @pytest.mark.parametrize(
