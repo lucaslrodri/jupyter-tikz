@@ -84,7 +84,7 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
 
 which produces:
 
-
+![Conway example](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/development/assets/conway.svg)
 
 Or use it as line magic, the TeX/TikZ code is passed as an IPython string variable:
 
@@ -99,10 +99,6 @@ Furthermore, additional arguments can be passed to the magic command:
 \draw (0,0) rectangle (1,1);
 \filldraw (0.5,0.5) circle (.1);
 ```
-
-which produces:
-
-
 
 Don't forget visit the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb) to learn more.
 
