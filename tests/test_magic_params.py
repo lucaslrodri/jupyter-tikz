@@ -5,6 +5,7 @@ from jupyter_tikz import TikZMagics, TexTemplate, TexDocument
 
 from jupyter_tikz.jupyter_tikz import (
     EXTRAS_CONFLITS_ERR,
+    PRINT_CONFLICT_ERR,
     DEPRECATED_I_ERR,
     DEPRECATED_F_ERR,
     DEPRECATED_I_AND_F_ERR,
@@ -95,6 +96,47 @@ def test_print_jinja_no_mocks(tikz_magic, capsys):
     # Assert
     out, err = capsys.readouterr()
     assert out.strip() == EXAMPLE_TIKZ_RENDERED_TEMPLATE.strip()
+
+
+EXAMPLE_TIKZ_BASIC_STANDALONE = r"\draw[fill=blue] (0, 0) rectangle (1, 1);"
+
+RES_TIKZ_BASIC_STANDALONE = r"""\documentclass{standalone}
+\usepackage{tikz}
+\begin{document}
+    \begin{tikzpicture}
+        \draw[fill=blue] (0, 0) rectangle (1, 1);
+    \end{tikzpicture}
+\end{document}"""
+
+
+def test_print_tex(tikz_magic_mock, capsys):
+    # Arrange
+    line = "-pt -as=full"
+    cell = "EXAMPLE_TIKZ"
+
+    # Act
+    tikz_magic_mock.tikz(line, cell)  # magic_line
+
+    # Assert
+    out, err = capsys.readouterr()
+    assert out.strip() == cell.strip()
+
+
+@pytest.mark.needs_latex
+@pytest.mark.needs_pdftocairo
+def test_print_tex_no_mocks(tikz_magic, capsys):
+    # Arrange
+    line = "-pt -as=tikz"
+    cell = EXAMPLE_TIKZ_BASIC_STANDALONE
+
+    expected_res = RES_TIKZ_BASIC_STANDALONE
+
+    # Act
+    tikz_magic.tikz(line, cell)  # magic_line
+
+    # Assert
+    out, err = capsys.readouterr()
+    assert out.strip() == expected_res.strip()
 
 
 def test_image_none(tikz_magic_mock, mocker, capsys):
@@ -295,6 +337,22 @@ def test_raise_error_tex_preamble_and_extras_not_allowed_at_same_time(
     # Assert
     _, err = capsys.readouterr()
     assert EXTRAS_CONFLITS_ERR + "\n" == err
+
+
+def test_raise_error_jinja_and_tex_prints_not_allowed_at_same_time(
+    tikz_magic_mock, capsys
+):
+    # Arrange
+    line = "-pj -pt"
+    cell = "any cell content"
+
+    # Act
+    res = tikz_magic_mock.tikz(line, cell)
+
+    # Assert
+    _, err = capsys.readouterr()
+    assert PRINT_CONFLICT_ERR + "\n" == err
+    assert res is None
 
 
 @pytest.mark.parametrize(

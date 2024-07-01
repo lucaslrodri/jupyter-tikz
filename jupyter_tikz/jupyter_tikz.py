@@ -12,6 +12,9 @@ from shutil import copy
 from textwrap import indent
 
 EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
+PRINT_CONFLICT_ERR = (
+    "You cannot use `--print-jinja` and `--print-tex` at the same time."
+)
 JINJA_NOT_INTALLED_ERR = (
     "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
@@ -427,6 +430,14 @@ class TikZMagics(Magics):
         help="Print the rendered Jinja2 template.",
     )
     @argument(
+        "-pt",
+        "--print-tex",
+        dest="print_tex",
+        action="store_true",
+        default=False,
+        help="Print full LaTeX document.",
+    )
+    @argument(
         "-sc",
         "--scale",
         dest="scale",
@@ -542,6 +553,12 @@ class TikZMagics(Magics):
                 file=sys.stderr,
             )
             return
+        if args.print_jinja and args.print_tex:
+            print(
+                PRINT_CONFLICT_ERR,
+                file=sys.stderr,
+            )
+            return
 
         self.input_type = self._get_input_type(args.input_type)
         if self.input_type is None:
@@ -584,6 +601,8 @@ class TikZMagics(Magics):
 
         if args.print_jinja:
             print(self.tex_obj)
+        if args.print_tex:
+            print(self.tex_obj.latex_str)
 
         image = None
         if not args.no_compile:
