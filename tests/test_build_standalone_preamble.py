@@ -1,6 +1,8 @@
-import pytest
-from jupyter_tikz import TexTemplate
 from string import Template
+
+import pytest
+
+from jupyter_tikz import TexTemplate
 
 TEMPLATE_TEX_PACKAGES = "\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
 TEMPLATE_NO_TEX_PACKAGES = "\\usepackage{tikz}\n"

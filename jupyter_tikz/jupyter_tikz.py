@@ -1,15 +1,16 @@
-import subprocess
-from IPython import display
-from typing import Literal, Optional, Any
-from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
-from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
-import sys
 import os
+import subprocess
+import sys
 import tempfile
-from string import Template
 from pathlib import Path
 from shutil import copy
+from string import Template
 from textwrap import indent
+from typing import Any, Literal, Optional
+
+from IPython import display
+from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
+from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 
 EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
 PRINT_CONFLICT_ERR = (
@@ -352,7 +353,7 @@ class TikZMagics(Magics):
         "--input-type",
         dest="input_type",
         default="standalone",
-        help="Input type. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Default is `standalone-document`.",
+        help="Type of the input. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Default is `standalone-document`.",
     )
     @argument(  # Deprecated
         "-i",
@@ -406,7 +407,7 @@ class TikZMagics(Magics):
         default="",
         help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
     )
-    @argument(
+    @argument(  # New
         "-j",
         "--use-jinja",
         dest="use_jinja",
@@ -467,7 +468,7 @@ class TikZMagics(Magics):
         dest="full_err",
         action="store_true",
         default=False,
-        help="Show full error message",
+        help="Show full error message.",
     )
     @argument(
         "-tp",
@@ -481,7 +482,7 @@ class TikZMagics(Magics):
         "--tex-args",
         dest="tex_args",
         default="",
-        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
+        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`.',
     )
     @argument(
         "-nc",
@@ -497,7 +498,7 @@ class TikZMagics(Magics):
         dest="save_tex",
         type=str,
         default=None,
-        help="Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.",
+        help="Save the TikZ or LaTeX code to file, e.g., `-s filename.tikz`.",
     )
     @argument(
         "-S",
@@ -505,7 +506,7 @@ class TikZMagics(Magics):
         dest="save_image",
         type=str,
         default=None,
-        help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
+        help="Save the output image to file, e.g., `-S filename.svg`.",
     )
     @argument(
         "-sv",
@@ -513,7 +514,7 @@ class TikZMagics(Magics):
         dest="save_var",
         type=str,
         default=None,
-        help="Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.",
+        help="Save the TikZ or LaTeX code to an IPython variable, e.g., `-sv varname`.",
     )
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope

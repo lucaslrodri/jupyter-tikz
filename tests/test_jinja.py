@@ -1,4 +1,5 @@
 import pytest
+
 from jupyter_tikz import TexDocument
 from jupyter_tikz.jupyter_tikz import JINJA_NOT_INTALLED_ERR, NS_NOT_PROVIDED_ERR
 

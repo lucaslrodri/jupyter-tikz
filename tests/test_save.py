@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import pytest
+
 from jupyter_tikz import TexDocument
 
 

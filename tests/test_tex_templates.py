@@ -1,6 +1,7 @@
 import pytest
-from jupyter_tikz import TexTemplate, TexDocument
 from IPython import display
+
+from jupyter_tikz import TexDocument, TexTemplate
 from jupyter_tikz.jupyter_tikz import EXTRAS_CONFLITS_ERR
 
 

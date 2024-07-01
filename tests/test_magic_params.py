@@ -1,15 +1,13 @@
 import pytest
 
-from jupyter_tikz import TikZMagics, TexTemplate, TexDocument
-
-
+from jupyter_tikz import TexDocument, TexTemplate, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
-    EXTRAS_CONFLITS_ERR,
-    PRINT_CONFLICT_ERR,
-    DEPRECATED_I_ERR,
+    DEPRECATED_ASJINJA_ERR,
     DEPRECATED_F_ERR,
     DEPRECATED_I_AND_F_ERR,
-    DEPRECATED_ASJINJA_ERR,
+    DEPRECATED_I_ERR,
+    EXTRAS_CONFLITS_ERR,
+    PRINT_CONFLICT_ERR,
 )
 
 

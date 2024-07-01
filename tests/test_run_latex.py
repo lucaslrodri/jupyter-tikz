@@ -1,11 +1,13 @@
 import os
-import pytest
-from jupyter_tikz import TexDocument
 import subprocess
 import tempfile
-from IPython import display
-from unittest.mock import ANY
 from pathlib import Path
+from unittest.mock import ANY
+
+import pytest
+from IPython import display
+
+from jupyter_tikz import TexDocument
 
 
 @pytest.fixture

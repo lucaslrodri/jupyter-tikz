@@ -1,5 +1,6 @@
 import pytest
-from jupyter_tikz import TexTemplate, TexDocument
+
+from jupyter_tikz import TexDocument, TexTemplate
 
 
 def test__str__() -> None:
