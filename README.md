@@ -197,7 +197,7 @@ If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab
 
 It will result as shown below:
 
-![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/c29d006dcf59f86b38b3a5fbca38fdcebb1d5504/assets/highlight_cell_tikz.png)
+![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/development/assets/highlight_cell_tikz.png)
 
 For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).
 
