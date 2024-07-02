@@ -1,6 +1,6 @@
 ![Jupyter Tikz Logo](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/assets/logo_wide.svg)
 
-[![PyPI version](https://badge.fury.io/py/jupyter-tikz.svg)](https://badge.fury.io/py/jupyter-tikz)
+[![PyPI - Version](https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e)](https://pypi.org/project/jupyter-tikz/)[![Pypi - Downloads](https://static.pepy.tech/badge/jupyter-tikz/month)](https://pepy.tech/project/jupyter-tikz)[![PyPI - License](https://img.shields.io/pypi/l/jupyter_tikz)](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE)
 
 Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
 
@@ -110,15 +110,17 @@ All additional options are listed below:
         Type of the input. 
         Possible values are: `full-document`, `standalone-document`, `tikzpicture`.
         e.g., `-as=full-document`.
-        Default is `standalone-document`.
+        Defaults to `standalone-document`.
     
 - `-p=<str>` or `--latex_preamble=<str>`:
          LaTeX preamble to insert before the document.
          e.g., `-p="$preamble"`, with the preamble being an IPython variable.
+        Defaults to None.
      
 - `-t=<str>` or `--tex-packages=<str>`:
         Comma-separated list of TeX packages.
         e.g., `-t=amsfonts,amsmath`.
+        Defaults to None.
     
 - `-nt` or `--no-tikz`:
         Force to not import the TikZ package.
@@ -126,10 +128,12 @@ All additional options are listed below:
 - `-l=<str>` or `--tikz-libraries=<str>`:
         Comma-separated list of TikZ libraries.
         e.g., `-l=arrows,automata`.
+        Defaults to None.
     
 - `-lp=<str>` or `--pgfplots-libraries=<str>`:
         Comma-separated list of PGFPlots libraries.
         e.g., `-lp groupplots,external`.
+        Defaults to None.
     
 - `-j` or  `--use-jinja`:
         Render the input as a Jinja2 template.
@@ -143,7 +147,7 @@ All additional options are listed below:
 - `-sc=<float | int>` or `--scale=<float | int>`:
         The scale factor to apply to the TikZ diagram.
         e.g., `-sc=2.5`.
-        Default is 1.
+        Defaults to 1.
     
 - `-r` or `--rasterize`:
         Output a rasterized image (PNG) instead of SVG.
@@ -151,7 +155,7 @@ All additional options are listed below:
 - `-d=<int>` or `--dpi=<int>`:
         DPI of the rasterized output image.
         e.g., `--dpi=300`.
-        Default is 96.
+        Defaults to 96.
     
 - `-e` or `--full-err`:
         Show the full error message.
@@ -159,12 +163,12 @@ All additional options are listed below:
 - `-tp=<str>` or `--tex-program=<str>`: 
         TeX program to use for rendering.
         e.g., `-tp=lualatex`.
-        Default is `pdflatex`.
+        Defaults to `pdflatex`.
     
 - `-ta=<str>` or `--tex-args=<str>`: 
         Additional arguments to pass to the TeX program.
         e.g., `-ta="$tex_args_ipython_variable"`.
-        Default is None.
+        Defaults to None.
     
 - `-nc` or `--no-compile`:
         Do not compile the LaTeX code. 
@@ -172,14 +176,17 @@ All additional options are listed below:
 - `-s=<str>` or `--save-tex=<str>`:
         Save the TikZ or TeX code to file.
         e.g., `-s=filename.tikz`.
+        Defaults to None.
     
 - `-S=<str>` or `--save-image=<str>`:
         Save the output image to file.
         e.g., `-S=filename.svg`.
+        Defaults to None.
 
 - `-sv=<str>` or `--save-var=<str>`:
-       Save the TikZ or LaTeX code to an IPython variable.
-       e.g., `-sv=var_name`.
+        Save the TikZ or LaTeX code to an IPython variable.
+        e.g., `-sv=var_name`.
+        Defaults to None.
 
 # Adding TikZ Syntax highlight
 
@@ -195,7 +202,7 @@ If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab
     }),
 ```
 
-It will result as shown below:
+Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as demonstrated below:
 
 ![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/development/assets/highlight_cell_tikz.png)
 
@@ -214,5 +221,6 @@ I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it do
 
 # License
 
-Distributed under the terms of the [MIT](./LICENSE) license, Jupyter TikZ is free and open source software.
+© Copyright 2024 [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
 
+Distributed under the terms of the [MIT License](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE), `jupyter-tikz` is free and open-source software.

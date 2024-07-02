@@ -50,7 +50,8 @@ class TexDocument:
     def _build_latex_str(self) -> None:
         self.latex_str = self._code
 
-    def _arg_head(self, arg, limit=60) -> str:
+    @staticmethod
+    def _arg_head(arg, limit=60) -> str:
         if type(arg) == str:
             arg = arg.strip()
             arg = f"{arg[:limit]}..." if len(arg) > limit else arg
@@ -79,7 +80,8 @@ class TexDocument:
     def __str__(self) -> str:
         return self._code
 
-    def _modify_texinputs(self, current_dir: str) -> dict[str, str]:
+    @staticmethod
+    def _modify_texinputs(current_dir: str) -> dict[str, str]:
         env = os.environ.copy()
         # TEXINPUTS is a environment variable that tells LaTeX where to look for files
         # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
@@ -161,7 +163,7 @@ class TexDocument:
     def run_latex(
         self,
         tex_program: str = "pdflatex",
-        tex_args: str = "",
+        tex_args: Optional[str] = None,
         rasterize: bool = False,
         full_err: bool = False,
         save_image: Optional[str] = None,
@@ -353,7 +355,7 @@ class TikZMagics(Magics):
         "--input-type",
         dest="input_type",
         default="standalone",
-        help="Type of the input. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Default is `standalone-document`.",
+        help="Type of the input. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Defaults to `standalone-document`.",
     )
     @argument(  # Deprecated
         "-i",
@@ -375,14 +377,14 @@ class TikZMagics(Magics):
         "-p",
         "--latex_preamble",
         dest="latex_preamble",
-        default="",
+        default=None,
         help='LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
     )
     @argument(
         "-t",
         "--tex-packages",
         dest="tex_packages",
-        default="",
+        default=None,
         help="Comma-separated list of TeX packages, e.g., `-t=amsfonts,amsmath`.",
     )
     @argument(
@@ -397,14 +399,14 @@ class TikZMagics(Magics):
         "-l",
         "--tikz-libraries",
         dest="tikz_libraries",
-        default="",
+        default=None,
         help="Comma-separated list of TikZ libraries, e.g., `-l=arrows,automata`.",
     )
     @argument(
         "-lp",
         "--pgfplots-libraries",
         dest="pgfplots_libraries",
-        default="",
+        default=None,
         help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
     )
     @argument(  # New
@@ -444,7 +446,7 @@ class TikZMagics(Magics):
         dest="scale",
         type=float,
         default=1.0,
-        help="The scale factor to apply to the TikZ diagram. Default is `-sc=1`.",
+        help="The scale factor to apply to the TikZ diagram. Defaults to `-sc=1`.",
     )
     @argument(
         "-r",
@@ -460,7 +462,7 @@ class TikZMagics(Magics):
         dest="dpi",
         type=int,
         default=96,
-        help="DPI of the rasterized output image. Default is `-d=96`.",
+        help="DPI of the rasterized output image. Defaults to `-d=96`.",
     )
     @argument(
         "-e",
@@ -481,7 +483,7 @@ class TikZMagics(Magics):
         "-ta",
         "--tex-args",
         dest="tex_args",
-        default="",
+        default=None,
         help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`.',
     )
     @argument(
