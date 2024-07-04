@@ -2,12 +2,12 @@ import pytest
 
 from jupyter_tikz import TexDocument, TexTemplate, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
-    DEPRECATED_ASJINJA_ERR,
-    DEPRECATED_F_ERR,
-    DEPRECATED_I_AND_F_ERR,
-    DEPRECATED_I_ERR,
-    EXTRAS_CONFLITS_ERR,
-    PRINT_CONFLICT_ERR,
+    _DEPRECATED_ASJINJA_ERR,
+    _DEPRECATED_F_ERR,
+    _DEPRECATED_I_AND_F_ERR,
+    _DEPRECATED_I_ERR,
+    _EXTRAS_CONFLITS_ERR,
+    _PRINT_CONFLICT_ERR,
 )
 
 
@@ -334,7 +334,7 @@ def test_raise_error_tex_preamble_and_extras_not_allowed_at_same_time(
 
     # Assert
     _, err = capsys.readouterr()
-    assert EXTRAS_CONFLITS_ERR + "\n" == err
+    assert _EXTRAS_CONFLITS_ERR + "\n" == err
 
 
 def test_raise_error_jinja_and_tex_prints_not_allowed_at_same_time(
@@ -349,19 +349,19 @@ def test_raise_error_jinja_and_tex_prints_not_allowed_at_same_time(
 
     # Assert
     _, err = capsys.readouterr()
-    assert PRINT_CONFLICT_ERR + "\n" == err
+    assert _PRINT_CONFLICT_ERR + "\n" == err
     assert res is None
 
 
 @pytest.mark.parametrize(
     "args, expected_err",
     [
-        ("-i -f", DEPRECATED_I_AND_F_ERR),
-        ("-i -as=f", DEPRECATED_I_ERR),
-        ("-i", DEPRECATED_I_ERR),
-        ("-f -as=t", DEPRECATED_F_ERR),
-        ("-f", DEPRECATED_F_ERR),
-        ("--as-jinja", DEPRECATED_ASJINJA_ERR),
+        ("-i -f", _DEPRECATED_I_AND_F_ERR),
+        ("-i -as=f", _DEPRECATED_I_ERR),
+        ("-i", _DEPRECATED_I_ERR),
+        ("-f -as=t", _DEPRECATED_F_ERR),
+        ("-f", _DEPRECATED_F_ERR),
+        ("--as-jinja", _DEPRECATED_ASJINJA_ERR),
     ],
 )
 def test_raise_deprecated_args(tikz_magic_mock, capsys, args, expected_err):

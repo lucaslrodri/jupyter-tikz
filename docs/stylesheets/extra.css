@@ -1,0 +1,42 @@
+:root {
+  --md-primary-fg-color: #fafafa;
+  --md-primary-fg-color--light: #334155;
+  --md-primary-fg-color--dark: #27272a;
+  --md-primary-bg-color: #27272a;
+  --md-primary-bg-color--light: #616161;
+  --md-primary-bg-color--dark: #616161;
+  --md-accent-fg-color: #f37726;
+}
+
+.md-header__title .md-ellipsis {
+  color: #616161;
+}
+
+.md-source__icon,
+.md-source__repository {
+  color: #414141;
+}
+
+.md-search__form .md-search__icon {
+  color: #616161;
+}
+
+/* .md-search__form:hover {
+  background-color: hsla(var(--md-hue), 0%, 0%, 0.14) !important;
+} */
+
+.md-header--shadow {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* .md-typeset a {
+  color: #f37726;
+} */
+
+.card-link {
+  color: var(--md-typeset-color) !important;
+}
+
+.card-link:hover {
+  color: var(--md-accent-fg-color) !important;
+}

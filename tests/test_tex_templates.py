@@ -2,7 +2,7 @@ import pytest
 from IPython import display
 
 from jupyter_tikz import TexDocument, TexTemplate
-from jupyter_tikz.jupyter_tikz import EXTRAS_CONFLITS_ERR
+from jupyter_tikz.jupyter_tikz import _EXTRAS_CONFLITS_ERR
 
 
 def test_preamble():
@@ -65,7 +65,7 @@ def test_raise_error_when_preamble_and_extras_are_provided():
         # Assert
         assert res is None
 
-    assert EXTRAS_CONFLITS_ERR in str(err.value)
+    assert _EXTRAS_CONFLITS_ERR in str(err.value)
 
 
 def test_scale():

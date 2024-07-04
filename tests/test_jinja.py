@@ -1,7 +1,7 @@
 import pytest
 
 from jupyter_tikz import TexDocument
-from jupyter_tikz.jupyter_tikz import JINJA_NOT_INTALLED_ERR, NS_NOT_PROVIDED_ERR
+from jupyter_tikz.jupyter_tikz import _JINJA_NOT_INTALLED_ERR, _NS_NOT_PROVIDED_ERR
 
 EXAMPLE_TIKZ_JINJA_TEMPLATE = """\\begin{tikzpicture}
     \\node[draw] at (0,0) {Hello, {{ name }}!};
@@ -28,7 +28,7 @@ def test_init_with_jinja_without_ns_raises_error():
         TexDocument(EXAMPLE_TIKZ_JINJA_TEMPLATE, use_jinja=True)
 
     # Assert
-    assert NS_NOT_PROVIDED_ERR in str(err.value)
+    assert _NS_NOT_PROVIDED_ERR in str(err.value)
 
 
 def test_jinja_when_jinja_is_not_installed_raises_error(monkeypatch):
@@ -43,7 +43,7 @@ def test_jinja_when_jinja_is_not_installed_raises_error(monkeypatch):
         # Assert
         assert res is None
 
-    assert JINJA_NOT_INTALLED_ERR in str(err.value)
+    assert _JINJA_NOT_INTALLED_ERR in str(err.value)
 
 
 def test_jinja_using_dict_ns():

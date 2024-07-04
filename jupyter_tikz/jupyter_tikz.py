@@ -12,24 +12,24 @@ from IPython import display
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 
-EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
-PRINT_CONFLICT_ERR = (
+_EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
+_PRINT_CONFLICT_ERR = (
     "You cannot use `--print-jinja` and `--print-tex` at the same time."
 )
-JINJA_NOT_INTALLED_ERR = (
+_JINJA_NOT_INTALLED_ERR = (
     "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
-NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
-DEPRECATED_I_ERR = (
+_NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
+_DEPRECATED_I_ERR = (
     "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
 )
-DEPRECATED_F_ERR = (
+_DEPRECATED_F_ERR = (
     "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
 )
-DEPRECATED_I_AND_F_ERR = (
+_DEPRECATED_I_AND_F_ERR = (
     "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
 )
-DEPRECATED_ASJINJA_ERR = (
+_DEPRECATED_ASJINJA_ERR = (
     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
 )
 
@@ -41,7 +41,7 @@ class TexDocument:
         self._code = code.strip()
         self.use_jinja = use_jinja
         if self.use_jinja and not ns:
-            raise ValueError(NS_NOT_PROVIDED_ERR)
+            raise ValueError(_NS_NOT_PROVIDED_ERR)
 
         if self.use_jinja:
             self._render_jinja(ns)
@@ -220,7 +220,7 @@ class TexDocument:
         try:
             import jinja2
         except ImportError:
-            raise ImportError(JINJA_NOT_INTALLED_ERR)
+            raise ImportError(_JINJA_NOT_INTALLED_ERR)
 
         fs_loader = jinja2.FileSystemLoader(os.getcwd())
         tmpl_env = jinja2.Environment(loader=fs_loader)
@@ -263,7 +263,7 @@ class TexTemplate(TexDocument):
         **kargs,
     ):
         if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
-            raise ValueError(EXTRAS_CONFLITS_ERR)
+            raise ValueError(_EXTRAS_CONFLITS_ERR)
 
         self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
         self.scale = scale or 1.0
@@ -529,36 +529,36 @@ class TikZMagics(Magics):
         if args.latex_preamble and (
             args.tex_packages or args.tikz_libraries or args.pgfplots_libraries
         ):
-            print(EXTRAS_CONFLITS_ERR, file=sys.stderr)
+            print(_EXTRAS_CONFLITS_ERR, file=sys.stderr)
             return
 
         if args.implicit_pic and not args.full_document:
             print(
-                DEPRECATED_I_ERR,
+                _DEPRECATED_I_ERR,
                 file=sys.stderr,
             )
             return
         elif args.full_document and not args.implicit_pic:
             print(
-                DEPRECATED_F_ERR,
+                _DEPRECATED_F_ERR,
                 file=sys.stderr,
             )
             return
         elif args.implicit_pic or args.full_document:
             print(
-                DEPRECATED_I_AND_F_ERR,
+                _DEPRECATED_I_AND_F_ERR,
                 file=sys.stderr,
             )
             return
         if args.as_jinja:
             print(
-                DEPRECATED_ASJINJA_ERR,
+                _DEPRECATED_ASJINJA_ERR,
                 file=sys.stderr,
             )
             return
         if args.print_jinja and args.print_tex:
             print(
-                PRINT_CONFLICT_ERR,
+                _PRINT_CONFLICT_ERR,
                 file=sys.stderr,
             )
             return
