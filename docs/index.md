@@ -3,19 +3,8 @@ hide:
   - navigation
   - toc
 ---
-<p align="center">
-<a><img alt="Logo of Jupyter-TikZ" src="./assets/logo_wide.svg" style="width: calc(100% - 2rem); max-width: 800px; max-height: 10rem;"/></a>
-</p>
 
-<p align="center" markdown>
-<em>An IPython Magics for rendering TeX/TikZ in Jupyter Notebooks</em>
-</p>
-
-<p align="center"> 
-<a href="https://pypi.org/project/jupyter-tikz/" target="_blank"><img src="https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e" alt="PyPI - Version"></a>
-<a href="https://pepy.tech/project/jupyter-tikz" target="_blank"><img src="https://static.pepy.tech/badge/jupyter-tikz" alt="Pypi - Downloads"></a>
-<a href="https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE" target="_blank"><img src="https://img.shields.io/pypi/l/jupyter_tikz" alt="License"></a>
-</p>
+{% include "templates/logo.html" %}
 
 ---
 
@@ -45,52 +34,37 @@ hide:
 
 # Getting started
 
-Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks. Choose the following links to continue your journey:
+{{ description }}
+
+## First steps
+
+Choose the following links to continue your journey:
 
 <div class="grid">
-  <a class="card card-link" href="/install/"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M384 96v224H64V96h320zM64 32C28.7 32 0 60.7 0 96v224c0 35.3 28.7 64 64 64h117.3l-10.7 32H96c-17.7 0-32 14.3-32 32s14.3 32 32 32h256c17.7 0 32-14.3 32-32s-14.3-32-32-32h-74.7l-10.7-32H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm464 0c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48h-64zm16 64h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16s7.2-16 16-16zm-16 80c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16zm32 160a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg></span> <strong>Install</strong> Jupyter-TikZ (Recomended)</a>
-  
-  <a class="card card-link" href="#"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M96 0C43 0 0 43 0 96v320c0 53 43 96 96 96h320c17.7 0 32-14.3 32-32s-14.3-32-32-32v-64c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H96zm0 384h256v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16h192c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48h192c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"></path></svg></span> <strong>Quickstart</strong> tutorials</a>
-
-  <a class="card card-link" href="#"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M9.4 86.6c-12.5-12.5-12.5-32.7 0-45.2s32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L178.7 256 9.4 86.6zM256 416h288c17.7 0 32 14.3 32 32s-14.3 32-32 32H256c-17.7 0-32-14.3-32-32s14.3-32 32-32z"></path></svg></span> IPython <strong>Magics arguments</strong> reference</a>
+  {% for href, icon, text in [
+    ("/install/", "computer", "<strong>Install</strong> Jupyter-TikZ"), 
+    ("#", "closed-book", "<strong>Usage</strong> tutorials"), 
+    ("#", "terminal", "IPython <strong>Magics arguments</strong> reference")
+  ] %}
+    <a class="card card-link" href="{{ href }}"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
+  {% endfor %}
 </div>
 
 
-
-
-## :link: Project Links
+## Project Links
 
 You can also visit the other project links:
 
 <div class="grid">
-<a class="card card-link" href="https://pypi.org/project/jupyter-tikz/" target="_blank"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6zM286.2 404c11.1 0 20.1 9.1 20.1 20.3 0 11.3-9 20.4-20.1 20.4-11 0-20.1-9.2-20.1-20.4.1-11.3 9.1-20.3 20.1-20.3zM167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4zm-6.7-142.6c-11.1 0-20.1-9.1-20.1-20.3.1-11.3 9-20.4 20.1-20.4 11 0 20.1 9.2 20.1 20.4s-9 20.3-20.1 20.3z"></path></svg></span> <strong>PyPI</strong> page</a>
-
-<a class="card card-link" href="https://github.com/lucaslrodri/jupyter-tikz/" target="_blank"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg></span> <strong>Source code</strong> in Github</a>
-
-<a class="card card-link" href="https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb" target="_blank">
-<span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.157 22.201A1.784 1.799 0 0 1 5.374 24a1.784 1.799 0 0 1-1.784-1.799 1.784 1.799 0 0 1 1.784-1.799 1.784 1.799 0 0 1 1.783 1.799zM20.582 1.427a1.415 1.427 0 0 1-1.415 1.428 1.415 1.427 0 0 1-1.416-1.428A1.415 1.427 0 0 1 19.167 0a1.415 1.427 0 0 1 1.415 1.427zM4.992 3.336A1.047 1.056 0 0 1 3.946 4.39a1.047 1.056 0 0 1-1.047-1.055A1.047 1.056 0 0 1 3.946 2.28a1.047 1.056 0 0 1 1.046 1.056zm7.336 1.517c3.769 0 7.06 1.38 8.768 3.424a9.363 9.363 0 0 0-3.393-4.547 9.238 9.238 0 0 0-5.377-1.728A9.238 9.238 0 0 0 6.95 3.73a9.363 9.363 0 0 0-3.394 4.547c1.713-2.04 5.004-3.424 8.772-3.424zm.001 13.295c-3.768 0-7.06-1.381-8.768-3.425a9.363 9.363 0 0 0 3.394 4.547A9.238 9.238 0 0 0 12.33 21a9.238 9.238 0 0 0 5.377-1.729 9.363 9.363 0 0 0 3.393-4.547c-1.712 2.044-5.003 3.425-8.772 3.425Z"></path></svg></span> Example <strong>notebook</strong>
-</a>
+ {% for href, icon, text in [
+  ("https://pypi.org/project/jupyter-tikz/", "python", "<strong>PyPI</strong> page"),
+  ("https://github.com/lucaslrodri/jupyter-tikz/", "github", "<strong>Source code</strong> in Github"),
+  ("https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb", "jupyter", "Example <strong>notebook</strong>")
+ ] %}
+  <a class="card card-link" href="https://pypi.org/project/jupyter-tikz/" target="_blank"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
+ {% endfor %}
 </div>
 
-<div class="grid cards" markdown>
-- :fontawesome-brands-python: **PyPI** page
-- :fontawesome-brands-github: **Source code** in Github
-- :simple-jupyter: **Example** notebook
-</div>
-
-## :handshake: Contribute
-
-Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here’s how you can contribute:
-
-1. If you encounter any issues or have suggestions for improvements, please report them using the [issues page](https://github.com/lucaslrodri/jupyter-tikz/issues).
-2. If you're interested in developing the software further, please refer to [contributing guide](./DEVELOPMENT.md). 
-
-## :heart: Thanks
-
-I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
-
-## :identification_card: License
-
-Copyright 2024 © [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
-
-Distributed under the terms of the [MIT License](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE), Jupyter-TikZ is free and open-source software.
+{% include "templates/contribute.md" %}
+{% include "templates/motivation.md" %}
+{% include "templates/license.md" %}

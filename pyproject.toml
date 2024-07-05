@@ -45,6 +45,7 @@ pytest-cov = "^5.0.0"
 mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-material = "^9.5.28"
 
+mkdocs-macros-plugin = "^1.0.5"
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
 markers = [

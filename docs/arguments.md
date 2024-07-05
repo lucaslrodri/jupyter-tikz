@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 # Additional arguments
 
 All Jupyter-TikZ IPython Magics additional options are listed below:

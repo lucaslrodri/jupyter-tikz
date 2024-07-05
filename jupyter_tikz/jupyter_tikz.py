@@ -1,3 +1,5 @@
+"""Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks."""
+
 import os
 import subprocess
 import sys
@@ -32,6 +34,152 @@ _DEPRECATED_I_AND_F_ERR = (
 _DEPRECATED_ASJINJA_ERR = (
     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
 )
+
+_ARGS = {
+    "input-type": {
+        "short-arg": "as",
+        "type": str,
+        "default": "standalone",
+        "desc": "Type of the input.<br>Possible values are: `full-document`, `standalone-document` and `tikzpicture`",
+        "example": "`-as=full-document`",
+    },
+    "latex-preamble": {
+        "short-arg": "p",
+        "type": str,
+        "default": None,
+        "desc": "LaTeX preamble to insert before the document",
+        "example": '`-p="$preamble"`, with the preamble being an IPython variable',
+    },
+    "tex-packages": {
+        "short-arg": "t",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TeX packages",
+        "example": "`-t=amsfonts,amsmath`",
+    },
+    "no-tikz": {
+        "short-arg": "nt",
+        "type": bool,
+        "default": False,
+        "desc": "Force to not import the TikZ package",
+        "example": None,
+    },
+    "tikz-libraries": {
+        "short-arg": "l",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TikZ libraries",
+        "example": "`-l=calc,arrows`",
+    },
+    "pgfplots-libraries": {
+        "short-arg": "lp",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of pgfplots libraries",
+        "example": "`-pl=groupplots,external`",
+    },
+    "use-jinja": {
+        "short-arg": "j",
+        "type": bool,
+        "default": False,
+        "desc": "Render the code using Jinja2",
+        "example": None,
+    },
+    "print-jinja": {
+        "short-arg": "pj",
+        "type": bool,
+        "default": False,
+        "desc": "Print the rendered Jinja2 template",
+        "example": None,
+    },
+    "print-tex": {
+        "short-arg": "pt",
+        "type": bool,
+        "default": False,
+        "desc": "Print the full LaTeX document",
+        "example": None,
+    },
+    "scale": {
+        "short-arg": "sc",
+        "type": float,
+        "default": 1.0,
+        "desc": "The scale factor to apply to the TikZ diagram",
+        "example": "`-sc=0.5`",
+    },
+    "rasterize": {
+        "short-arg": "r",
+        "type": bool,
+        "default": False,
+        "desc": "Output a rasterized image (PNG) instead of SVG",
+        "example": None,
+    },
+    "dpi": {
+        "short-arg": "d",
+        "type": int,
+        "default": 96,
+        "desc": "DPI to use when rasterizing the image",
+        "example": "`-d=300`",
+    },
+    "full-err": {
+        "short-arg": "e",
+        "type": bool,
+        "default": False,
+        "desc": "Print the full error message when an error occurs",
+        "example": None,
+    },
+    "tex-program": {
+        "short-arg": "tp",
+        "type": str,
+        "default": "pdflatex",
+        "desc": "TeX program to use for compilation",
+        "example": "`-tp=xelatex` or `-tp=lualatex`",
+    },
+    "tex-args": {
+        "short-arg": "ta",
+        "type": str,
+        "default": None,
+        "desc": "Arguments to pass to the TeX program",
+        "example": '`-ta="$tex_args_ipython_variable"`',
+    },
+    "no-compile": {
+        "short-arg": "nc",
+        "type": bool,
+        "default": False,
+        "desc": "Do not compile the TeX code",
+        "example": None,
+    },
+    "save-text": {
+        "short-arg": "s",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to file",
+        "example": "`-s filename.tikz`",
+    },
+    "save-image": {
+        "short-arg": "S",
+        "type": str,
+        "default": None,
+        "desc": "Save the output image to file",
+        "example": "`-S filename.png`",
+    },
+    "save-var": {
+        "short-arg": "sv",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to an IPython variable",
+        "example": "`-sv my_var`",
+    },
+}
+
+
+def _get_arg_help(arg: str) -> str:
+    help = _ARGS[arg]["desc"].replace("<br>", " ")
+    if _ARGS[arg].get("example"):
+        help += f", e.g., {_ARGS[arg]['example']}"
+    if _ARGS[arg].get("default"):
+        help += f". Defaults to `{_ARGS[arg]['default']}`"
+    help += "."
+    return help
 
 
 class TexDocument:
@@ -351,11 +499,11 @@ class TikZMagics(Magics):
     @line_cell_magic
     @magic_arguments()
     @argument(  # New
-        "-as",
+        f"-{_ARGS['input-type']['short-arg']}",
         "--input-type",
         dest="input_type",
-        default="standalone",
-        help="Type of the input. Possible values are: `full-document`, `standalone-document`, `tikzpicture`. Defaults to `standalone-document`.",
+        default=_ARGS["input-type"]["default"],
+        help=_get_arg_help("input-type"),
     )
     @argument(  # Deprecated
         "-i",

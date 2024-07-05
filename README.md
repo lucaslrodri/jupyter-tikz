@@ -1,6 +1,6 @@
 ![Jupyter Tikz Logo](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/assets/logo_wide.svg)
 
-[![PyPI - Version](https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e)](https://pypi.org/project/jupyter-tikz/)[![Pypi - Downloads](https://static.pepy.tech/badge/jupyter-tikz/month)](https://pepy.tech/project/jupyter-tikz)[![PyPI - License](https://img.shields.io/pypi/l/jupyter_tikz)](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE)
+[![PyPI - Version](https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e)](https://pypi.org/project/jupyter-tikz/)[![Pypi - Downloads](https://static.pepy.tech/badge/jupyter-tikz)](https://pepy.tech/project/jupyter-tikz)[![PyPI - License](https://img.shields.io/pypi/l/jupyter_tikz)](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE)
 
 Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
 
