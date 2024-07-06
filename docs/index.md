@@ -1,7 +1,6 @@
 ---
 hide:
   - navigation
-  - toc
 ---
 
 {% include "templates/logo.html" %}
@@ -17,7 +16,7 @@ hide:
      \filldraw [color=cyan, opacity=0.3] (4.5,2.5) circle (1.5);
 \end{tikzpicture}
 ```
-![A dot and a gridline](./assets/dot_in_grid.svg){height="300"}
+![A dot and a gridline](./assets/dots_in_grid.svg){height="300"}
 </div>
 
 
@@ -36,7 +35,9 @@ hide:
 
 {{ description }}
 
-## First steps
+{% include "templates/basic-usage.md" %}
+
+## Next steps
 
 Choose the following links to continue your journey:
 
@@ -53,7 +54,7 @@ Choose the following links to continue your journey:
 
 ## Project Links
 
-You can also visit the other project links:
+Explore additional resources and related links for this project:
 
 <div class="grid">
  {% for href, icon, text in [

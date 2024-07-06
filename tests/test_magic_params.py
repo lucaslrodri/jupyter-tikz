@@ -2,10 +2,8 @@ import pytest
 
 from jupyter_tikz import TexDocument, TexTemplate, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
-    _DEPRECATED_ASJINJA_ERR,
-    _DEPRECATED_F_ERR,
-    _DEPRECATED_I_AND_F_ERR,
-    _DEPRECATED_I_ERR,
+    _PRINT_CONFLICT_ERR,
+    _INPUT_TYPE_CONFLIT_ERR,
     _EXTRAS_CONFLITS_ERR,
     _PRINT_CONFLICT_ERR,
 )
@@ -164,7 +162,7 @@ def test_save_tex(tikz_magic_mock):
 
 @pytest.mark.needs_latex
 @pytest.mark.needs_pdftocairo
-def test_save_tex_no_mocks(tikz_magic, mocker, tmp_path, monkeypatch):
+def test_save_tex_no_mocks(tikz_magic, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     # Arrange
@@ -223,7 +221,7 @@ def test_valid_input_type(tikz_magic_mock, input_type, expected_input_type):
     cell = "any cell content"
 
     # Act
-    tikz_magic_mock.tikz(line, cell)
+    res = tikz_magic_mock.tikz(line, cell)
 
     # Assert
     assert tikz_magic_mock._get_input_type(input_type) == expected_input_type
@@ -259,6 +257,39 @@ def test_tex_obj_type(tikz_magic_mock, input_type, expected_input_type):
         assert tikz_magic_mock.tex_obj.template == expected_input_type
     else:
         assert isinstance(tikz_magic_mock.tex_obj, TexDocument)
+
+
+@pytest.mark.parametrize(
+    "params, expected_input_type",
+    [
+        ("-f", "full-document"),
+        ("-i", "tikzpicture"),
+    ],
+)
+def test_alternative_tex_obj_type(tikz_magic_mock, params, expected_input_type):
+    # Arrange
+    line = params
+    code = "any code"
+
+    # Act
+    tikz_magic_mock.tikz(line, code)
+
+    # Assert
+    assert tikz_magic_mock.input_type == expected_input_type
+
+
+def test_as_jinja_same_as_use_jinja(tikz_magic_mock, monkeypatch):
+    # Arrange
+    line = "--as-jinja"
+    code = "any code"
+
+    monkeypatch.setattr(TexDocument, "__init__", lambda *args, **kwargs: None)
+
+    # Act
+    tikz_magic_mock.tikz(line, code)
+
+    # Assert
+    assert tikz_magic_mock.args.use_jinja is True
 
 
 # =================== Test src content ===================
@@ -356,12 +387,10 @@ def test_raise_error_jinja_and_tex_prints_not_allowed_at_same_time(
 @pytest.mark.parametrize(
     "args, expected_err",
     [
-        ("-i -f", _DEPRECATED_I_AND_F_ERR),
-        ("-i -as=f", _DEPRECATED_I_ERR),
-        ("-i", _DEPRECATED_I_ERR),
-        ("-f -as=t", _DEPRECATED_F_ERR),
-        ("-f", _DEPRECATED_F_ERR),
-        ("--as-jinja", _DEPRECATED_ASJINJA_ERR),
+        ("-i -f", _INPUT_TYPE_CONFLIT_ERR),
+        ("-i -as=f", _INPUT_TYPE_CONFLIT_ERR),
+        ("-f -as=t", _INPUT_TYPE_CONFLIT_ERR),
+        ("-i -f -as=s", _INPUT_TYPE_CONFLIT_ERR),
     ],
 )
 def test_raise_deprecated_args(tikz_magic_mock, capsys, args, expected_err):

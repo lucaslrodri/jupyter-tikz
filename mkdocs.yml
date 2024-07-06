@@ -15,14 +15,18 @@ theme:
     - navigation.expand
     - navigation.indexes
     - navigation.footer
+    - navigation.top
 
 nav:
-  - Introduction: index.md
+  - Getting started: index.md
   - Installation: installation.md
   - Usage: usage/index.md
-  - Arguments reference: arguments.md
+  - Additional options: arguments.md
   - API reference: api.md
   - Development guide: development.md
+
+hide:
+  - navigation
 
 extra_css:
   - stylesheets/extra.css

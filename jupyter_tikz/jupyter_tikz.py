@@ -18,168 +18,25 @@ _EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz
 _PRINT_CONFLICT_ERR = (
     "You cannot use `--print-jinja` and `--print-tex` at the same time."
 )
+_INPUT_TYPE_CONFLIT_ERR = "You cannot use `--implicit-pic`, `--full-document` or/and `-as=<input_type>` at the same time."
 _JINJA_NOT_INTALLED_ERR = (
     "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
 _NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
-_DEPRECATED_I_ERR = (
-    "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
-)
-_DEPRECATED_F_ERR = (
-    "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
-)
-_DEPRECATED_I_AND_F_ERR = (
-    "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
-)
-_DEPRECATED_ASJINJA_ERR = (
-    "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
-)
-
-_ARGS = {
-    "input-type": {
-        "short-arg": "as",
-        "type": str,
-        "default": "standalone",
-        "desc": "Type of the input.<br>Possible values are: `full-document`, `standalone-document` and `tikzpicture`",
-        "example": "`-as=full-document`",
-    },
-    "latex-preamble": {
-        "short-arg": "p",
-        "type": str,
-        "default": None,
-        "desc": "LaTeX preamble to insert before the document",
-        "example": '`-p="$preamble"`, with the preamble being an IPython variable',
-    },
-    "tex-packages": {
-        "short-arg": "t",
-        "type": str,
-        "default": None,
-        "desc": "Comma-separated list of TeX packages",
-        "example": "`-t=amsfonts,amsmath`",
-    },
-    "no-tikz": {
-        "short-arg": "nt",
-        "type": bool,
-        "default": False,
-        "desc": "Force to not import the TikZ package",
-        "example": None,
-    },
-    "tikz-libraries": {
-        "short-arg": "l",
-        "type": str,
-        "default": None,
-        "desc": "Comma-separated list of TikZ libraries",
-        "example": "`-l=calc,arrows`",
-    },
-    "pgfplots-libraries": {
-        "short-arg": "lp",
-        "type": str,
-        "default": None,
-        "desc": "Comma-separated list of pgfplots libraries",
-        "example": "`-pl=groupplots,external`",
-    },
-    "use-jinja": {
-        "short-arg": "j",
-        "type": bool,
-        "default": False,
-        "desc": "Render the code using Jinja2",
-        "example": None,
-    },
-    "print-jinja": {
-        "short-arg": "pj",
-        "type": bool,
-        "default": False,
-        "desc": "Print the rendered Jinja2 template",
-        "example": None,
-    },
-    "print-tex": {
-        "short-arg": "pt",
-        "type": bool,
-        "default": False,
-        "desc": "Print the full LaTeX document",
-        "example": None,
-    },
-    "scale": {
-        "short-arg": "sc",
-        "type": float,
-        "default": 1.0,
-        "desc": "The scale factor to apply to the TikZ diagram",
-        "example": "`-sc=0.5`",
-    },
-    "rasterize": {
-        "short-arg": "r",
-        "type": bool,
-        "default": False,
-        "desc": "Output a rasterized image (PNG) instead of SVG",
-        "example": None,
-    },
-    "dpi": {
-        "short-arg": "d",
-        "type": int,
-        "default": 96,
-        "desc": "DPI to use when rasterizing the image",
-        "example": "`-d=300`",
-    },
-    "full-err": {
-        "short-arg": "e",
-        "type": bool,
-        "default": False,
-        "desc": "Print the full error message when an error occurs",
-        "example": None,
-    },
-    "tex-program": {
-        "short-arg": "tp",
-        "type": str,
-        "default": "pdflatex",
-        "desc": "TeX program to use for compilation",
-        "example": "`-tp=xelatex` or `-tp=lualatex`",
-    },
-    "tex-args": {
-        "short-arg": "ta",
-        "type": str,
-        "default": None,
-        "desc": "Arguments to pass to the TeX program",
-        "example": '`-ta="$tex_args_ipython_variable"`',
-    },
-    "no-compile": {
-        "short-arg": "nc",
-        "type": bool,
-        "default": False,
-        "desc": "Do not compile the TeX code",
-        "example": None,
-    },
-    "save-text": {
-        "short-arg": "s",
-        "type": str,
-        "default": None,
-        "desc": "Save the TikZ or LaTeX code to file",
-        "example": "`-s filename.tikz`",
-    },
-    "save-image": {
-        "short-arg": "S",
-        "type": str,
-        "default": None,
-        "desc": "Save the output image to file",
-        "example": "`-S filename.png`",
-    },
-    "save-var": {
-        "short-arg": "sv",
-        "type": str,
-        "default": None,
-        "desc": "Save the TikZ or LaTeX code to an IPython variable",
-        "example": "`-sv my_var`",
-    },
-}
 
 
-def _get_arg_help(arg: str) -> str:
-    help = _ARGS[arg]["desc"].replace("<br>", " ")
-    if _ARGS[arg].get("example"):
-        help += f", e.g., {_ARGS[arg]['example']}"
-    if _ARGS[arg].get("default"):
-        help += f". Defaults to `{_ARGS[arg]['default']}`"
-    help += "."
-    return help
+# _DEPRECATED_I_ERR = (
+#     "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
+# )
+# _DEPRECATED_F_ERR = (
+#     "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
+# )
+# _DEPRECATED_I_AND_F_ERR = (
+#     "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
+# )
+# _DEPRECATED_ASJINJA_ERR = (
+#     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
+# )
 
 
 class TexDocument:
@@ -482,6 +339,196 @@ class TexTemplate(TexDocument):
         )
 
 
+_ARGS = {
+    "input-type": {
+        "short-arg": "as",
+        "dest": "input_type",
+        "type": str,
+        "default": "standalone-document",
+        "desc": "Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`",
+        "example": "`-as=full-document`",
+    },
+    "implicit-pic": {  # Deprecated
+        "short-arg": "i",
+        "dest": "implicit_pic",
+        "type": bool,
+        "desc": "Alias for `-as=tikzpicture`",
+    },
+    "full-document": {  # Deprecated
+        "short-arg": "f",
+        "dest": "full_document",
+        "type": bool,
+        "desc": "Alias for `-as=full-document`",
+    },
+    "latex-preamble": {
+        "short-arg": "p",
+        "dest": "latex_preamble",
+        "type": str,
+        "default": None,
+        "desc": "LaTeX preamble to insert before the document",
+        "example": '`-p="$preamble"`, with the preamble being an IPython variable',
+    },
+    "tex-packages": {
+        "short-arg": "t",
+        "dest": "tex_packages",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TeX packages",
+        "example": "`-t=amsfonts,amsmath`",
+    },
+    "no-tikz": {
+        "short-arg": "nt",
+        "dest": "no_tikz",
+        "type": bool,
+        "desc": "Force to not import the TikZ package",
+    },
+    "tikz-libraries": {
+        "short-arg": "l",
+        "dest": "tikz_libraries",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TikZ libraries",
+        "example": "`-l=calc,arrows`",
+    },
+    "pgfplots-libraries": {
+        "short-arg": "lp",
+        "dest": "pgfplots_libraries",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of pgfplots libraries",
+        "example": "`-pl=groupplots,external`",
+    },
+    "use-jinja": {
+        "short-arg": "j",
+        "dest": "use_jinja",
+        "type": bool,
+        "desc": "Render the code using Jinja2",
+    },
+    "print-jinja": {
+        "short-arg": "pj",
+        "dest": "print_jinja",
+        "type": bool,
+        "desc": "Print the rendered Jinja2 template",
+    },
+    "print-tex": {
+        "short-arg": "pt",
+        "dest": "print_tex",
+        "type": bool,
+        "desc": "Print the full LaTeX document",
+    },
+    "scale": {
+        "short-arg": "sc",
+        "dest": "scale",
+        "type": float,
+        "default": 1.0,
+        "desc": "The scale factor to apply to the TikZ diagram",
+        "example": "`-sc=0.5`",
+    },
+    "rasterize": {
+        "short-arg": "r",
+        "dest": "rasterize",
+        "type": bool,
+        "desc": "Output a rasterized image (PNG) instead of SVG",
+    },
+    "dpi": {
+        "short-arg": "d",
+        "dest": "dpi",
+        "type": int,
+        "default": 96,
+        "desc": "DPI to use when rasterizing the image",
+        "example": "`--dpi=300`",
+    },
+    "full-err": {
+        "short-arg": "e",
+        "dest": "full_err",
+        "type": bool,
+        "desc": "Print the full error message when an error occurs",
+    },
+    "tex-program": {
+        "short-arg": "tp",
+        "dest": "tex_program",
+        "type": str,
+        "default": "pdflatex",
+        "desc": "TeX program to use for compilation",
+        "example": "`-tp=xelatex` or `-tp=lualatex`",
+    },
+    "tex-args": {
+        "short-arg": "ta",
+        "dest": "tex_args",
+        "type": str,
+        "default": None,
+        "desc": "Arguments to pass to the TeX program",
+        "example": '`-ta="$tex_args_ipython_variable"`',
+    },
+    "no-compile": {
+        "short-arg": "nc",
+        "dest": "no_compile",
+        "type": bool,
+        "desc": "Do not compile the TeX code",
+    },
+    "save-text": {
+        "short-arg": "s",
+        "dest": "save_tex",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to file",
+        "example": "`-s filename.tikz`",
+    },
+    "save-image": {
+        "short-arg": "S",
+        "dest": "save_image",
+        "type": str,
+        "default": None,
+        "desc": "Save the output image to file",
+        "example": "`-S filename.png`",
+    },
+    "save-var": {
+        "short-arg": "sv",
+        "dest": "save_var",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to an IPython variable",
+        "example": "`-sv my_var`",
+    },
+}
+
+
+def _get_arg_params(arg: str) -> tuple[tuple[str, str], dict[str, Any]]:
+    def get_arg_help(arg: str) -> str:
+        help = _ARGS[arg]["desc"].replace("<br>", " ")
+        if _ARGS[arg].get("example"):
+            help += f", e.g., {_ARGS[arg]['example']}"
+        if _ARGS[arg].get("default"):
+            help += (
+                f". Defaults to `-{_ARGS[arg]['short-arg']}={_ARGS[arg]['default']}`"
+            )
+        help += "."
+        return help
+
+    args = (f"-{_ARGS[arg]['short-arg']}", f"--{arg}")
+    kwargs = {"dest": _ARGS[arg]["dest"]}
+    if _ARGS[arg]["type"] == bool:
+        kwargs["action"] = "store_true"
+        kwargs["default"] = False
+    elif _ARGS[arg]["type"] == str:
+        kwargs["default"] = _ARGS[arg]["default"]
+    else:
+        kwargs["type"] = _ARGS[arg]["type"]
+        kwargs["default"] = _ARGS[arg]["default"]
+    kwargs["help"] = get_arg_help(arg)
+    return args, kwargs
+
+
+def _apply_args():
+    def decorator(magic_command):
+        for arg in reversed(_ARGS.keys()):
+            args, kwargs = _get_arg_params(arg)
+            magic_command = argument(*args, **kwargs)(magic_command)
+        return magic_command
+
+    return decorator
+
+
 @magics_class
 class TikZMagics(Magics):
     def _get_input_type(self, input_type: str) -> Optional[str]:
@@ -498,73 +545,7 @@ class TikZMagics(Magics):
     # Path to the pdftocairo executable
     @line_cell_magic
     @magic_arguments()
-    @argument(  # New
-        f"-{_ARGS['input-type']['short-arg']}",
-        "--input-type",
-        dest="input_type",
-        default=_ARGS["input-type"]["default"],
-        help=_get_arg_help("input-type"),
-    )
-    @argument(  # Deprecated
-        "-i",
-        "--implicit-pic",
-        dest="implicit_pic",
-        action="store_true",
-        default=False,
-        help="Deprecated. Use `-as=tikzpicture` instead.",
-    )
-    @argument(  # Deprecated
-        "-f",
-        "--full-document",
-        dest="full_document",
-        action="store_true",
-        default=False,
-        help="Deprecated. Use `-as=full-document` instead.",
-    )
-    @argument(
-        "-p",
-        "--latex_preamble",
-        dest="latex_preamble",
-        default=None,
-        help='LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
-    )
-    @argument(
-        "-t",
-        "--tex-packages",
-        dest="tex_packages",
-        default=None,
-        help="Comma-separated list of TeX packages, e.g., `-t=amsfonts,amsmath`.",
-    )
-    @argument(
-        "-nt",
-        "--no-tikz",
-        dest="no_tikz",
-        action="store_true",
-        default=False,
-        help="Force to not import the TikZ package.",
-    )
-    @argument(
-        "-l",
-        "--tikz-libraries",
-        dest="tikz_libraries",
-        default=None,
-        help="Comma-separated list of TikZ libraries, e.g., `-l=arrows,automata`.",
-    )
-    @argument(
-        "-lp",
-        "--pgfplots-libraries",
-        dest="pgfplots_libraries",
-        default=None,
-        help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
-    )
-    @argument(  # New
-        "-j",
-        "--use-jinja",
-        dest="use_jinja",
-        action="store_true",
-        default=False,
-        help="Render the input using Jinja2.",
-    )
+    @_apply_args()
     @argument(  # Deprecated
         "--as-jinja",
         dest="as_jinja",
@@ -572,149 +553,49 @@ class TikZMagics(Magics):
         default=False,
         help="Deprecated. Use `--use-jinja` instead.",
     )
-    @argument(
-        "-pj",
-        "--print-jinja",
-        dest="print_jinja",
-        action="store_true",
-        default=False,
-        help="Print the rendered Jinja2 template.",
-    )
-    @argument(
-        "-pt",
-        "--print-tex",
-        dest="print_tex",
-        action="store_true",
-        default=False,
-        help="Print full LaTeX document.",
-    )
-    @argument(
-        "-sc",
-        "--scale",
-        dest="scale",
-        type=float,
-        default=1.0,
-        help="The scale factor to apply to the TikZ diagram. Defaults to `-sc=1`.",
-    )
-    @argument(
-        "-r",
-        "--rasterize",
-        dest="rasterize",
-        action="store_true",
-        default=False,
-        help="Output a rasterized image (PNG) instead of SVG.",
-    )
-    @argument(
-        "-d",
-        "--dpi",
-        dest="dpi",
-        type=int,
-        default=96,
-        help="DPI of the rasterized output image. Defaults to `-d=96`.",
-    )
-    @argument(
-        "-e",
-        "--full-err",
-        dest="full_err",
-        action="store_true",
-        default=False,
-        help="Show full error message.",
-    )
-    @argument(
-        "-tp",
-        "--tex-program",
-        dest="tex_program",
-        default="pdflatex",
-        help="TeX program to use for rendering, e.g., `-tp=lualatex`.",
-    )
-    @argument(
-        "-ta",
-        "--tex-args",
-        dest="tex_args",
-        default=None,
-        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`.',
-    )
-    @argument(
-        "-nc",
-        "--no-compile",
-        dest="no_compile",
-        action="store_true",
-        default=False,
-        help="Do not compile the LaTeX code.",
-    )
-    @argument(
-        "-s",
-        "--save-tex",
-        dest="save_tex",
-        type=str,
-        default=None,
-        help="Save the TikZ or LaTeX code to file, e.g., `-s filename.tikz`.",
-    )
-    @argument(
-        "-S",
-        "--save-image",
-        dest="save_image",
-        type=str,
-        default=None,
-        help="Save the output image to file, e.g., `-S filename.svg`.",
-    )
-    @argument(
-        "-sv",
-        "--save-var",
-        dest="save_var",
-        type=str,
-        default=None,
-        help="Save the TikZ or LaTeX code to an IPython variable, e.g., `-sv varname`.",
-    )
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
     def tikz(
         self, line, cell: Optional[str] = None, local_ns=None
     ) -> Optional[display.Image | display.SVG]:
 
-        args = parse_argstring(self.tikz, line)
+        self.args = parse_argstring(self.tikz, line)
 
-        if args.latex_preamble and (
-            args.tex_packages or args.tikz_libraries or args.pgfplots_libraries
+        if self.args.latex_preamble and (
+            self.args.tex_packages
+            or self.args.tikz_libraries
+            or self.args.pgfplots_libraries
         ):
             print(_EXTRAS_CONFLITS_ERR, file=sys.stderr)
             return
 
-        if args.implicit_pic and not args.full_document:
+        if (self.args.implicit_pic and self.args.full_document) or (
+            (self.args.implicit_pic or self.args.full_document)
+            and self.args.input_type != "standalone-document"
+        ):
             print(
-                _DEPRECATED_I_ERR,
+                _INPUT_TYPE_CONFLIT_ERR,
                 file=sys.stderr,
             )
             return
-        elif args.full_document and not args.implicit_pic:
-            print(
-                _DEPRECATED_F_ERR,
-                file=sys.stderr,
-            )
-            return
-        elif args.implicit_pic or args.full_document:
-            print(
-                _DEPRECATED_I_AND_F_ERR,
-                file=sys.stderr,
-            )
-            return
-        if args.as_jinja:
-            print(
-                _DEPRECATED_ASJINJA_ERR,
-                file=sys.stderr,
-            )
-            return
-        if args.print_jinja and args.print_tex:
+        if self.args.as_jinja:
+            self.args.use_jinja = True
+        if self.args.print_jinja and self.args.print_tex:
             print(
                 _PRINT_CONFLICT_ERR,
                 file=sys.stderr,
             )
             return
 
-        self.input_type = self._get_input_type(args.input_type)
+        if self.args.implicit_pic:
+            self.input_type = "tikzpicture"
+        elif self.args.full_document:
+            self.input_type = "full-document"
+        else:
+            self.input_type = self._get_input_type(self.args.input_type)
         if self.input_type is None:
             print(
-                f"`{args.input_type}` is not a valid input type.",
+                f"`{self.args.input_type}` is not a valid input type.",
                 "Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.",
                 file=sys.stderr,
             )
@@ -724,54 +605,56 @@ class TikZMagics(Magics):
         local_ns = local_ns or {}
 
         if cell is None:
-            if args.code is None:
+            if self.args.code is None:
                 print('Use "%tikz?" for help', file=sys.stderr)
                 return
 
-            if args.code not in local_ns:
-                self.src: str = args.code
+            if self.args.code not in local_ns:
+                self.src: str = self.args.code
             else:
-                self.src: str = local_ns[args.code]
+                self.src: str = local_ns[self.args.code]
 
         if self.input_type == "full-document":
-            self.tex_obj = TexDocument(self.src, use_jinja=args.use_jinja, ns=local_ns)
+            self.tex_obj = TexDocument(
+                self.src, use_jinja=self.args.use_jinja, ns=local_ns
+            )
         else:
             implicit_tikzpicture = self.input_type == "tikzpicture"
             self.tex_obj = TexTemplate(
                 self.src,
                 implicit_tikzpicture=implicit_tikzpicture,
-                preamble=args.latex_preamble,
-                tex_packages=args.tex_packages,
-                no_tikz=args.no_tikz,
-                tikz_libraries=args.tikz_libraries,
-                pgfplots_libraries=args.pgfplots_libraries,
-                scale=args.scale,
-                use_jinja=args.use_jinja or args.print_jinja,
+                preamble=self.args.latex_preamble,
+                tex_packages=self.args.tex_packages,
+                no_tikz=self.args.no_tikz,
+                tikz_libraries=self.args.tikz_libraries,
+                pgfplots_libraries=self.args.pgfplots_libraries,
+                scale=self.args.scale,
+                use_jinja=self.args.use_jinja or self.args.print_jinja,
                 ns=local_ns,
             )
 
-        if args.print_jinja:
+        if self.args.print_jinja:
             print(self.tex_obj)
-        if args.print_tex:
+        if self.args.print_tex:
             print(self.tex_obj.latex_str)
 
         image = None
-        if not args.no_compile:
+        if not self.args.no_compile:
             image = self.tex_obj.run_latex(
-                tex_program=args.tex_program,
-                tex_args=args.tex_args,
-                rasterize=args.rasterize,
-                full_err=args.full_err,
-                save_image=args.save_image,
-                dpi=args.dpi,
+                tex_program=self.args.tex_program,
+                tex_args=self.args.tex_args,
+                rasterize=self.args.rasterize,
+                full_err=self.args.full_err,
+                save_image=self.args.save_image,
+                dpi=self.args.dpi,
             )
             if image is None:
                 return None
 
-        if args.save_var:
-            local_ns[args.save_var] = str(self.tex_obj)
+        if self.args.save_var:
+            local_ns[self.args.save_var] = str(self.tex_obj)
 
-        if args.save_tex:
-            self.saved_path = self.tex_obj.save(args.save_tex, format="code")
+        if self.args.save_tex:
+            self.saved_path = self.tex_obj.save(self.args.save_tex, format="code")
 
         return image
