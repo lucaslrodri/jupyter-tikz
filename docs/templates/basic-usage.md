@@ -20,7 +20,7 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
 \end{tikzpicture}
 ```
 
-![Conway example](./assets/conway.svg)
+![Conway example](./assets/tikz/conway.svg)
 
 
 Or use it as line magic, where the TeX/TikZ code is passed as an IPython string variable:
@@ -41,7 +41,7 @@ Additional options can be passed to the magic command:
 \end{axis}
 ```
 
-![Quadratic formula](./assets/quadratic.png)
+![Quadratic formula](./assets/tikz/quadratic.png)
 
 Going further, it is also possible to use it as a Python package:
 

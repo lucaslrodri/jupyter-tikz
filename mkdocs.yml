@@ -4,6 +4,7 @@ repo_url: https://github.com/lucaslrodri/jupyter-tikz
 theme:
   name: material
   logo: assets/logo.svg
+  favicon: assets/favicon.svg
   palette:
     primary: white
     accent: custom
@@ -16,6 +17,7 @@ theme:
     - navigation.indexes
     - navigation.footer
     - navigation.top
+    - navigation.sections
 
 nav:
   - Getting started: index.md

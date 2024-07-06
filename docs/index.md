@@ -16,7 +16,7 @@ hide:
      \filldraw [color=cyan, opacity=0.3] (4.5,2.5) circle (1.5);
 \end{tikzpicture}
 ```
-![A dot and a gridline](./assets/dots_in_grid.svg){height="300"}
+![A dot and a gridline](./assets/tikz/dots_in_grid.svg){height="300"}
 </div>
 
 
@@ -44,8 +44,8 @@ Choose the following links to continue your journey:
 <div class="grid">
   {% for href, icon, text in [
     ("/install/", "computer", "<strong>Install</strong> Jupyter-TikZ"), 
-    ("#", "closed-book", "<strong>Usage</strong> tutorials"), 
-    ("#", "terminal", "IPython <strong>Magics arguments</strong> reference")
+    ("#", "closed-book", "<strong>Usage</strong> as IPython Magics"), 
+    ("#", "terminal", "IPython Magics <strong>additional options</strong>")
   ] %}
     <a class="card card-link" href="{{ href }}"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
   {% endfor %}
