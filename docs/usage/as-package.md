@@ -1,5 +1,5 @@
 !!! note ""
-    This document was partialy build from a notebook. Download it from Github (right click to download).
+    This document was partially built from a notebook. Download it from GitHub (right-click to download).
 
 You can create TikZ pictures using two available classes:
 
