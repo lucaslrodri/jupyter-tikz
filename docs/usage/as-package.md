@@ -1,5 +1,6 @@
-!!! note ""
-    This document was partially built from a notebook. Download it from GitHub (right-click to download).
+{% include "templates/notebook-download.md" %}
+
+## LaTeX classes
 
 You can create TikZ pictures using two available classes:
 
@@ -9,6 +10,8 @@ You can create TikZ pictures using two available classes:
 For more details, please visit the [API reference](../api.md).
 
 ## Usage of TexDocument
+
+{% include "templates/installation-warning.md" %}
 
 First, let's import the `TexDocument` class from the package:
 

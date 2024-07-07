@@ -44,8 +44,9 @@ Choose the following links to continue your journey:
 <div class="grid">
   {% for href, icon, text in [
     ("/install/", "computer", "<strong>Install</strong> Jupyter-TikZ"), 
-    ("#", "closed-book", "<strong>Usage</strong> as IPython Magics"), 
-    ("#", "terminal", "IPython Magics <strong>additional options</strong>")
+    ("/arguments/", "terminal", "IPython Magics <strong>additional options</strong>"),
+    ("/usage/as-package/", "closed-book", "<strong>Usage</strong> as IPython Magics"), 
+    ("/usage/as-package/", "closed-book", "<strong>Usage</strong> as a Python Package"), 
   ] %}
     <a class="card card-link" href="{{ href }}"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
   {% endfor %}
@@ -60,9 +61,9 @@ Explore additional resources and related links for this project:
  {% for href, icon, text in [
   ("https://pypi.org/project/jupyter-tikz/", "python", "<strong>PyPI</strong> page"),
   ("https://github.com/lucaslrodri/jupyter-tikz/", "github", "<strong>Source code</strong> in Github"),
-  ("https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb", "jupyter", "Example <strong>notebook</strong>")
+  ("https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb", "jupyter", "Getting Started <strong>notebook</strong>")
  ] %}
-  <a class="card card-link" href="https://pypi.org/project/jupyter-tikz/" target="_blank"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
+  <a class="card card-link" href="{{ href }}" target="_blank"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
  {% endfor %}
 </div>
 
