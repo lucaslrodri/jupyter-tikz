@@ -66,6 +66,16 @@ Explore additional resources and related links for this project:
  {% endfor %}
 </div>
 
+## Contribute
+
 {% include "templates/contribute.md" %}
+
+## Motivation
+
 {% include "templates/motivation.md" %}
-{% include "templates/license.md" %}
+
+## License
+
+Copyright 2024 © <a href="https://github.com/lucaslrodri" target="_blank">Lucas Lima Rodrigues</a>.
+
+Distributed under the terms of the [MIT License](./about/license.md), Jupyter-TikZ is free and open-source software.

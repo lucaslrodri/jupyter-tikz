@@ -1,7 +1,7 @@
 import pytest
 from IPython import display
 
-from jupyter_tikz import TexDocument, TexTemplate
+from jupyter_tikz import TexDocument, TexFragment
 from jupyter_tikz.jupyter_tikz import _EXTRAS_CONFLITS_ERR
 
 
@@ -11,11 +11,11 @@ def test_preamble():
     preamble = "any preamble"
 
     # Act
-    tex_template = TexTemplate(code, preamble=preamble)
+    tex_template = TexFragment(code, preamble=preamble)
 
     # Assert
     assert tex_template.preamble == preamble + "\n"
-    assert preamble in tex_template.latex_str
+    assert preamble in tex_template.full_latex
 
 
 def test_standalone_preamble():
@@ -26,7 +26,7 @@ def test_standalone_preamble():
     pgfplots_libraries = "e,f"
 
     # Act
-    tex_template = TexTemplate(
+    tex_template = TexFragment(
         code,
         tex_packages=tex_packages,
         tikz_libraries=tikz_libraries,
@@ -39,9 +39,9 @@ def test_standalone_preamble():
         and "e,f" in tex_template.preamble
     )
     assert (
-        "a,b" in tex_template.latex_str
-        and "c,d" in tex_template.latex_str
-        and "e,f" in tex_template.latex_str
+        "a,b" in tex_template.full_latex
+        and "c,d" in tex_template.full_latex
+        and "e,f" in tex_template.full_latex
     )
 
 
@@ -55,7 +55,7 @@ def test_raise_error_when_preamble_and_extras_are_provided():
 
     # Act
     with pytest.raises(ValueError) as err:
-        res = TexTemplate(
+        res = TexFragment(
             code,
             preamble=preamble,
             tex_packages=tex_packages,
@@ -74,11 +74,11 @@ def test_scale():
     scale = 1.5
 
     # Act
-    tex_template = TexTemplate(code, scale=scale)
+    tex_template = TexFragment(code, scale=scale)
 
     # Assert
     assert (
-        " " * 4 + "\\scalebox{%g}{\n" % scale in tex_template.latex_str
+        " " * 4 + "\\scalebox{%g}{\n" % scale in tex_template.full_latex
         and " " * 4 + "\n}\n"
         and "graphicx" in tex_template.preamble
     )
@@ -91,11 +91,11 @@ def test_scale_with_preamble():
     preamble = "any preamble"
 
     # Act
-    tex_template = TexTemplate(code, scale=scale, preamble=preamble)
+    tex_template = TexFragment(code, scale=scale, preamble=preamble)
 
     # Assert
     assert (
-        " " * 4 + "\\scalebox{%g}{\n" % scale in tex_template.latex_str
+        " " * 4 + "\\scalebox{%g}{\n" % scale in tex_template.full_latex
         and " " * 4 + "}\n"
         and "graphicx" not in tex_template.preamble
     )
@@ -106,12 +106,12 @@ def test_implicit_tikzpicture():
     code = "any code"
 
     # Act
-    tex_template = TexTemplate(code, implicit_tikzpicture=True)
+    tex_template = TexFragment(code, implicit_tikzpicture=True)
 
     # Assert
     assert (
-        4 * " " + "\\begin{tikzpicture}\n" in tex_template.latex_str
-        and 4 * " " + "\\end{tikzpicture}\n" in tex_template.latex_str
+        4 * " " + "\\begin{tikzpicture}\n" in tex_template.full_latex
+        and 4 * " " + "\\end{tikzpicture}\n" in tex_template.full_latex
     )
 
 
@@ -130,12 +130,12 @@ def test_code_indent(implicit_tikzpicture, indent_size, scale, expected_n_indent
     code_indent = " " * indent_size
 
     # Act
-    tex_template = TexTemplate(
+    tex_template = TexFragment(
         code, implicit_tikzpicture=implicit_tikzpicture, scale=scale
     )
 
     # Assert
-    assert tex_template.latex_str.count(code_indent) == expected_n_indents
+    assert tex_template.full_latex.count(code_indent) == expected_n_indents
 
 
 # =========================== run_latex - tests ===========================
@@ -183,12 +183,12 @@ RES_IMPLICIT_PIC = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_implicit_pic():
-    return TexTemplate(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True)
+    return TexFragment(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True)
 
 
 def test_build_tex_string_implicit_pic(tex_template_implicit_pic):
     # Assert
-    assert tex_template_implicit_pic.latex_str.strip() == RES_IMPLICIT_PIC.strip()
+    assert tex_template_implicit_pic.full_latex.strip() == RES_IMPLICIT_PIC.strip()
 
 
 @pytest.mark.needs_latex
@@ -219,13 +219,13 @@ RES_IMPLICIT_PIC_WITH_SCALE = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_implicit_pic_with_scale():
-    return TexTemplate(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True, scale=3)
+    return TexFragment(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True, scale=3)
 
 
 def test_build_tex_string_implicit_pic_with_scale(tex_template_implicit_pic_with_scale):
     # Assert
     assert (
-        tex_template_implicit_pic_with_scale.latex_str.strip()
+        tex_template_implicit_pic_with_scale.full_latex.strip()
         == RES_IMPLICIT_PIC_WITH_SCALE.strip()
     )
 
@@ -261,7 +261,7 @@ RES_IMPLICT_PIC_WITH_PACKAGES_AND_SCALE = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_implicit_pic_with_packages_and_scale():
-    return TexTemplate(
+    return TexFragment(
         EXAMPLE_SRC_IMPLICIT_PIC,
         implicit_tikzpicture=True,
         scale=2,
@@ -274,7 +274,7 @@ def test_build_tex_string_implicit_pic_with_packages_and_scale(
 ):
     # Assert
     assert (
-        tex_template_implicit_pic_with_packages_and_scale.latex_str.strip()
+        tex_template_implicit_pic_with_packages_and_scale.full_latex.strip()
         == RES_IMPLICT_PIC_WITH_PACKAGES_AND_SCALE.strip()
     )
 
@@ -316,7 +316,7 @@ RES_NO_IMPLICT_PIC_NO_TIKZ = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_implicit_pic_no_tikz():
-    return TexTemplate(
+    return TexFragment(
         EXAMPLE_SRC_CIRCUITIKZ,
         implicit_tikzpicture=True,
         no_tikz=True,
@@ -329,7 +329,7 @@ def test_build_tex_string_implicit_pic_no_tikz(
 ):
     # Assert
     assert (
-        tex_template_implicit_pic_no_tikz.latex_str.strip()
+        tex_template_implicit_pic_no_tikz.full_latex.strip()
         == RES_NO_IMPLICT_PIC_NO_TIKZ.strip()
     )
 
@@ -364,7 +364,7 @@ RES_NO_IMPLICT_PIC_WITH_SCALE_AND_NO_EXTRAS = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_no_implicit_pic_with_scale_and_no_extras():
-    return TexTemplate(EXAMPLE_SRC_STANDALONE, scale=1.5)
+    return TexFragment(EXAMPLE_SRC_STANDALONE, scale=1.5)
 
 
 def test_build_tex_string_no_implicit_pic_with_scale_and_no_extras(
@@ -372,7 +372,7 @@ def test_build_tex_string_no_implicit_pic_with_scale_and_no_extras(
 ):
     # Assert
     assert (
-        tex_template_no_implicit_pic_with_scale_and_no_extras.latex_str.strip()
+        tex_template_no_implicit_pic_with_scale_and_no_extras.full_latex.strip()
         == RES_NO_IMPLICT_PIC_WITH_SCALE_AND_NO_EXTRAS.strip()
     )
 
@@ -408,7 +408,7 @@ RES_NO_IMPLICT_PIC_WITH_SCALE_AND_PACKAGES = r"""\documentclass{standalone}
 
 @pytest.fixture
 def tex_template_no_implicit_pic_with_scale_and_packages():
-    return TexTemplate(EXAMPLE_SRC_STANDALONE, scale=0.5, tex_packages="xcolor,amsmath")
+    return TexFragment(EXAMPLE_SRC_STANDALONE, scale=0.5, tex_packages="xcolor,amsmath")
 
 
 def test_build_tex_string_no_implicit_pic_with_scale_and_packages(
@@ -416,7 +416,7 @@ def test_build_tex_string_no_implicit_pic_with_scale_and_packages(
 ):
     # Assert
     assert (
-        tex_template_no_implicit_pic_with_scale_and_packages.latex_str.strip()
+        tex_template_no_implicit_pic_with_scale_and_packages.full_latex.strip()
         == RES_NO_IMPLICT_PIC_WITH_SCALE_AND_PACKAGES.strip()
     )
 

@@ -8,9 +8,10 @@ from pathlib import Path
 from shutil import copy
 from string import Template
 from textwrap import indent
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from IPython import display
+from IPython.display import Image, SVG
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 
@@ -40,20 +41,35 @@ _NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.:
 
 
 class TexDocument:
+    """This class provides functionality to create and render a LaTeX document given the full LaTeX code. It can also constructs LaTeX code using Jinja2 templates."""
+
+    full_latex: str
+    """Final LaTeX code (Full LaTeX code) to render."""
+
     def __init__(
-        self, code: str, use_jinja: bool = False, ns: Optional[dict[str, Any]] = None
+        self, code: str, use_jinja: bool = False, ns: dict[str, Any] | None = None
     ):
-        self._code = code.strip()
-        self.use_jinja = use_jinja
+        """Initializes the `TexDocument` class.
+
+        Args:
+            code: LaTeX code to render.
+            use_jinja: A flag to indicate if the code uses Jinja2 template.
+            ns: A namespace dictionary with the variables to render the Jinja2 template. It must be provided when `use_jinja` is `True`.
+
+        Raises:
+            ValueError: If `use_jinja` is `True` and `ns` is not provided.
+        """
+        self._code: str = code.strip()
+        self.use_jinja: bool = use_jinja
         if self.use_jinja and not ns:
             raise ValueError(_NS_NOT_PROVIDED_ERR)
 
         if self.use_jinja:
             self._render_jinja(ns)
-        self._build_latex_str()
+        self._build_full_latex()
 
-    def _build_latex_str(self) -> None:
-        self.latex_str = self._code
+    def _build_full_latex(self) -> None:
+        self.full_latex = self._code
 
     @staticmethod
     def _arg_head(arg, limit=60) -> str:
@@ -75,7 +91,7 @@ class TexDocument:
             [
                 f"{k}={self._arg_head(v)}"
                 for k, v in params_dict.items()
-                if k not in ["_code", "latex_str", "ns"] and v
+                if k not in ["_code", "full_latex", "ns"] and v
             ]
         )
         if params:
@@ -83,6 +99,11 @@ class TexDocument:
         return f"{self.__class__.__name__}({self._arg_head(self._code)}{params})"
 
     def __str__(self) -> str:
+        """Returns the LaTeX code string to render.
+
+        Returns:
+            str: The LaTeX code to render.
+        """
         return self._code
 
     @staticmethod
@@ -123,9 +144,23 @@ class TexDocument:
     def save(
         self,
         dest: str,
-        src: Optional[str] = None,
+        src: str | None = None,
         format: Literal["svg", "png", "code"] = "code",
-    ) -> Optional[str]:
+    ) -> str | None:
+        """Save the TikZ or LaTeX code to a file.
+
+        Args:
+            dest: The destination file path.
+            src: The source file path if the format is a image ("svg" or "png") or code source string if the format is "code".
+            format: The format to save the file. It can be "svg", "png", or "code". If the format is "code", it saves to a text file.
+
+        Raises:
+            ValueError: If the format is not valid.
+            ValueError: If the format is a image ("svg" or "png") and the source file path is not provided.
+
+        Returns:
+            str | None: The destination file absolute path. None if an error occurs.
+        """
         if dest is None:
             return None
 
@@ -168,12 +203,25 @@ class TexDocument:
     def run_latex(
         self,
         tex_program: str = "pdflatex",
-        tex_args: Optional[str] = None,
+        tex_args: str | None = None,
         rasterize: bool = False,
         full_err: bool = False,
-        save_image: Optional[str] = None,
+        save_image: str | None = None,
         dpi: int = 96,
-    ) -> Optional[display.Image | display.SVG]:
+    ) -> Image | SVG | None:
+        """Run the LaTeX program to render the LaTeX code.
+
+        Args:
+            tex_program: The LaTeX program to use for compilation.
+            tex_args: Arguments to pass to the TeX program.
+            rasterize: Output a rasterized image (PNG) instead of SVG.
+            full_err: Print the full error message when an error occurs. If False, it prints only the last 20 lines.
+            save_image: Save the output image to file.
+            dpi: DPI to use when rasterizing the image.
+
+        Returns:
+            Image | SVG | None: The rendered image. None if an error occurs.
+        """
         current_dir = os.getcwd()  # get current working directory
 
         with tempfile.TemporaryDirectory() as working_dir:
@@ -182,7 +230,7 @@ class TexDocument:
             env = self._modify_texinputs(current_dir)
             output_stem = tex_path.parent.resolve() / tex_path.stem
 
-            tex_path.write_text(self.latex_str, encoding="utf-8")
+            tex_path.write_text(self.full_latex, encoding="utf-8")
 
             tex_command = tex_program
             if tex_args:
@@ -235,7 +283,9 @@ class TexDocument:
         self._code = tmpl.render(**ns)
 
 
-class TexTemplate(TexDocument):
+class TexFragment(TexDocument):
+    """This class provides functionality to create and render a standalone LaTeX document given a TikZ Picture or LaTeX fragment."""
+
     TMPL = Template(
         "\\documentclass{standalone}\n"
         + "$preamble"
@@ -260,13 +310,28 @@ class TexTemplate(TexDocument):
         code: str,
         implicit_tikzpicture: bool = False,
         scale: float = 1.0,
-        preamble: Optional[str] = None,
-        tex_packages: Optional[str] = None,
-        tikz_libraries: Optional[str] = None,
-        pgfplots_libraries: Optional[str] = None,
+        preamble: str | None = None,
+        tex_packages: str | None = None,
+        tikz_libraries: str | None = None,
+        pgfplots_libraries: str | None = None,
         no_tikz: bool = False,
         **kargs,
     ):
+        """Initializes the `TexFragment` class.
+
+        Args:
+            code: TikZ Picture or LaTeX fragment to render.
+            implicit_tikzpicture: A flag to indicate if the final LaTeX should implicitly wrap a TikZ Picture.
+            scale: The scale factor to apply to the TikZ/LaTeX code. It uses the `\\scalebox` command from graphicx package.
+            preamble: LaTeX preamble to insert before the document.
+            tex_packages: Comma-separated list of TeX packages.
+            tikz_libraries: Comma-separated list of TikZ libraries.
+            pgfplots_libraries: Comma-separated list of pgfplots libraries.
+            no_tikz: Force to not import the TikZ package.
+
+        Raises:
+            ValueError: If `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) are provided at the same time.
+        """
         if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
             raise ValueError(_EXTRAS_CONFLITS_ERR)
 
@@ -283,9 +348,9 @@ class TexTemplate(TexDocument):
 
     def _build_standalone_preamble(
         self,
-        tex_packages: Optional[str] = None,
-        tikz_libraries: Optional[str] = None,
-        pgfplots_libraries: Optional[str] = None,
+        tex_packages: str | None = None,
+        tikz_libraries: str | None = None,
+        pgfplots_libraries: str | None = None,
         no_tikz: bool = False,
     ) -> str:
         tikz_package = "" if no_tikz else "\\usepackage{tikz}\n"
@@ -310,7 +375,7 @@ class TexTemplate(TexDocument):
             pgfplots_libraries=pgfplots_libraries,
         )
 
-    def _build_latex_str(self) -> None:
+    def _build_full_latex(self) -> None:
         if self.scale != 1:
             scale_begin = indent("\\scalebox{" + str(self.scale) + "}{\n", " " * 4)
             scale_end = indent("}\n", " " * 4)
@@ -329,7 +394,7 @@ class TexTemplate(TexDocument):
 
         code = indent(self._code, code_indent) + "\n" if self._code else ""
 
-        self.latex_str = self.TMPL.substitute(
+        self.full_latex = self.TMPL.substitute(
             preamble=self.preamble,
             scale_begin=scale_begin,
             tikzpicture_begin=tikzpicture_begin,
@@ -340,7 +405,7 @@ class TexTemplate(TexDocument):
 
 
 _ARGS = {
-    "input-type": {
+    "input-type": {  # New
         "short-arg": "as",
         "dest": "input_type",
         "type": str,
@@ -398,7 +463,7 @@ _ARGS = {
         "desc": "Comma-separated list of pgfplots libraries",
         "example": "`-pl=groupplots,external`",
     },
-    "use-jinja": {
+    "use-jinja": {  # Changed
         "short-arg": "j",
         "dest": "use_jinja",
         "type": bool,
@@ -410,7 +475,7 @@ _ARGS = {
         "type": bool,
         "desc": "Print the rendered Jinja2 template",
     },
-    "print-tex": {
+    "print-tex": {  # New
         "short-arg": "pt",
         "dest": "print_tex",
         "type": bool,
@@ -531,7 +596,7 @@ def _apply_args():
 
 @magics_class
 class TikZMagics(Magics):
-    def _get_input_type(self, input_type: str) -> Optional[str]:
+    def _get_input_type(self, input_type: str) -> str | None:
         VALID_INPUT_TYPES = ["full-document", "standalone-document", "tikzpicture"]
         input_type = input_type.lower()
         input_type_len = len(input_type)
@@ -555,9 +620,34 @@ class TikZMagics(Magics):
     )
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
-    def tikz(
-        self, line, cell: Optional[str] = None, local_ns=None
-    ) -> Optional[display.Image | display.SVG]:
+    def tikz(self, line, cell: str | None = None, local_ns=None) -> Image | SVG | None:
+        r"""
+        Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
+
+        When used as cell magic, it executes the TeX/TikZ code within the cell:
+            Example:
+                In [3]: %%tikz
+                   ...:  \begin{tikzpicture}
+                   ...:     \draw (0,0) rectangle (1,1);
+                   ...: \end{tikzpicture}
+
+        When used as line magic, the TeX/TikZ code is passed as an IPython string variable:
+            Example:
+                In [4]: %tikz "$ipython_string_variable_with_code"
+
+        Additional options can be passed to the magic command to customize LaTeX code and rendering output:
+            Example:
+                In [5]: %%tikz -l=arrows,matrix
+                   ...: \matrix (m) [matrix of math nodes, row sep=3em, column sep=4em] {
+                   ...:     A & B \\
+                   ...:     C & D \\
+                   ...: };
+                   ...: \path[-stealth, line width=.4mm]
+                   ...:     (m-1-1) edge node [left ] {$ac$} (m-2-1)
+                   ...:     (m-1-1) edge node [above] {$ab$} (m-1-2)
+                   ...:     (m-1-2) edge node [right] {$bd$} (m-2-2)
+                   ...:     (m-2-1) edge node [below] {$cd$} (m-2-2);
+        """
 
         self.args = parse_argstring(self.tikz, line)
 
@@ -620,7 +710,7 @@ class TikZMagics(Magics):
             )
         else:
             implicit_tikzpicture = self.input_type == "tikzpicture"
-            self.tex_obj = TexTemplate(
+            self.tex_obj = TexFragment(
                 self.src,
                 implicit_tikzpicture=implicit_tikzpicture,
                 preamble=self.args.latex_preamble,
@@ -636,7 +726,7 @@ class TikZMagics(Magics):
         if self.args.print_jinja:
             print(self.tex_obj)
         if self.args.print_tex:
-            print(self.tex_obj.latex_str)
+            print(self.tex_obj.full_latex)
 
         image = None
         if not self.args.no_compile:

@@ -1,6 +1,6 @@
 import pytest
 
-from jupyter_tikz import TexDocument, TexTemplate, TikZMagics
+from jupyter_tikz import TexDocument, TexFragment, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
     _PRINT_CONFLICT_ERR,
     _INPUT_TYPE_CONFLIT_ERR,
@@ -34,9 +34,9 @@ def tikz_magic_mock(mocker, tmp_path):
 
     mocker.patch.object(TexDocument, "run_latex", side_effect=run_latex_mock)
     mocker.patch.object(TexDocument, "save", side_effect=save_mock)
-    mocker.patch.object(TexTemplate, "_build_latex_str", return_value="dummy_code")
+    mocker.patch.object(TexFragment, "_build_full_latex", return_value="dummy_code")
     mocker.patch.object(
-        TexTemplate, "_build_standalone_preamble", return_value="dummy preamble"
+        TexFragment, "_build_standalone_preamble", return_value="dummy preamble"
     )
     # mocker.patch.object(TexDocument, "_render_jinja", side_effect=jinja_mock)
 
@@ -253,7 +253,7 @@ def test_tex_obj_type(tikz_magic_mock, input_type, expected_input_type):
     assert tikz_magic_mock.input_type == expected_input_type
 
     if tikz_magic_mock.input_type != "full-document":
-        assert isinstance(tikz_magic_mock.tex_obj, TexTemplate)
+        assert isinstance(tikz_magic_mock.tex_obj, TexFragment)
         assert tikz_magic_mock.tex_obj.template == expected_input_type
     else:
         assert isinstance(tikz_magic_mock.tex_obj, TexDocument)

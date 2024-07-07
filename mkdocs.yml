@@ -12,23 +12,28 @@ theme:
     repo: fontawesome/brands/github
   features:
     - content.code.copy
+    - content.code.annotate 
     - navigation.tabs
-    - navigation.expand
-    - navigation.indexes
     - navigation.footer
     - navigation.top
-    - navigation.sections
+    - navigation.tracking
+    - search.highlight
+    - search.suggest
 
 nav:
   - Getting started: index.md
   - Installation: installation.md
-  - Usage: usage/index.md
+  - Usage guide: 
+    - Usage as IPython Magics: usage/as-magic.md
+    - Usage as a Python package: usage/as-package.md
   - Additional options: arguments.md
   - API reference: api.md
-  - Development guide: development.md
+  - About:
+    - Development guide: about/development.md
+    - Changelog: about/changelog.md
+    - License: about/license.md
 
-hide:
-  - navigation
+
 
 extra_css:
   - stylesheets/extra.css
@@ -36,6 +41,7 @@ extra_css:
 markdown_extensions:
   - attr_list
   - md_in_html
+  - admonition
   - pymdownx.superfences
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
@@ -44,3 +50,12 @@ markdown_extensions:
 plugins:
   - search
   - macros
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [jupyter_tikz]
+          options:
+            show_source: true
+            heading_level: 2
+            show_root_heading: true

@@ -1,6 +1,6 @@
 import pytest
 
-from jupyter_tikz import TexDocument, TexTemplate
+from jupyter_tikz import TexDocument, TexFragment
 
 
 def test__str__() -> None:
@@ -8,7 +8,7 @@ def test__str__() -> None:
     code = "any code"
 
     # Act
-    tex_template = TexTemplate(code)
+    tex_template = TexFragment(code)
     tex_document = TexDocument(code)
 
     # Assert
@@ -50,21 +50,21 @@ def test_get_arg_head(code, expected_result):
             "TexDocument('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', use_jinja=True)",
         ),
         (
-            "TexTemplate",
+            "TexFragment",
             {
                 "ns": {"name": "World"},
                 "use_jinja": True,
                 "preamble": "custom preamble",
             },
-            "TexTemplate('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', preamble='custom preamble', use_jinja=True)",
+            "TexFragment('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', preamble='custom preamble', use_jinja=True)",
         ),
         (
-            "TexTemplate",
+            "TexFragment",
             {
                 "ns": {"name": "World"},
                 "scale": 2,
             },
-            "TexTemplate('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', scale=2, preamble='\\\\usepackage{graphicx}\\n\\\\usepackage{tikz}')",
+            "TexFragment('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', scale=2, preamble='\\\\usepackage{graphicx}\\n\\\\usepackage{tikz}')",
         ),
     ],
 )
@@ -76,7 +76,7 @@ def test__repr__(kwargs, expected_result, class_) -> None:
     if class_ == "TexDocument":
         obj = TexDocument(code, **kwargs)
     else:
-        obj = TexTemplate(code, **kwargs)
+        obj = TexFragment(code, **kwargs)
 
     # Assert
     assert repr(obj) == expected_result

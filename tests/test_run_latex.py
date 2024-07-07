@@ -610,7 +610,7 @@ def test_run_latex_save_image(
     image_path = Path(tmpdir) / expected_dest
 
     # Arrange
-    tex_document.latex_str = EXAMPLE_GOOD_TIKZ
+    tex_document.full_latex = EXAMPLE_GOOD_TIKZ
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)
@@ -632,7 +632,7 @@ def test_run_latex_save_image_absolute_tmp_path(
     image_path = env_dir / expected_dest
 
     # Arrange
-    tex_document.latex_str = EXAMPLE_GOOD_TIKZ
+    tex_document.full_latex = EXAMPLE_GOOD_TIKZ
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)
@@ -654,7 +654,7 @@ def test_run_latex_save_image_relative_tmp_path(
     image_path = env_dir / expected_dest
 
     # Arrange
-    tex_document.latex_str = EXAMPLE_GOOD_TIKZ
+    tex_document.full_latex = EXAMPLE_GOOD_TIKZ
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)

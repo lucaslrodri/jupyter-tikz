@@ -2,7 +2,7 @@ from string import Template
 
 import pytest
 
-from jupyter_tikz import TexTemplate
+from jupyter_tikz import TexFragment
 
 TEMPLATE_TEX_PACKAGES = "\\usepackage{tikz}\n\\usepackage{$tex_packages}\n"
 TEMPLATE_NO_TEX_PACKAGES = "\\usepackage{tikz}\n"
@@ -21,7 +21,7 @@ TEMPLATE_NO_TEX_PACKAGES = "\\usepackage{tikz}\n"
 def test_latex_packages(tex_packages):
     # Arrange
     code = "any code"
-    tex_template = TexTemplate(code)
+    tex_template = TexFragment(code)
 
     # Act
     res = tex_template._build_standalone_preamble(tex_packages=tex_packages)
@@ -61,7 +61,7 @@ def test_tikz_libraries(tex_packages, tikz_libraries, expected_template):
     # Arrange
     code = "any code"
     tikz_libraries = "calc,arrows,patterns"
-    tex_template = TexTemplate(code)
+    tex_template = TexFragment(code)
 
     # Act
     res = tex_template._build_standalone_preamble(
@@ -121,7 +121,7 @@ def test_pgfplots_libraries(
 ):
     # Arrange
     code = "any code"
-    tex_template = TexTemplate(code)
+    tex_template = TexFragment(code)
 
     # Act
     res = tex_template._build_standalone_preamble(
@@ -159,7 +159,7 @@ TEMPLATE_NO_TIKZ_WITH_ALL_EXTRAS = "\\usepackage{$tex_packages}\n\\usetikzlibrar
 def test_no_tikz(tex_packages, tikz_libraries, pgfplots_libraries, expected_template):
     # Arrange
     code = "any code"
-    tex_template = TexTemplate(code)
+    tex_template = TexFragment(code)
 
     # Act
     res = tex_template._build_standalone_preamble(
@@ -199,7 +199,7 @@ TEMPLATE_SCALE_WITH_ALL_EXTRAS = "\\usepackage{graphicx}\n\\usepackage{tikz}\n\\
 def test_scale(tex_packages, tikz_libraries, pgfplots_libraries, expected_template):
     # Arrange
     code = "any code"
-    tex_template = TexTemplate(code, scale=2)
+    tex_template = TexFragment(code, scale=2)
 
     # Act
     res = tex_template._build_standalone_preamble(

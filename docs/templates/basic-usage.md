@@ -19,9 +19,9 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
     \draw[fill=black!10] (2, 3) rectangle (3, 4);
 \end{tikzpicture}
 ```
-
+<div class="result" markdown>
 ![Conway example](./assets/tikz/conway.svg)
-
+</div>
 
 Or use it as line magic, where the TeX/TikZ code is passed as an IPython string variable:
 
@@ -40,20 +40,24 @@ Additional options can be passed to the magic command:
     \addplot [red] {x^2 + 4};
 \end{axis}
 ```
-
+<div class="result" markdown>
 ![Quadratic formula](./assets/tikz/quadratic.png)
+</div>
 
 Going further, it is also possible to use it as a Python package:
 
 ```python
-from jupyter_tikz import TexTemplate
+from jupyter_tikz import TexFragment
 
 tikz_code = tex_template_code = r"""\begin{tikzpicture}
     \draw[help lines] grid (5, 5);
      \filldraw [color=orange, opacity=0.3] (2.5,2.5) circle (1.5);
 \end{tikzpicture}"""
 
-tikz = TexTemplate(tikz_code)  # Create the tex template object
+tikz = TexFragment(tikz_code)  # Create the tex template object
 
 tikz.run_latex()  # Run LaTeX and shows the output
 ```
+<div class="result" markdown>
+![Orange dot in a grid](./assets/tikz/dot_in_grid.svg)
+</div>

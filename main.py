@@ -61,3 +61,7 @@ def define_env(env):
 
             table += f"| {argument} | {description} |\n"
         return table
+
+    @env.macro
+    def result(res):
+        return f"<div class='result' markdown>{res}</div>"

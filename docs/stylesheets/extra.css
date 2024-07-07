@@ -40,3 +40,25 @@
 .card-link:hover {
   color: var(--md-accent-fg-color) !important;
 }
+
+.log-card{
+  border: solid 1px var(--md-default-fg-color--lightest); 
+  padding: 0.75rem; 
+  border-radius: 5px;
+  font-family: monospace;
+  max-height: 20rem;
+  font-size: .65rem;
+}
+
+.log-output{ 
+  font-family: monospace; 
+  max-height: 20rem; 
+  font-size: .65rem;
+  overflow: auto; 
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-default-fg-color--lighter) white;
+}
+
+.log-output:hover {
+  scrollbar-color: var(--md-accent-fg-color) white;
+}
