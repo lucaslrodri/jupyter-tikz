@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "jupyter-tikz"
-version = "0.2.1"
+version = "0.3.0"
 description = "IPython Magics for rendering TeX/TikZ in Jupyter Notebooks"
 license = "MIT"
 authors = ["lucaslrodri"]
 readme = "README.md"
-packages = [{include = "jupyter_tikz"}]
+packages = [{ include = "jupyter_tikz" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -39,10 +39,22 @@ isort = "^5.13.2"
 black = "^24.4.2"
 taskipy = "^1.13.0"
 pytest-cov = "^5.0.0"
+pytest-mock = "^3.14.0"
+
+[tool.poetry.group.doc.dependencies]
+mkdocstrings = { extras = ["python"], version = "^0.25.1" }
+mkdocs-material = "^9.5.28"
+mkdocs-macros-plugin = "^1.0.5"
+jinja2 = "^3.1.4"
 
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
-addopts = "--no-cov"
+markers = [
+    "needs_latex: marks tests that require a LaTeX environment with the TikZ package installed.",
+    "needs_pdftocairo: marks tests that require `pdftocairo` (Poppler) installed.",
+]
+# addopts = '-m "not needs_latex and not needs_pdftocairo"'
+# addopts = "--no-cov"
 
 [tool.isort]
 profile = "black"

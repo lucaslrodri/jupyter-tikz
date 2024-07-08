@@ -1,225 +1,113 @@
+"""Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks."""
+
 import os
+import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from shutil import copy
 from string import Template
-from subprocess import CalledProcessError, check_output
 from textwrap import indent
-from typing import Literal, Union
+from typing import Any, Literal
 
+from IPython import display
+from IPython.display import Image, SVG
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
-from IPython.display import SVG, Image
 
-
-def build_template_extras(
-    no_tikz: bool = False,
-    tex_packages: str = "",
-    tikz_libraries: str = "",
-    pgfplots_libraries: str = "",
-) -> str:
-    """
-    This function constructs a LaTeX preamble string for TikZ diagrams, including any additional LaTeX packages or libraries specified.
-
-    Args:
-        no_tikz (bool, optional): A flag to indicate whether the TikZ package should be imported. If True, the TikZ package is not imported; if False, the TikZ package is imported. Default is False.
-        tex_packages (str, optional): A comma-separated list of additional LaTeX packages to include. These packages are included in the preamble.
-        tikz_libraries (str, optional): A comma-separated list of TikZ libraries to include. These libraries are included in the preamble.
-        pgfplots_libraries (str, optional): A comma-separated list of PGFPlots libraries to include. These libraries are included in the preamble.
-
-    Returns:
-        str: A LaTeX preamble string that includes the specified packages and libraries, as well as the TikZ package if the `no_tikz` flag is not set.
-    """
-    extras = []
-
-    if not no_tikz:
-        extras.append(r"\usepackage{tikz}")
-    if tex_packages:
-        extras.append(r"\usepackage{" + tex_packages + "}")
-    if tikz_libraries:
-        extras.append(r"\usetikzlibrary{" + tikz_libraries + "}")
-    if pgfplots_libraries:
-        extras.append(r"\usepgfplotslibrary{" + pgfplots_libraries + "}")
-    if len(extras) > 0:
-        extras = "\n".join(extras) + "\n"
-    else:
-        extras = ""
-    return extras
-
-
-IMPLICIT_PIC_TMPL = Template(
-    r"""\documentclass{standalone}
-$extras\begin{document}
-	\begin{tikzpicture}
-$src	\end{tikzpicture}
-\end{document}"""
+_EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
+_PRINT_CONFLICT_ERR = (
+    "You cannot use `--print-jinja` and `--print-tex` at the same time."
 )
-
-IMPLICIT_PIC_SCALE_TMPL = Template(
-    r"""\documentclass{standalone}
-\usepackage{graphicx}
-$extras\begin{document}
-	\scalebox{$scale}{
-	\begin{tikzpicture}
-$src	\end{tikzpicture}
-	}
-\end{document}"""
+_INPUT_TYPE_CONFLIT_ERR = "You cannot use `--implicit-pic`, `--full-document` or/and `-as=<input_type>` at the same time."
+_JINJA_NOT_INTALLED_ERR = (
+    "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
-
-IMPLICIT_STANDALONE_TMPL = Template(
-    r"""\documentclass{standalone}
-$extras\begin{document}
-$src
-\end{document}"""
-)
-
-IMPLICIT_STANDALONE_SCALE_TMPL = Template(
-    r"""\documentclass{standalone}
-\usepackage{graphicx}
-$extras\begin{document}
-	\scalebox{$scale}{
-$src	}
-\end{document}"""
-)
+_NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
 
 
-def build_tex_string(
-    src: str, implicit_pic: bool = False, extras: str = "", scale: float = 1
-) -> str:
-    """
-    This function prepares a LaTeX string for rendering TikZ diagrams.
-
-    It can either wrap the provided TikZ code in a TikZpicture environment or treat the code as standalone. Additional LaTeX commands can be included through the `extras` parameter.
-
-    Args:
-        src (str): The TikZ code to be included in the LaTeX string. This code is either wrapped in a TikZpicture environment or left as is, based on the `implicit_pic` flag.
-        implicit_pic (bool, optional): Determines whether the TikZ code should be wrapped in a TikZpicture environment. If True, the code is wrapped; if False, the code is treated as standalone latex class. Default is False.
-        extras (str, optional): Additional LaTeX commands to be included. These can be preamble commands or commands to be included within the document environment, depending on how the LaTeX string is being constructed.
-        scale (float, optional): The scale factor to apply to the TikZ diagram. This factor is used to wrap the TikZ code in a \scalebox command. Default is 1.
-
-    Returns:
-        str: A LaTeX string ready for compilation. This string includes the TikZ code (optionally wrapped in a TikZpicture environment) and any additional LaTeX commands specified in `extras`.
-    """
-    if implicit_pic:
-        if len(src):
-            src = indent(src.strip(), "\t\t") + "\n"
-        if scale == 1:
-            return IMPLICIT_PIC_TMPL.substitute(src=src, extras=extras)
-        else:
-            return IMPLICIT_PIC_SCALE_TMPL.substitute(
-                src=src, extras=extras, scale=scale
-            )
-    else:
-        if len(src):
-            src = indent(src.strip(), "\t")
-            if scale != 1:
-                src += "\n"
-        if scale == 1:
-            return IMPLICIT_STANDALONE_TMPL.substitute(src=src, extras=extras)
-        else:
-            return IMPLICIT_STANDALONE_SCALE_TMPL.substitute(
-                src=src, extras=extras, scale=scale
-            )
+# _DEPRECATED_I_ERR = (
+#     "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
+# )
+# _DEPRECATED_F_ERR = (
+#     "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
+# )
+# _DEPRECATED_I_AND_F_ERR = (
+#     "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
+# )
+# _DEPRECATED_ASJINJA_ERR = (
+#     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
+# )
 
 
-def render_jinja(src: str, ns: dict[str, str]) -> Union[str, None]:
-    """
-    Renders the Jinja template with the provided namespace.
+class TexDocument:
+    """This class provides functionality to create and render a LaTeX document given the full LaTeX code. It can also constructs LaTeX code using Jinja2 templates."""
 
-    Args:
-        src (str): The Jinja template source code.
-        ns (dict): The namespace to use for rendering the template.
-            Example: `locals()` or `globals()`.
+    full_latex: str
+    """Final LaTeX code (Full LaTeX code) to render."""
 
-    Returns:
-        str | None: The rendered template, or None if jinja2 is not installed.
-    """
-
-    try:
-        import jinja2
-    except ImportError:  # pragma no cover
-        print("Please install jinja2", file=sys.stderr)
-        print("$ pip install jinja2", file=sys.stderr)
-        return None
-
-    fs_loader = jinja2.FileSystemLoader(os.getcwd())
-    tmpl_env = jinja2.Environment(loader=fs_loader)
-    tmpl = tmpl_env.from_string(src)
-
-    return tmpl.render(**ns)
-
-
-def save(
-    src: str, dest: str, format: Literal["svg", "png", "code"] = "code"
-) -> Union[str, None]:
-    """
-    Saves the source code or image to the specified destination path.
-
-    Args:
-        src (str): The source code or image path.
-        dest (str): The destination path.
-
-    Returns:
-        str | None: The path to the saved file, or None if destination is None.
-    """
-
-    if dest is None:
-        return None
-
-    if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
-        save_path = os.path.join(os.environ.get("JUPYTER_TIKZ_SAVEDIR"), dest)
-    else:
-        save_path = dest
-
-    if format != "code" and (not save_path.endswith(f".{format}")):
-        save_path += f".{format}"
-    elif format == "code" and not (
-        save_path.endswith(".tex")
-        or save_path.endswith(".tikz")
-        or save_path.endswith(".pgf")
-        or save_path.endswith(".txt")
+    def __init__(
+        self, code: str, use_jinja: bool = False, ns: dict[str, Any] | None = None
     ):
-        save_path += ".tex"
+        """Initializes the `TexDocument` class.
 
-    save_folder = os.path.dirname(save_path)
-    if save_folder:
-        os.makedirs(save_folder, exist_ok=True)
+        Args:
+            code: LaTeX code to render.
+            use_jinja: A flag to indicate if the code uses Jinja2 template.
+            ns: A namespace dictionary with the variables to render the Jinja2 template. It must be provided when `use_jinja` is `True`.
 
-    if format == "code":
-        with open(save_path, "w") as f:
-            f.write(src)
-    else:
-        copy(src, save_path)
-    return save_path
+        Raises:
+            ValueError: If `use_jinja` is `True` and `ns` is not provided.
+        """
+        self._code: str = code.strip()
+        self.use_jinja: bool = use_jinja
+        if self.use_jinja and not ns:
+            raise ValueError(_NS_NOT_PROVIDED_ERR)
 
+        if self.use_jinja:
+            self._render_jinja(ns)
+        self._build_full_latex()
 
-def run_latex(
-    src: str,
-    rasterize: bool = False,
-    tex_program: Literal["pdflatex", "xelatex", "lualatex"] = "pdflatex",
-    tex_args: str = "",
-    dpi: int = 96,
-    full_err: bool = False,
-    save_image: str = None,
-) -> Union[Image | SVG | None]:
-    """
-    This function compiles a LaTeX string containing TikZ code and returns an SVG or rasterized image.
+    def _build_full_latex(self) -> None:
+        self.full_latex = self._code
 
-    Parameters:
+    @staticmethod
+    def _arg_head(arg, limit=60) -> str:
+        if type(arg) == str:
+            arg = arg.strip()
+            arg = f"{arg[:limit]}..." if len(arg) > limit else arg
+            arg = str(repr(arg.strip()))
+        else:
+            arg = str(arg)
+        return arg
 
-    - src (str): The LaTeX string containing the TikZ code to be compiled.
-    - rasterize (bool, optional): A flag indicating whether the output should be rasterized. If True, the output is rasterized; if False, the output is an SVG image. Default is False.
-    - tex_program (str, optional): The TeX program to use for rendering the TikZ code. This can be one of "pdflatex", "xelatex", or "lualatex". Default is "pdflatex".
-    - tex_args (str, optional): Additional arguments to pass to the TeX program.
-    - dpi (int, optional): The DPI (dots per inch) to use for rasterizing the output. This parameter is only used when `rasterize` is True. Default is 96.
-    - full_err (bool, optional): A flag indicating whether the full error message should be displayed. If True, the full error message is displayed; if False, only the last 20 lines of the error message are displayed. Default is False.
-    - save_image (str, optional): The path to save the output image. If None, the image is not saved to disk. Default is None.
+    def __repr__(self) -> str:
+        params_dict = self.__dict__
+        if "scale" in params_dict.keys():
+            if params_dict["scale"] == 1.0:
+                del params_dict["scale"]
 
-    Returns:
-    - Image | SVG | None: An Image (PNG) or SVG object representing the compiled TikZ diagram, or None if an error occurred during compilation.
-    """
-    current_dir = os.getcwd()  # get current working directory
-    with tempfile.TemporaryDirectory() as working_dir:
+        params = ", ".join(
+            [
+                f"{k}={self._arg_head(v)}"
+                for k, v in params_dict.items()
+                if k not in ["_code", "full_latex", "ns"] and v
+            ]
+        )
+        if params:
+            params = ", " + params
+        return f"{self.__class__.__name__}({self._arg_head(self._code)}{params})"
+
+    def __str__(self) -> str:
+        """Returns the LaTeX code string to render.
+
+        Returns:
+            str: The LaTeX code to render.
+        """
+        return self._code
+
+    @staticmethod
+    def _modify_texinputs(current_dir: str) -> dict[str, str]:
         env = os.environ.copy()
         # TEXINPUTS is a environment variable that tells LaTeX where to look for files
         # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
@@ -229,326 +117,634 @@ def run_latex(
             env["TEXINPUTS"] = "." + os.pathsep + current_dir + os.pathsep * 2
             # note that the trailing double pathsep will insert the standard
             # search path (otherwise we would lose access to all packages)
-            # TEXINPUTS=.;C:\Users\joseph\Documents\LaTeX\local\\;
+            # TEXINPUTS=.;C:\Users\user\Documents\LaTeX\local\\;
 
-        output_path = os.path.join(working_dir, "tikz")
-        tex_path = f"{output_path}.tex"
+        return env
 
-        with open(tex_path, "w") as f:
-            f.write(src)
+    def _run_command(
+        self, command: str, working_dir: str, full_err: bool = False, **kwargs
+    ) -> int:
 
-        tex_filename = os.path.basename(tex_path)
-
-        tex_command = [tex_program]
-        if tex_args:
-            tex_command.extend(tex_args.split())
-        tex_command.append(tex_filename)
-        try:
-            check_output(tex_command, env=env, cwd=working_dir)
-        except CalledProcessError as e:
-            err_msg = e.output.decode()
-            if not full_err:  # tail -n 20
-                err_msg = "\n".join(err_msg.splitlines()[-20:])
-
-            print(err_msg, file=sys.stderr)
-            return None
-
-        image_format = "svg" if not rasterize else "png"
-
-        if os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH"):
-            pdftocairo_path = os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH")
-        else:
-            pdftocairo_path = "pdftocairo"
-
-        pdftocairo_command = [pdftocairo_path, f"-{image_format}"]
-        if rasterize:
-            pdftocairo_command.extend(["-singlefile", "-transp", "-r", f"{dpi}"])
-        pdftocairo_command.append(f"{output_path}.pdf")
-        pdftocairo_command.append(
-            f"{output_path}.svg" if not rasterize else output_path
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=working_dir,
+            **kwargs,
         )
-        try:
-            check_output(pdftocairo_command, cwd=working_dir)
-        except CalledProcessError as e:
-            err_msg = e.output.decode()
+        if result.returncode != 0:
+            err_msg = result.stderr if result.stderr else result.stdout
             if not full_err:  # tail -n 20
                 err_msg = "\n".join(err_msg.splitlines()[-20:])
-
             print(err_msg, file=sys.stderr)
+        return result.returncode
+
+    def save(
+        self,
+        dest: str,
+        src: str | None = None,
+        format: Literal["svg", "png", "code"] = "code",
+    ) -> str | None:
+        """Save the TikZ or LaTeX code to a file.
+
+        Args:
+            dest: The destination file path.
+            src: The source file path if the format is a image ("svg" or "png") or code source string if the format is "code".
+            format: The format to save the file. It can be "svg", "png", or "code". If the format is "code", it saves to a text file.
+
+        Raises:
+            ValueError: If the format is not valid.
+            ValueError: If the format is a image ("svg" or "png") and the source file path is not provided.
+
+        Returns:
+            str | None: The destination file absolute path. None if an error occurs.
+        """
+        if dest is None:
             return None
 
-        image_path = f"{output_path}.{image_format}"
+        if format not in ["svg", "png", "code"]:
+            raise ValueError(
+                f"`{format}` is not a valid format. Valid formats are `svg`, `png`, and `code`."
+            )
 
-        if not rasterize:
-            with open(image_path, "r") as f:
-                image = f.read()
-                if save_image:
-                    save(image_path, save_image, format="svg")
-                return SVG(image)
+        if format != "code" and src is None:
+            raise ValueError("src must be provided when format is not code.")
+
+        dest_path = Path(dest)
+
+        if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
+            dest_path = str(os.environ.get("JUPYTER_TIKZ_SAVEDIR")) / dest_path
         else:
-            if save_image:
-                save(image_path, save_image, format="png")
-            return Image(filename=image_path)
+            dest_path = dest_path
+
+        dest_path = dest_path.resolve()
+
+        if format == "svg" and (dest_path.suffix != ".svg"):
+            dest_path = dest_path.with_suffix(dest_path.suffix + ".svg")
+        elif format == "png" and (dest_path.suffix != ".png"):
+            dest_path = dest_path.with_suffix(dest_path.suffix + ".png")
+        elif format == "code" and (not dest_path.suffix):
+            dest_path = dest_path.with_suffix(".tex")
+
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if format == "code":
+            if src is None:
+                src = self._code
+            dest_path.write_text(src)
+        else:
+            if src is not None:
+                src_path = Path(src).resolve()
+                copy(src_path, dest_path)
+        return f"{dest_path}"
+
+    def run_latex(
+        self,
+        tex_program: str = "pdflatex",
+        tex_args: str | None = None,
+        rasterize: bool = False,
+        full_err: bool = False,
+        save_image: str | None = None,
+        dpi: int = 96,
+    ) -> Image | SVG | None:
+        """Run the LaTeX program to render the LaTeX code.
+
+        Args:
+            tex_program: The LaTeX program to use for compilation.
+            tex_args: Arguments to pass to the TeX program.
+            rasterize: Output a rasterized image (PNG) instead of SVG.
+            full_err: Print the full error message when an error occurs. If False, it prints only the last 20 lines.
+            save_image: Save the output image to file.
+            dpi: DPI to use when rasterizing the image.
+
+        Returns:
+            Image | SVG | None: The rendered image. None if an error occurs.
+        """
+        current_dir = os.getcwd()  # get current working directory
+
+        with tempfile.TemporaryDirectory() as working_dir:
+            tex_path = Path(working_dir) / "tikz.tex"
+
+            env = self._modify_texinputs(current_dir)
+            output_stem = tex_path.parent.resolve() / tex_path.stem
+
+            tex_path.write_text(self.full_latex, encoding="utf-8")
+
+            tex_command = tex_program
+            if tex_args:
+                tex_command += f" {tex_args}"
+            tex_command += f" {tex_path.resolve()}"
+
+            res = self._run_command(tex_command, working_dir, full_err, env=env)
+            if res != 0:
+                return None
+
+            image_format = "svg" if not rasterize else "png"
+
+            if os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH"):
+                pdftocairo_path = os.environ.get("JUPYTER_TIKZ_PDFTOCAIROPATH")
+            else:
+                pdftocairo_path = "pdftocairo"
+
+            pdftocairo_command = f"{pdftocairo_path} -{image_format}"
+            if rasterize:
+                pdftocairo_command += f" -singlefile -transp -r {dpi}"
+
+            pdftocairo_command += f" {output_stem}.pdf"
+            pdftocairo_command += (
+                f" {output_stem}.svg" if not rasterize else f" {output_stem}"
+            )
+            res = self._run_command(pdftocairo_command, working_dir, full_err)
+            if res != 0:
+                return None
+
+            if not rasterize:
+                if save_image:
+                    self.save(save_image, f"{output_stem}.svg", "svg")
+                return display.SVG(f"{output_stem}.svg")
+            else:
+                if save_image:
+                    self.save(save_image, f"{output_stem}.png", "png")
+                return display.Image(f"{output_stem}.png")
+
+    def _render_jinja(self, ns) -> None:
+        try:
+            import jinja2
+        except ImportError:
+            raise ImportError(_JINJA_NOT_INTALLED_ERR)
+
+        fs_loader = jinja2.FileSystemLoader(os.getcwd())
+        tmpl_env = jinja2.Environment(loader=fs_loader)
+
+        tmpl = tmpl_env.from_string(self._code)
+
+        self._code = tmpl.render(**ns)
 
 
-# The class MUST call this class decorator at creation time
+class TexFragment(TexDocument):
+    """This class provides functionality to create and render a standalone LaTeX document given a TikZ Picture or LaTeX fragment."""
+
+    TMPL = Template(
+        "\\documentclass{standalone}\n"
+        + "$preamble"
+        + "\\begin{document}\n"
+        + "$scale_begin"
+        + "$tikzpicture_begin"
+        + "$code"
+        + "$tikzpicture_end"
+        + "$scale_end"
+        + "\\end{document}"
+    )
+    TMPL_STANDALONE_PREAMBLE = Template(
+        "$graphicx_package"
+        + "$tikz_package"
+        + "$tex_packages"
+        + "$tikz_libraries"
+        + "$pgfplots_libraries"
+    )
+
+    def __init__(
+        self,
+        code: str,
+        implicit_tikzpicture: bool = False,
+        scale: float = 1.0,
+        preamble: str | None = None,
+        tex_packages: str | None = None,
+        tikz_libraries: str | None = None,
+        pgfplots_libraries: str | None = None,
+        no_tikz: bool = False,
+        **kargs,
+    ):
+        """Initializes the `TexFragment` class.
+
+        Args:
+            code: TikZ Picture or LaTeX fragment to render.
+            implicit_tikzpicture: A flag to indicate if the final LaTeX should implicitly wrap a TikZ Picture.
+            scale: The scale factor to apply to the TikZ/LaTeX code. It uses the `\\scalebox` command from graphicx package.
+            preamble: LaTeX preamble to insert before the document.
+            tex_packages: Comma-separated list of TeX packages.
+            tikz_libraries: Comma-separated list of TikZ libraries.
+            pgfplots_libraries: Comma-separated list of pgfplots libraries.
+            no_tikz: Force to not import the TikZ package.
+
+        Raises:
+            ValueError: If `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) are provided at the same time.
+        """
+        if preamble and (tex_packages or tikz_libraries or pgfplots_libraries):
+            raise ValueError(_EXTRAS_CONFLITS_ERR)
+
+        self.template = "tikzpicture" if implicit_tikzpicture else "standalone-document"
+        self.scale = scale or 1.0
+        if preamble:
+            self.preamble = preamble.strip() + "\n"
+        else:
+            self.preamble = self._build_standalone_preamble(
+                tex_packages, tikz_libraries, pgfplots_libraries, no_tikz
+            )
+
+        super().__init__(code, **kargs)
+
+    def _build_standalone_preamble(
+        self,
+        tex_packages: str | None = None,
+        tikz_libraries: str | None = None,
+        pgfplots_libraries: str | None = None,
+        no_tikz: bool = False,
+    ) -> str:
+        tikz_package = "" if no_tikz else "\\usepackage{tikz}\n"
+
+        graphicx_package = "" if self.scale == 1 else "\\usepackage{graphicx}\n"
+
+        tex_packages = "\\usepackage{%s}\n" % tex_packages if tex_packages else ""
+        tikz_libraries = (
+            "\\usetikzlibrary{%s}\n" % tikz_libraries if tikz_libraries else ""
+        )
+        pgfplots_libraries = (
+            "\\usepgfplotslibrary{%s}\n" % pgfplots_libraries
+            if pgfplots_libraries
+            else ""
+        )
+
+        return self.TMPL_STANDALONE_PREAMBLE.substitute(
+            graphicx_package=graphicx_package,
+            tikz_package=tikz_package,
+            tex_packages=tex_packages,
+            tikz_libraries=tikz_libraries,
+            pgfplots_libraries=pgfplots_libraries,
+        )
+
+    def _build_full_latex(self) -> None:
+        if self.scale != 1:
+            scale_begin = indent("\\scalebox{" + str(self.scale) + "}{\n", " " * 4)
+            scale_end = indent("}\n", " " * 4)
+        else:
+            scale_begin = ""
+            scale_end = ""
+
+        if self.template == "tikzpicture":
+            tikzpicture_begin = indent("\\begin{tikzpicture}\n", " " * 4)
+            tikzpicture_end = indent("\\end{tikzpicture}\n", " " * 4)
+            code_indent = " " * 8
+        else:
+            tikzpicture_begin = ""
+            tikzpicture_end = ""
+            code_indent = " " * 4
+
+        code = indent(self._code, code_indent) + "\n" if self._code else ""
+
+        self.full_latex = self.TMPL.substitute(
+            preamble=self.preamble,
+            scale_begin=scale_begin,
+            tikzpicture_begin=tikzpicture_begin,
+            code=code,
+            tikzpicture_end=tikzpicture_end,
+            scale_end=scale_end,
+        )
+
+
+_ARGS = {
+    "input-type": {  # New
+        "short-arg": "as",
+        "dest": "input_type",
+        "type": str,
+        "default": "standalone-document",
+        "desc": "Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`",
+        "example": "`-as=full-document`",
+    },
+    "implicit-pic": {  # Deprecated
+        "short-arg": "i",
+        "dest": "implicit_pic",
+        "type": bool,
+        "desc": "Alias for `-as=tikzpicture`",
+    },
+    "full-document": {  # Deprecated
+        "short-arg": "f",
+        "dest": "full_document",
+        "type": bool,
+        "desc": "Alias for `-as=full-document`",
+    },
+    "latex-preamble": {
+        "short-arg": "p",
+        "dest": "latex_preamble",
+        "type": str,
+        "default": None,
+        "desc": "LaTeX preamble to insert before the document",
+        "example": '`-p="$preamble"`, with the preamble being an IPython variable',
+    },
+    "tex-packages": {
+        "short-arg": "t",
+        "dest": "tex_packages",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TeX packages",
+        "example": "`-t=amsfonts,amsmath`",
+    },
+    "no-tikz": {
+        "short-arg": "nt",
+        "dest": "no_tikz",
+        "type": bool,
+        "desc": "Force to not import the TikZ package",
+    },
+    "tikz-libraries": {
+        "short-arg": "l",
+        "dest": "tikz_libraries",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of TikZ libraries",
+        "example": "`-l=calc,arrows`",
+    },
+    "pgfplots-libraries": {
+        "short-arg": "lp",
+        "dest": "pgfplots_libraries",
+        "type": str,
+        "default": None,
+        "desc": "Comma-separated list of pgfplots libraries",
+        "example": "`-pl=groupplots,external`",
+    },
+    "use-jinja": {  # Changed
+        "short-arg": "j",
+        "dest": "use_jinja",
+        "type": bool,
+        "desc": "Render the code using Jinja2",
+    },
+    "print-jinja": {
+        "short-arg": "pj",
+        "dest": "print_jinja",
+        "type": bool,
+        "desc": "Print the rendered Jinja2 template",
+    },
+    "print-tex": {  # New
+        "short-arg": "pt",
+        "dest": "print_tex",
+        "type": bool,
+        "desc": "Print the full LaTeX document",
+    },
+    "scale": {
+        "short-arg": "sc",
+        "dest": "scale",
+        "type": float,
+        "default": 1.0,
+        "desc": "The scale factor to apply to the TikZ diagram",
+        "example": "`-sc=0.5`",
+    },
+    "rasterize": {
+        "short-arg": "r",
+        "dest": "rasterize",
+        "type": bool,
+        "desc": "Output a rasterized image (PNG) instead of SVG",
+    },
+    "dpi": {
+        "short-arg": "d",
+        "dest": "dpi",
+        "type": int,
+        "default": 96,
+        "desc": "DPI to use when rasterizing the image",
+        "example": "`--dpi=300`",
+    },
+    "full-err": {
+        "short-arg": "e",
+        "dest": "full_err",
+        "type": bool,
+        "desc": "Print the full error message when an error occurs",
+    },
+    "tex-program": {
+        "short-arg": "tp",
+        "dest": "tex_program",
+        "type": str,
+        "default": "pdflatex",
+        "desc": "TeX program to use for compilation",
+        "example": "`-tp=xelatex` or `-tp=lualatex`",
+    },
+    "tex-args": {
+        "short-arg": "ta",
+        "dest": "tex_args",
+        "type": str,
+        "default": None,
+        "desc": "Arguments to pass to the TeX program",
+        "example": '`-ta="$tex_args_ipython_variable"`',
+    },
+    "no-compile": {
+        "short-arg": "nc",
+        "dest": "no_compile",
+        "type": bool,
+        "desc": "Do not compile the TeX code",
+    },
+    "save-text": {
+        "short-arg": "s",
+        "dest": "save_tex",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to file",
+        "example": "`-s filename.tikz`",
+    },
+    "save-image": {
+        "short-arg": "S",
+        "dest": "save_image",
+        "type": str,
+        "default": None,
+        "desc": "Save the output image to file",
+        "example": "`-S filename.png`",
+    },
+    "save-var": {
+        "short-arg": "sv",
+        "dest": "save_var",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ or LaTeX code to an IPython variable",
+        "example": "`-sv my_var`",
+    },
+}
+
+
+def _get_arg_params(arg: str) -> tuple[tuple[str, str], dict[str, Any]]:
+    def get_arg_help(arg: str) -> str:
+        help = _ARGS[arg]["desc"].replace("<br>", " ")
+        if _ARGS[arg].get("example"):
+            help += f", e.g., {_ARGS[arg]['example']}"
+        if _ARGS[arg].get("default"):
+            help += (
+                f". Defaults to `-{_ARGS[arg]['short-arg']}={_ARGS[arg]['default']}`"
+            )
+        help += "."
+        return help
+
+    args = (f"-{_ARGS[arg]['short-arg']}", f"--{arg}")
+    kwargs = {"dest": _ARGS[arg]["dest"]}
+    if _ARGS[arg]["type"] == bool:
+        kwargs["action"] = "store_true"
+        kwargs["default"] = False
+    elif _ARGS[arg]["type"] == str:
+        kwargs["default"] = _ARGS[arg]["default"]
+    else:
+        kwargs["type"] = _ARGS[arg]["type"]
+        kwargs["default"] = _ARGS[arg]["default"]
+    kwargs["help"] = get_arg_help(arg)
+    return args, kwargs
+
+
+def _apply_args():
+    def decorator(magic_command):
+        for arg in reversed(_ARGS.keys()):
+            args, kwargs = _get_arg_params(arg)
+            magic_command = argument(*args, **kwargs)(magic_command)
+        return magic_command
+
+    return decorator
+
+
 @magics_class
 class TikZMagics(Magics):
+    def _get_input_type(self, input_type: str) -> str | None:
+        VALID_INPUT_TYPES = ["full-document", "standalone-document", "tikzpicture"]
+        input_type = input_type.lower()
+        input_type_len = len(input_type)
+
+        for index, valid_input_type in enumerate(VALID_INPUT_TYPES):
+            if input_type == valid_input_type[:input_type_len]:
+                return VALID_INPUT_TYPES[index]
+
+        return None
+
+    # Path to the pdftocairo executable
     @line_cell_magic
     @magic_arguments()
-    @argument(
-        "-p",
-        "--latex_preamble",
-        dest="latex_preamble",
-        default="",
-        help='LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
-    )
-    @argument(
-        "-t",
-        "--tex-packages",
-        dest="tex_packages",
-        default="",
-        help="Comma-separated list of TeX packages, e.g., `-t=amsfonts,amsmath`.",
-    )
-    @argument(
-        "-nt",
-        "--no-tikz",
-        dest="no_tikz",
-        action="store_true",
-        default=False,
-        help="Force to not import the TikZ package.",
-    )
-    @argument(
-        "-l",
-        "--tikz-libraries",
-        dest="tikz_libraries",
-        default="",
-        help="Comma-separated list of TikZ libraries, e.g., `-l=arrows,automata`.",
-    )
-    @argument(
-        "-lp",
-        "--pgfplots-libraries",
-        dest="pgfplots_libraries",
-        default="",
-        help="Comma-separated list of PGFPlots libraries, e.g., `-lp=groupplots,external`.",
-    )
-    @argument(
-        "-i",
-        "--implicit-pic",
-        dest="implicit_pic",
-        action="store_true",
-        default=False,
-        help="Implicitly wrap the code in a standalone document with a `tikzpicture` environment.",
-    )
-    @argument(
-        "-f",
-        "--full-document",
-        dest="full_document",
-        action="store_true",
-        default=False,
-        help="Use a full LaTeX document as input.",
-    )
-    @argument(
-        "-j",
+    @_apply_args()
+    @argument(  # Deprecated
         "--as-jinja",
         dest="as_jinja",
         action="store_true",
         default=False,
-        help="Render the input as a Jinja2 template.",
+        help="Deprecated. Use `--use-jinja` instead.",
     )
-    @argument(
-        "-pj",
-        "--print-jinja",
-        dest="print_jinja",
-        action="store_true",
-        default=False,
-        help="Print the rendered Jinja2 template.",
-    )
-    @argument(
-        "-sc",
-        "--scale",
-        dest="scale",
-        type=float,
-        default=1.0,
-        help="The scale factor to apply to the TikZ diagram. Default is `-sc=1`.",
-    )
-    @argument(
-        "-r",
-        "--rasterize",
-        dest="rasterize",
-        action="store_true",
-        default=False,
-        help="Output a rasterized image (PNG) instead of SVG.",
-    )
-    @argument(
-        "-d",
-        "--dpi",
-        dest="dpi",
-        type=int,
-        default=96,
-        help="DPI of the rasterized output image. Default is `-d=96`.",
-    )
-    @argument(
-        "-e",
-        "--full-err",
-        dest="full_err",
-        action="store_true",
-        default=False,
-        help="Show full error message",
-    )
-    @argument(
-        "-tp",
-        "--tex-program",
-        dest="tex_program",
-        default="pdflatex",
-        help="TeX program to use for rendering, e.g., `-tp=lualatex`.",
-    )
-    @argument(
-        "-ta",
-        "--tex-args",
-        dest="tex_args",
-        default="",
-        help='Additional arguments to pass to the TeX program, e.g., `-ta="$tex_args_ipython_variable"`',
-    )
-    @argument(
-        "-nc",
-        "--no-compile",
-        dest="no_compile",
-        action="store_true",
-        default=False,
-        help="Do not compile the LaTeX code.",
-    )
-    @argument(
-        "-s",
-        "--save-tex",
-        dest="save_tex",
-        type=str,
-        default=None,
-        help="Save the TikZ or TeX code to file, e.g., `-s filename.tikz`. Default is None.",
-    )
-    @argument(
-        "-S",
-        "--save-image",
-        dest="save_image",
-        type=str,
-        default=None,
-        help="Save the output image to file, e.g., `-S filename.svg`. Default is None.",
-    )
-    @argument(
-        "-sv",
-        "--save-var",
-        dest="save_var",
-        type=str,
-        default=None,
-        help="Save the TikZ or TeX code to an IPython variable, e.g., `-sv varname`. Default is None.",
-    )
-    @argument("code", nargs="?", help="the variable in IPython with the string source")
+    @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
-    def tikz(self, line, cell=None, local_ns=None) -> Union[Image, SVG, None]:
+    def tikz(self, line, cell: str | None = None, local_ns=None) -> Image | SVG | None:
         r"""
         Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
 
         When used as cell magic, it executes the TeX/TikZ code within the cell:
             Example:
                 In [3]: %%tikz
-                        \begin{tikzpicture}
-                            \draw (0,0) rectangle (1,1);
-                        \end{tikzpicture}
+                   ...:  \begin{tikzpicture}
+                   ...:     \draw (0,0) rectangle (1,1);
+                   ...: \end{tikzpicture}
 
         When used as line magic, the TeX/TikZ code is passed as an IPython string variable:
             Example:
                 In [4]: %tikz "$ipython_string_variable_with_code"
 
-        Additional options can be passed to the magic command to control the output:
+        Additional options can be passed to the magic command to customize LaTeX code and rendering output:
             Example:
-                In [5]: %%tikz -i --rasterize --dpi=1200 -l arrows,automata
-                        \draw (0,0) rectangle (1,1);
-                        \filldraw (0.5,0.5) circle (.1);
+                In [5]: %%tikz -l=arrows,matrix
+                   ...: \matrix (m) [matrix of math nodes, row sep=3em, column sep=4em] {
+                   ...:     A & B \\
+                   ...:     C & D \\
+                   ...: };
+                   ...: \path[-stealth, line width=.4mm]
+                   ...:     (m-1-1) edge node [left ] {$ac$} (m-2-1)
+                   ...:     (m-1-1) edge node [above] {$ab$} (m-1-2)
+                   ...:     (m-1-2) edge node [right] {$bd$} (m-2-2)
+                   ...:     (m-2-1) edge node [below] {$cd$} (m-2-2);
         """
 
-        args = parse_argstring(self.tikz, line)
-        src = cell
+        self.args = parse_argstring(self.tikz, line)
 
-        if local_ns is None:
-            local_ns = {}
+        if self.args.latex_preamble and (
+            self.args.tex_packages
+            or self.args.tikz_libraries
+            or self.args.pgfplots_libraries
+        ):
+            print(_EXTRAS_CONFLITS_ERR, file=sys.stderr)
+            return
+
+        if (self.args.implicit_pic and self.args.full_document) or (
+            (self.args.implicit_pic or self.args.full_document)
+            and self.args.input_type != "standalone-document"
+        ):
+            print(
+                _INPUT_TYPE_CONFLIT_ERR,
+                file=sys.stderr,
+            )
+            return
+        if self.args.as_jinja:
+            self.args.use_jinja = True
+        if self.args.print_jinja and self.args.print_tex:
+            print(
+                _PRINT_CONFLICT_ERR,
+                file=sys.stderr,
+            )
+            return
+
+        if self.args.implicit_pic:
+            self.input_type = "tikzpicture"
+        elif self.args.full_document:
+            self.input_type = "full-document"
+        else:
+            self.input_type = self._get_input_type(self.args.input_type)
+        if self.input_type is None:
+            print(
+                f"`{self.args.input_type}` is not a valid input type.",
+                "Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.",
+                file=sys.stderr,
+            )
+            return
+
+        self.src = cell or ""
+        local_ns = local_ns or {}
 
         if cell is None:
-            if args.code is None:
+            if self.args.code is None:
                 print('Use "%tikz?" for help', file=sys.stderr)
                 return
 
-            if args.code not in local_ns:
-                src = args.code
+            if self.args.code not in local_ns:
+                self.src: str = self.args.code
             else:
-                src = local_ns[args.code]
+                self.src: str = local_ns[self.args.code]
 
-            save_code = src
+        if self.input_type == "full-document":
+            self.tex_obj = TexDocument(
+                self.src, use_jinja=self.args.use_jinja, ns=local_ns
+            )
         else:
-            save_code = cell
-
-        if args.implicit_pic and args.full_document:
-            print(
-                "Can't use --full-document and --implicit-pic together", file=sys.stderr
-            )
-            return None
-
-        if args.as_jinja:
-            src = render_jinja(src, local_ns)
-            save_code = src
-            if args.print_jinja:
-                print(src)
-
-        if args.latex_preamble and (
-            args.tikz_libraries or args.tex_packages or args.pgfplots_libraries
-        ):
-            print(
-                "Packages and libraries should be passed in the preamble or as arguments, not both",
-                file=sys.stderr,
-            )
-            return None
-
-        if not args.full_document:
-            if args.latex_preamble:
-                extras = args.latex_preamble + "\n"
-            else:
-                extras = build_template_extras(
-                    no_tikz=args.no_tikz,
-                    tex_packages=args.tex_packages,
-                    tikz_libraries=args.tikz_libraries,
-                    pgfplots_libraries=args.pgfplots_libraries,
-                )
-
-            src = build_tex_string(
-                src,
-                implicit_pic=args.implicit_pic,
-                extras=extras,
-                scale=args.scale,
+            implicit_tikzpicture = self.input_type == "tikzpicture"
+            self.tex_obj = TexFragment(
+                self.src,
+                implicit_tikzpicture=implicit_tikzpicture,
+                preamble=self.args.latex_preamble,
+                tex_packages=self.args.tex_packages,
+                no_tikz=self.args.no_tikz,
+                tikz_libraries=self.args.tikz_libraries,
+                pgfplots_libraries=self.args.pgfplots_libraries,
+                scale=self.args.scale,
+                use_jinja=self.args.use_jinja or self.args.print_jinja,
+                ns=local_ns,
             )
 
-        if args.no_compile:
-            if save_code:
-                if args.save_var:
-                    local_ns[args.save_var] = save_code
-                if args.save_tex:
-                    save(save_code, args.save_tex, format="code")
-            return None
+        if self.args.print_jinja:
+            print(self.tex_obj)
+        if self.args.print_tex:
+            print(self.tex_obj.full_latex)
 
-        image = run_latex(
-            src,
-            rasterize=args.rasterize,
-            tex_program=args.tex_program,
-            dpi=args.dpi,
-            full_err=args.full_err,
-            save_image=args.save_image,
-        )
+        image = None
+        if not self.args.no_compile:
+            image = self.tex_obj.run_latex(
+                tex_program=self.args.tex_program,
+                tex_args=self.args.tex_args,
+                rasterize=self.args.rasterize,
+                full_err=self.args.full_err,
+                save_image=self.args.save_image,
+                dpi=self.args.dpi,
+            )
+            if image is None:
+                return None
 
-        if image is None:
-            return None
+        if self.args.save_var:
+            local_ns[self.args.save_var] = str(self.tex_obj)
 
-        if save_code:
-            if args.save_var:
-                local_ns[args.save_var] = save_code
-            if args.save_tex:
-                save(save_code, args.save_tex, format="code")
+        if self.args.save_tex:
+            self.saved_path = self.tex_obj.save(self.args.save_tex, format="code")
 
         return image

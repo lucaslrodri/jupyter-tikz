@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="160" height="160" version="1.1" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <clipPath id="clip-0">
+   <path d="m0 0h141.86v141.86h-141.86z"/>
+  </clipPath>
+ </defs>
+ <rect width="160" height="160" rx="0" fill="#fff" stroke-dashoffset="85.304" stroke-linecap="round" stroke-miterlimit="0" stroke-width="1.0194" style="paint-order:markers fill stroke"/>
+ <g transform="translate(9.0345 9.0345)" clip-path="url(#clip-0)">
+  <path transform="matrix(.99951 0 0 -.99951 .099951 141.76)" d="m0.0016119 3.6355e-4h141.73m-141.73 28.346h141.73m-141.73 28.346h141.73m-141.73 28.35h141.73m-141.73 28.346h141.73m-141.73 28.338h141.73m-141.73-141.73v141.73m28.346-141.73v141.73m28.346-141.73v141.73m28.346-141.73v141.73m28.35-141.73v141.73m28.334-141.73v141.73" fill="none" stroke="#7f7f7f" stroke-miterlimit="10" stroke-width=".19925"/>
+ </g>
+ <g stroke="#000" stroke-miterlimit="10" stroke-width=".39831">
+  <path d="m37.468 122.46v-28.332h28.332v28.332z"/>
+  <path d="m65.8 122.46v-28.332h28.332v28.332z"/>
+  <path d="m94.132 122.46v-28.332h28.336v28.332z"/>
+  <path d="m94.132 94.132v-28.336h28.336v28.336z"/>
+  <path d="m65.8 65.796v-28.332h28.332v28.332z"/>
+ </g>
+</svg>
