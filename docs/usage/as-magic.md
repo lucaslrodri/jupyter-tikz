@@ -2,8 +2,6 @@
 
 ## Basic usage
 
-{% include "templates/installation-warning.md" %}
-
 First, you need to load the `jupyter_tikz` extension in your Jupyter Notebook. You can do this by running the following code cell:
 
 ```python

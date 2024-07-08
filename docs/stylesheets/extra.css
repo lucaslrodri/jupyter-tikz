@@ -37,28 +37,45 @@
   color: var(--md-typeset-color) !important;
 }
 
-.card-link-blue{
+.card-link-blue {
   color: var(--md-typeset-a-color) !important;
 }
 
-.card-link:hover, .card-link-blue:hover {
+.card-link:hover,
+.card-link-blue:hover {
   color: var(--md-accent-fg-color) !important;
 }
 
-.log-card{
-  border: solid 1px var(--md-default-fg-color--lightest); 
-  padding: 0.75rem; 
+.alert {
+  display: block;
+  padding: 0.64rem;
+  background-color: var(--md-admonition-bg-color);
+  border: 0.075rem solid var(--md-typeset-a-color);
+  border-radius: 0.2rem;
+  box-shadow: var(--md-shadow-z1);
+  font-size: 0.64rem;
+  margin: 1.5625em 0;
+  transition: box-shadow 125ms;
+}
+
+.alert:hover {
+  border-color: var(--md-accent-fg-color);
+}
+
+.log-card {
+  border: solid 1px var(--md-default-fg-color--lightest);
+  padding: 0.75rem;
   border-radius: 5px;
   font-family: monospace;
   max-height: 20rem;
-  font-size: .65rem;
+  font-size: 0.65rem;
 }
 
-.log-output{ 
-  font-family: monospace; 
-  max-height: 20rem; 
-  font-size: .65rem;
-  overflow: auto; 
+.log-output {
+  font-family: monospace;
+  max-height: 20rem;
+  font-size: 0.65rem;
+  overflow: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--md-default-fg-color--lighter) white;
 }

@@ -11,8 +11,6 @@ For more details, please visit the [API reference](../api.md).
 
 ## Usage of TexDocument
 
-{% include "templates/installation-warning.md" %}
-
 First, let's import the `TexDocument` class from the package:
 
 ```python

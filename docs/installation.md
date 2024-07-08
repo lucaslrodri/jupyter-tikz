@@ -99,3 +99,23 @@ pip install jupyter-tikz # (1)!
 
 1. You can install with your favorite package manager, i.e., `poetry`.
 
+## Adding TikZ Syntax highlight
+
+If you are using Jupyter Lab 4. You can add LaTeX highlight to `%%tikz` magic cells by using [JupyterLab-lsp](https://jupyterlab-lsp.readthedocs.io/en/latest/Installation.html) and editing [this part of the code in JupyterLab-lsp](https://github.com/jupyter-lsp/jupyterlab-lsp/blob/b159ae2736b26463d8cc8f0ef78f4b2ce9913370/packages/jupyterlab-lsp/src/transclusions/ipython/extractors.ts#L68-L74) in the file `extractor.ts`:
+
+```ts
+new RegExpForeignCodeExtractor({
+  language: 'latex',
+  pattern: '^%%(latex|tikz)( .*?)?\n([^]*)', // Add tikz support to this line
+  foreignCaptureGroups: [3],
+  isStandalone: false,
+  fileExtension: 'tex'
+}),
+```
+
+Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as demonstrated below:
+
+![Using Jupyter TikZ with LaTeX syntax highlight](./assets/highlight_cell_tikz.png)
+
+For more information refer to this <a href="https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9" target="_blank"> link
+</a>.
