@@ -30,7 +30,7 @@ Make your changes in the codebase. If you're adding a feature or updating docume
 
 ### 4. Test your changes
 
-The project utilizes <a href="https://docs.pytest.org/" target="_blank">pytest</a> for testing. Create tests for your new feature and run them. If you use VS Code, you can follow this guide <a href="https://code.visualstudio.com/docs/python/testing" target="_blank">here</a>. Additionally, build the project using `poetry build` and install the package locally on your machine to test it in a Jupyter Notebook.
+The project utilizes [pytest](https://docs.pytest.org/) for testing. Create tests for your new feature and run them. If you use VS Code, you can follow this guide [here](https://code.visualstudio.com/docs/python/testing). Additionally, build the project using `poetry build` and install the package locally on your machine to test it in a Jupyter Notebook.
 
 ### 5. Submit a pull request
 

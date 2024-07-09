@@ -83,7 +83,7 @@ os.environ["JUPYTER_TIKZ_PDFTOCAIROPATH"] = custom_pdftocairo_path
 
 ### Jinja2 (Optional)
 
-Jinja2 is only necessary if you plan to use [Jinja2 templates](http://jinja.pocoo.org/docs/latest/templates/). To install it, use:
+Jinja2 is only necessary if you plan to use [Jinja2 templates](https://jinja.pocoo.org/docs/latest/templates/). To install it, use:
 
 ```shell
 pip install jinja2
@@ -117,5 +117,4 @@ Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as d
 
 ![Using Jupyter TikZ with LaTeX syntax highlight](./assets/highlight_cell_tikz.png)
 
-For more information refer to this <a href="https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9" target="_blank"> link
-</a>.
+For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).

@@ -59,11 +59,11 @@ Explore additional resources and related links for this project:
 <div class="grid">
  {% for href, icon, text in [
   ("https://pypi.org/project/jupyter-tikz/", "python", "<strong>PyPI</strong> page"),
-  ("https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb", "jupyter", "Getting Started <strong>notebook</strong>"),
+  ("https://github.com/lucaslrodri/jupyter-tikz/blob/main/notebooks/GettingStarted.ipynb", "jupyter", "Getting Started <strong>notebook</strong>"),
   ("https://github.com/lucaslrodri/jupyter-tikz/", "github", "<strong>Source code</strong> in Github"),
   ("https://github.com/lucaslrodri/jupyter-tikz/issues/", "issues", "Github <strong>issues</strong> page")
  ] %}
-  <a class="card card-link" href="{{ href }}" target="_blank"><span class="twemoji">{{ icons[icon] }}</span>&nbsp; {{ text }}</a>
+  <a class="card card-link" href="{{ href }}"><span class="twemoji">{{ icons[icon] }}</span>&nbsp; {{ text }}</a>
  {% endfor %}
 </div>
 
@@ -77,6 +77,6 @@ Explore additional resources and related links for this project:
 
 ## License
 
-Copyright 2024 © <a href="https://github.com/lucaslrodri" target="_blank">Lucas Lima Rodrigues</a>.
+Copyright 2024 © [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
 
 Distributed under the terms of the [MIT License](./about/license.md), Jupyter-TikZ is free and open-source software.
