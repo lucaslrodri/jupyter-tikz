@@ -10,9 +10,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install LaTeX and Poppler
-        run: |
-          apt update
-          apt install -y texlive-latex-extra texlive-luatex poppler-utils
+        uses: daaku/gh-action-apt-install@v4
+        with:
+          packages: texlive-latex-extra texlive-luatex poppler-utils
       
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
