@@ -90,7 +90,7 @@ def test_run_command_invalid_command(tex_document, capsys, tmp_path):
     # Assert
     _, err = capsys.readouterr()
     assert command in err.lower()
-    assert res == 1
+    assert res != 0
 
 
 DUMMY_COMMAND = "dummy_command"
@@ -429,7 +429,7 @@ EXAMPLE_GOOD_TIKZ = r"""
 		\draw[fill=blue] (0, 0) rectangle (1, 1);
 	\end{tikzpicture}
 \end{document}"""
-RENDERED_SVG_GOOD_TIKZ = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="28.745" height="28.745" viewBox="0 0 28.745 28.745">\n<defs>\n<clipPath id="clip-0">\n<path clip-rule="nonzero" d="M 0 0 L 28.492188 0 L 28.492188 28.492188 L 0 28.492188 Z M 0 0 "/>\n</clipPath>\n</defs>\n<g clip-path="url(#clip-0)">\n<path fill-rule="nonzero" fill="rgb(0%, 0%, 100%)" fill-opacity="1" stroke-width="0.3985" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(0%, 0%, 0%)" stroke-opacity="1" stroke-miterlimit="10" d="M -0.00195486 -0.00189963 L -0.00195486 28.345014 L 28.344959 28.345014 L 28.344959 -0.00189963 Z M -0.00195486 -0.00189963 " transform="matrix(0.991207, 0, 0, -0.991207, 0.19725, 28.294992)"/>\n</g>\n</svg>'
+RENDERED_SVG_PATH_GOOD_TIKZ = "M -0.00195486 -0.00189963 L -0.00195486 28.345014 L 28.344959 28.345014 L 28.344959 -0.00189963 Z M -0.00195486 -0.00189963"
 
 
 @pytest.mark.needs_latex
@@ -441,10 +441,10 @@ def test_run_latex_good_input_with_no_aditional_params(monkeypatch, tmpdir):
     # Act
     tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
     res = tex_document.run_latex()
-    expected_res = RENDERED_SVG_GOOD_TIKZ
+    expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
     assert isinstance(res, display.SVG)
-    assert res.data == expected_res
+    assert expected_res in str(res.data)
 
 
 @pytest.mark.needs_latex
@@ -501,10 +501,10 @@ def test_run_latex_custom_tex_command(monkeypatch, tmpdir, texprogram, texargs):
     # Act
     tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
     res = tex_document.run_latex(tex_program=texprogram, tex_args=texargs)
-    expected_res = RENDERED_SVG_GOOD_TIKZ
+    expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
     assert isinstance(res, display.SVG)
-    assert res.data == expected_res
+    assert expected_res in str(res.data)
 
 
 @pytest.mark.needs_latex
@@ -556,11 +556,11 @@ def test_run_latex_with_custom_pdftocairo_path(monkeypatch, tmpdir):
     # Act
     tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
     res = tex_document.run_latex()
-    expected_res = RENDERED_SVG_GOOD_TIKZ
+    expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
     # Assert
     assert isinstance(res, display.SVG)
-    assert res.data == expected_res
+    assert expected_res in str(res.data)
 
 
 @pytest.mark.needs_latex

@@ -1,8 +1,34 @@
-![Jupyter Tikz Logo](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/assets/logo_wide.svg)
+<p align="center">
+  <a
+    ><img
+      alt="Logo of Jupyter-TikZ"
+      src="docs/assets/logo_wide.svg"
+      style="width: calc(100% - 2rem); max-width: 800px; max-height: 10rem"
+  /></a>
+</p>
 
-[![PyPI - Version](https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e)](https://pypi.org/project/jupyter-tikz/)[![Pypi - Downloads](https://static.pepy.tech/badge/jupyter-tikz)](https://pepy.tech/project/jupyter-tikz)[![PyPI - License](https://img.shields.io/pypi/l/jupyter_tikz)](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE)
+<p align="center">
+  <em>IPython Magics for rendering TeX/TikZ in Jupyter Notebooks</em>
+</p>
 
-Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks.
+<p align="center">
+  <a href="https://pypi.org/project/jupyter-tikz/" target="_blank"
+    ><img
+      src="https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e"
+      alt="PyPI - Version"
+  /></a>
+  <a href="https://pepy.tech/project/jupyter-tikz" target="_blank"
+    ><img
+      src="https://static.pepy.tech/badge/jupyter-tikz"
+      alt="Pypi - Downloads"
+  /></a>
+  <a
+    href="https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE"
+    target="_blank"
+    ><img src="https://img.shields.io/pypi/l/jupyter_tikz" alt="License"
+  /></a>
+</p>
+
 
 # Demonstration notebook
 
@@ -84,109 +110,59 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
 
 which produces:
 
-![Conway example](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/development/assets/conway.svg)
+![Conway example](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/conway.svg)
 
-Or use it as line magic, the TeX/TikZ code is passed as an IPython string variable:
+Or use it as line magic, where the TeX/TikZ code is passed as an IPython string variable:
 
 ```python
 %tikz "$ipython_string_variable_with_code"
 ```
 
-Furthermore, additional arguments can be passed to the magic command:
+Additional options can be passed to the magic command:
 
 ```latex
- %%tikz -as=tikzpicture --rasterize --dpi=300 -l=arrows,automata -S-assets/dot_in_frame
-\draw (0,0) rectangle (1,1);
-\filldraw (0.5,0.5) circle (.1);
+%%tikz -i -t=pgfplots -nt -S=docs/assets/quadratic -r --dpi=150
+\begin{axis}[
+  xlabel=$x$,
+  ylabel={$f(x) = x^2 + 4$}
+]
+    \addplot [red] {x^2 + 4};
+\end{axis}
 ```
 
-Don't forget visit the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb) to learn more.
+which produces:
+
+![Quadratic formula](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/quadratic.png)
+
+Don't forget visit the [Documentation]() and [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb) to learn more.
 
 # Additional options
 
 All additional options are listed below:
 
-- `-as=<str>` or `-input-type=<str>`: 
-        Type of the input. 
-        Possible values are: `full-document`, `standalone-document`, `tikzpicture`.
-        e.g., `-as=full-document`.
-        Defaults to `standalone-document`.
-    
-- `-p=<str>` or `--latex_preamble=<str>`:
-         LaTeX preamble to insert before the document.
-         e.g., `-p="$preamble"`, with the preamble being an IPython variable.
-        Defaults to None.
-     
-- `-t=<str>` or `--tex-packages=<str>`:
-        Comma-separated list of TeX packages.
-        e.g., `-t=amsfonts,amsmath`.
-        Defaults to None.
-    
-- `-nt` or `--no-tikz`:
-        Force to not import the TikZ package.
-    
-- `-l=<str>` or `--tikz-libraries=<str>`:
-        Comma-separated list of TikZ libraries.
-        e.g., `-l=arrows,automata`.
-        Defaults to None.
-    
-- `-lp=<str>` or `--pgfplots-libraries=<str>`:
-        Comma-separated list of PGFPlots libraries.
-        e.g., `-lp groupplots,external`.
-        Defaults to None.
-    
-- `-j` or  `--use-jinja`:
-        Render the input as a Jinja2 template.
-    
-- `-pj` or `--print-jinja`:
-        Print the rendered Jinja2 template.
-    
-- `-pt` or `--print-tex`:
-        Print full LaTeX document.
-    
-- `-sc=<float | int>` or `--scale=<float | int>`:
-        The scale factor to apply to the TikZ diagram.
-        e.g., `-sc=2.5`.
-        Defaults to 1.
-    
-- `-r` or `--rasterize`:
-        Output a rasterized image (PNG) instead of SVG.
-    
-- `-d=<int>` or `--dpi=<int>`:
-        DPI of the rasterized output image.
-        e.g., `--dpi=300`.
-        Defaults to 96.
-    
-- `-e` or `--full-err`:
-        Show the full error message.
-    
-- `-tp=<str>` or `--tex-program=<str>`: 
-        TeX program to use for rendering.
-        e.g., `-tp=lualatex`.
-        Defaults to `pdflatex`.
-    
-- `-ta=<str>` or `--tex-args=<str>`: 
-        Additional arguments to pass to the TeX program.
-        e.g., `-ta="$tex_args_ipython_variable"`.
-        Defaults to None.
-    
-- `-nc` or `--no-compile`:
-        Do not compile the LaTeX code. 
-
-- `-s=<str>` or `--save-tex=<str>`:
-        Save the TikZ or TeX code to file.
-        e.g., `-s=filename.tikz`.
-        Defaults to None.
-    
-- `-S=<str>` or `--save-image=<str>`:
-        Save the output image to file.
-        e.g., `-S=filename.svg`.
-        Defaults to None.
-
-- `-sv=<str>` or `--save-var=<str>`:
-        Save the TikZ or LaTeX code to an IPython variable.
-        e.g., `-sv=var_name`.
-        Defaults to None.
+| Argument | Description |
+| -------- | ----------- |
+| `-as=<str>`<br>`--input-type=<str>` | Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-as=full-document`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-as=standalone-document`. |
+| `-i`<br>`--implicit-pic` | Alias for `-as=tikzpicture`. |
+| `-f`<br>`--full-document` | Alias for `-as=full-document`. |
+| `-p=<str>`<br>`--latex-preamble=<str>` | LaTeX preamble to insert before the document.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-p="$preamble"`, with the preamble being an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-t=<str>`<br>`--tex-packages=<str>` | Comma-separated list of TeX packages.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-t=amsfonts,amsmath`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-nt`<br>`--no-tikz` | Force to not import the TikZ package. |
+| `-l=<str>`<br>`--tikz-libraries=<str>` | Comma-separated list of TikZ libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-l=calc,arrows`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-lp=<str>`<br>`--pgfplots-libraries=<str>` | Comma-separated list of pgfplots libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-pl=groupplots,external`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-j`<br>`--use-jinja` | Render the code using Jinja2. |
+| `-pj`<br>`--print-jinja` | Print the rendered Jinja2 template. |
+| `-pt`<br>`--print-tex` | Print the full LaTeX document. |
+| `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |
+| `-r`<br>`--rasterize` | Output a rasterized image (PNG) instead of SVG. |
+| `-d=<int>`<br>`--dpi=<int>` | DPI to use when rasterizing the image.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `--dpi=300`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-d=96`. |
+| `-e`<br>`--full-err` | Print the full error message when an error occurs. |
+| `-tp=<str>`<br>`--tex-program=<str>` | TeX program to use for compilation.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-tp=xelatex` or `-tp=lualatex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-tp=pdflatex`. |
+| `-ta=<str>`<br>`--tex-args=<str>` | Arguments to pass to the TeX program.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-ta="$tex_args_ipython_variable"`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-nc`<br>`--no-compile` | Do not compile the TeX code. |
+| `-s=<str>`<br>`--save-text=<str>` | Save the TikZ or LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-sv=<str>`<br>`--save-var=<str>` | Save the TikZ or LaTeX code to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 
 # Adding TikZ Syntax highlight
 
@@ -204,7 +180,7 @@ If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab
 
 Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as demonstrated below:
 
-![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/development/assets/highlight_cell_tikz.png)
+![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/highlight_cell_tikz.png)
 
 For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).
 

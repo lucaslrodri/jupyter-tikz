@@ -1,9 +1,44 @@
 import sys
 from textwrap import dedent
+import jinja2
 
 sys.path.insert(1, "./jupyter_tikz")
 
 import jupyter_tikz
+
+
+def _args_table():
+    """
+    This macro generates a table of the command line arguments
+    """
+    table = dedent(
+        """
+    | Argument | Description |
+    | -------- | ----------- |
+    """
+    )
+    for arg, params in jupyter_tikz._ARGS.items():
+        type = params.get("type", str).__name__
+        short = params.get("short-arg", arg)
+        if params.get("type") == bool:
+            argument = f"`-{short}`<br>`--{arg}`"
+        else:
+            argument = f"`-{short}=<{type}>`<br>`--{arg}=<{type}>`"
+
+        description = [params["desc"] + "."]
+        if "example" in params:
+            description.append("&nbsp;" * 4 + f"*Example:* {params['example']}.")
+        if "default" in params:
+            if params["default"]:
+                description.append(
+                    "&nbsp;" * 4 + f"*Defaults* to `-{short}={params['default']}`."
+                )
+            elif params["default"] is None:
+                description.append("&nbsp;" * 4 + f"*Defaults* to None.")
+        description = "<br>".join(description)
+
+        table += f"| {argument} | {description} |\n"
+    return table
 
 
 def define_env(env):
@@ -33,34 +68,8 @@ def define_env(env):
 
     @env.macro
     def args_table():
-        """
-        This macro generates a table of the command line arguments
-        """
-        table = dedent(
-            """
-        | Argument | Description |
-        | -------- | ----------- |
-        """
-        )
-        for arg, params in jupyter_tikz._ARGS.items():
-            type = params.get("type", str).__name__
-            short = params.get("short-arg", arg)
-            if params.get("type") == bool:
-                argument = f"`-{short}`<br>`--{arg}`"
-            else:
-                argument = f"`-{short}=<{type}>`<br>`--{arg}=<{type}>`"
+        return _args_table()
 
-            description = [params["desc"] + "."]
-            if "example" in params:
-                description.append("&nbsp;" * 4 + f"*Example:* {params['example']}.")
-            if "default" in params:
-                if params["default"]:
-                    description.append(
-                        "&nbsp;" * 4 + f"*Defaults* to `-{short}={params['default']}`."
-                    )
-                elif params["default"] is None:
-                    description.append("&nbsp;" * 4 + f"*Defaults* to None.")
-            description = "<br>".join(description)
 
-            table += f"| {argument} | {description} |\n"
-        return table
+if __name__ == "__main__":
+    print(_args_table())

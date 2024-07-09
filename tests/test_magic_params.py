@@ -332,7 +332,7 @@ def test_src_is_line__code_is_in_in_local_ns(tikz_magic_mock):
 
     # Arrange
     code = "code"
-    line = '"$code_var"'
+    line = "$code_var"
     local_ns = {"$code_var": code}
 
     # Act

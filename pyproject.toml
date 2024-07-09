@@ -29,7 +29,7 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 ipython = "^8.25.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -61,5 +61,5 @@ profile = "black"
 
 [tool.taskipy.tasks]
 lint = "black . && isort ."
-test = "pytest -vv --cov=jupyter_tikz --cov-report lcov"
+test = "pytest -vv --cov=jupyter_tikz"
 post_test = "coverage lcov"

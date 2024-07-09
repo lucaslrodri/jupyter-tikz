@@ -37,9 +37,10 @@ All notable changes to this project are presented below.
 - Web documentation.
 - Flag (`--print-tex`) to print the full LaTeX document.
 - UTF-8 support.
+- Added support for Python 3.10.
 
 **🚨 Breaking Changes**
 
-- Replaced `--full-document` and `--implicit-pic` with `--input-type=<str>`. `-f` and `-i` still work as aliases.
+- Replaced `--full-document` and `--implicit-pic` with `--input-type=<str>`. `-f` and `-i` still working as aliases.
 - Changed the `--as-jinja` flag to `--use-jinja`.
 - Reworked the API to an object-oriented approach.
