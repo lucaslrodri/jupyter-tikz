@@ -23,6 +23,6 @@ build:
     post_create_environment:
       - pip install poetry
       - poetry config virtualenvs.create false
-
+      
     post_install:
       - poetry install --only doc
