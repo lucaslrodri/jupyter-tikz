@@ -14,7 +14,7 @@ mkdocs:
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.10"
+    python: "3.11"
     # You can also specify other tool versions:
     # nodejs: "19"
     # rust: "1.64"
@@ -25,4 +25,4 @@ build:
       - poetry config virtualenvs.create false
 
     post_install:
-      - poetry install
+      - poetry install --only doc
