@@ -18,7 +18,7 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
 \end{tikzpicture}
 ```
 <div class="result" markdown>
-![Conway example](./assets/tikz/conway.svg)
+![Conway example](./assets/conway.svg)
 </div>
 
 Or use it as line magic, where the TeX/TikZ code is passed as an IPython string variable:
@@ -39,7 +39,7 @@ Additional options can be passed to the magic command:
 \end{axis}
 ```
 <div class="result" markdown>
-![Quadratic formula](./assets/tikz/quadratic.png)
+![Quadratic formula](./assets/quadratic.png)
 </div>
 
 Going further, it is also possible to use it as a Python package:
@@ -57,5 +57,5 @@ tikz = TexFragment(tikz_code)  # Create the tex template object
 tikz.run_latex()  # Run LaTeX and shows the output
 ```
 <div class="result" markdown>
-![Orange dot in a grid](./assets/tikz/dot_in_grid.svg)
+![Orange dot in a grid](./assets/dot_in_grid.svg)
 </div>
