@@ -71,6 +71,10 @@
   font-size: 0.65rem;
 }
 
+.log-terminal{
+  font-family: monospace;
+}
+
 .log-output {
   font-family: monospace;
   max-height: 20rem;

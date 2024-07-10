@@ -143,7 +143,7 @@ class TexDocument:
 
     def save(
         self,
-        dest: str,
+        dest: str | None,
         src: str | None = None,
         format: Literal["svg", "png", "code"] = "code",
     ) -> str | None:

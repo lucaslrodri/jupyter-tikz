@@ -32,8 +32,9 @@ hide:
 ---
 
 # Getting started
-
 {{ description }}
+
+## Basic Usage
 
 {% include "templates/basic-usage.md" %}
 
@@ -77,6 +78,4 @@ Explore additional resources and related links for this project:
 
 ## License
 
-Copyright 2024 © [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
-
-Distributed under the terms of the [MIT License](./about/license.md), Jupyter-TikZ is free and open-source software.
+{% include "templates/copyright.md" %}

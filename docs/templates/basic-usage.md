@@ -1,5 +1,3 @@
-## Basic Usage
-
 To begin, load the `jupyter_tikz` extension:
 
 ```
