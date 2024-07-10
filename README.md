@@ -1,5 +1,5 @@
 <p align="center">
-  <a
+  <a href="https://jupyter-tikz.readthedocs.io/en/latest/"
     ><img
       alt="Logo of Jupyter-TikZ"
       src="https://jupyter-tikz.readthedocs.io/en/latest/assets/logo_wide.svg"
@@ -238,9 +238,10 @@ All additional options are listed below:
 
 Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here's how you can contribute:
 
-- If you encounter any issues or have suggestions for improvements, please report them using the [issues page](https://github.com/lucaslrodri/jupyter-tikz/issues).
-
-- If you're interested in developing the software further, please refer to [development guide](https://jupyter-tikz.readthedocs.io/en/latest/about/development). 
+<ol>
+<li>If you encounter any issues or have suggestions for improvements, please report them using the <a href="https://github.com/lucaslrodri/jupyter-tikz/issues">issues page</a>.</li>
+<li>If you're interested in developing the software further, please refer to <a href="about/development/">development guide</a>.</li>
+</ol>
 
 # Thanks
 

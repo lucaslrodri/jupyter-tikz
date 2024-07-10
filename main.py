@@ -158,7 +158,7 @@ if __name__ == "__main__":
     rendered_readme = re.sub(yaml_pattern, "", rendered_readme, flags=re.DOTALL)
 
     # Remove code annotations
-    rendered_readme = re.sub(r"^\d+\.\s+.*$\n", "", rendered_readme, flags=re.MULTILINE)
+    rendered_readme = re.sub(r"^1\.\s+.*$\n", "", rendered_readme, flags=re.MULTILINE)
     rendered_readme = re.sub(r" #\s*\(\d+\)!", "", rendered_readme, flags=re.DOTALL)
 
     print(rendered_readme)
