@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
     # Internal links
 
-    domain = "https://jupyter-tikz.readthedocs.io/en/latest/"
+    domain = "https://jupyter-tikz.readthedocs.io/en/stable/"
 
     rendered_readme = rendered_readme.replace("./", domain).replace(".md", "")
 
