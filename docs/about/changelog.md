@@ -1,9 +1,16 @@
 All notable changes to this project are presented below.
 
+## v0.3.2
+
+**🐞 Bug Fixes**
+
+- Improved documentation visibility on mobile devices.
+
 ## v0.3.1
 
 **🐞 Bug Fixes**
-- Fixed DOCs links
+
+- Fixed DOCs links.
 
 ## v0.3.0
 
