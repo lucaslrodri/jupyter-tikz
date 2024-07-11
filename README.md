@@ -12,19 +12,22 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/jupyter-tikz/"
+  <a href="https://jupyter-tikz.readthedocs.io/en/latest/"
+    ><img
+      alt="Read the Docs"
+      src="https://img.shields.io/readthedocs/jupyter-tikz"
+  /></a> <a href="https://pypi.org/project/jupyter-tikz/"
     ><img
       src="https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e"
       alt="PyPI - Version"
-  /></a>
-  <a href="https://pepy.tech/project/jupyter-tikz"
+  /></a> <a href="https://pepy.tech/project/jupyter-tikz"
     ><img
       src="https://static.pepy.tech/badge/jupyter-tikz"
       alt="Pypi - Downloads"
-  /></a>
-  <a href="https://codecov.io/github/lucaslrodri/jupyter-tikz"> 
-    <img src="https://codecov.io/github/lucaslrodri/jupyter-tikz/graph/badge.svg?token=6QVANQMJYC"/> 
-  </a><a
+  /></a> <a href="https://codecov.io/github/lucaslrodri/jupyter-tikz">
+    <img
+      src="https://codecov.io/github/lucaslrodri/jupyter-tikz/graph/badge.svg?token=6QVANQMJYC"
+  /></a> <a
     href="https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE"
     ><img src="https://img.shields.io/pypi/l/jupyter_tikz" alt="License"
   /></a>
@@ -42,7 +45,10 @@
 
 ## Prerequisites
 
-Before start the installation, you should verify if the minimal dependencies are installed.
+Jupyter-TikZ is a Python (3.10+) and IPython Magics library. However, in order for Jupyter-TikZ to work properly, some non-Python dependencies need to be installed first:
+
+- LaTeX
+- Poppler
 
 ### LaTeX
 

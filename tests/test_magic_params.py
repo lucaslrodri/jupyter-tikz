@@ -34,7 +34,7 @@ def tikz_magic_mock(mocker, tmp_path):
 
     mocker.patch.object(TexDocument, "run_latex", side_effect=run_latex_mock)
     mocker.patch.object(TexDocument, "save", side_effect=save_mock)
-    mocker.patch.object(TexFragment, "_build_full_latex", return_value="dummy_code")
+    # mocker.patch.object(TexFragment, "_build_full_latex", return_value="dummy_code")
     mocker.patch.object(
         TexFragment, "_build_standalone_preamble", return_value="dummy preamble"
     )

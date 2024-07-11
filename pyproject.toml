@@ -24,13 +24,15 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.urls]
-"Homepage" = "https://github.com/lucaslrodri/jupyter-tikz"
-"Repository" = "https://github.com/lucaslrodri/jupyter-tikz"
+"Homepage" = "https://jupyter-tikz.readthedocs.io/"
+"Documentation" = "https://jupyter-tikz.readthedocs.io/"
+"Repository" = "https://github.com/lucaslrodri/jupyter-tikz/"
+"Tracker" = "https://github.com/lucaslrodri/jupyter-tikz/issues/"
 
 
 [tool.poetry.dependencies]
 python = "^3.10"
-ipython = "^8.25.0"
+ipython = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"

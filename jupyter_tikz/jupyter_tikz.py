@@ -26,25 +26,8 @@ _JINJA_NOT_INTALLED_ERR = (
 _NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
 
 
-# _DEPRECATED_I_ERR = (
-#     "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
-# )
-# _DEPRECATED_F_ERR = (
-#     "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
-# )
-# _DEPRECATED_I_AND_F_ERR = (
-#     "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
-# )
-# _DEPRECATED_ASJINJA_ERR = (
-#     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
-# )
-
-
 class TexDocument:
     """This class provides functionality to create and render a LaTeX document given the full LaTeX code. It can also constructs LaTeX code using Jinja2 templates."""
-
-    full_latex: str
-    """Final LaTeX code (Full LaTeX code) to render."""
 
     def __init__(
         self, code: str, use_jinja: bool = False, ns: dict[str, Any] | None = None
@@ -60,16 +43,17 @@ class TexDocument:
             ValueError: If `use_jinja` is `True` and `ns` is not provided.
         """
         self._code: str = code.strip()
-        self.use_jinja: bool = use_jinja
-        if self.use_jinja and not ns:
+        self._use_jinja: bool = use_jinja
+        if self._use_jinja and not ns:
             raise ValueError(_NS_NOT_PROVIDED_ERR)
 
-        if self.use_jinja:
+        if self._use_jinja:
             self._render_jinja(ns)
-        self._build_full_latex()
 
-    def _build_full_latex(self) -> None:
-        self.full_latex = self._code
+    @property
+    def full_latex(self) -> str:
+        """Returns the full LaTeX code to render."""
+        return self._code
 
     @staticmethod
     def _arg_head(arg, limit=60) -> str:
@@ -89,7 +73,7 @@ class TexDocument:
 
         params = ", ".join(
             [
-                f"{k}={self._arg_head(v)}"
+                f'{k if k != "_use_jinja" else "use_jinja"}={self._arg_head(v)}'
                 for k, v in params_dict.items()
                 if k not in ["_code", "full_latex", "ns"] and v
             ]
@@ -375,7 +359,9 @@ class TexFragment(TexDocument):
             pgfplots_libraries=pgfplots_libraries,
         )
 
-    def _build_full_latex(self) -> None:
+    @property
+    def full_latex(self) -> str:
+        """Returns the full LaTeX code to render."""
         if self.scale != 1:
             scale_begin = indent("\\scalebox{" + str(self.scale) + "}{\n", " " * 4)
             scale_end = indent("}\n", " " * 4)
@@ -394,7 +380,7 @@ class TexFragment(TexDocument):
 
         code = indent(self._code, code_indent) + "\n" if self._code else ""
 
-        self.full_latex = self.TMPL.substitute(
+        return self.TMPL.substitute(
             preamble=self.preamble,
             scale_begin=scale_begin,
             tikzpicture_begin=tikzpicture_begin,

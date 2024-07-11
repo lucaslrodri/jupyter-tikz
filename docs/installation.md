@@ -5,7 +5,10 @@ hide:
 
 ## Prerequisites
 
-Before start the installation, you should verify if the minimal dependencies are installed.
+Jupyter-TikZ is a Python (3.10+) and IPython Magics library. However, in order for Jupyter-TikZ to work properly, some non-Python dependencies need to be installed first:
+
+- LaTeX
+- Poppler
 
 ### LaTeX
 
