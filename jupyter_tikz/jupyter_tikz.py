@@ -177,7 +177,7 @@ class TexDocument:
         if format == "code":
             if src is None:
                 src = self._code
-            dest_path.write_text(src)
+            dest_path.write_text(src, encoding="utf-8")
         else:
             if src is not None:
                 src_path = Path(src).resolve()

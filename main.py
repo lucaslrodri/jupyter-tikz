@@ -104,6 +104,10 @@ All additional options are listed below:
 
 {% include "./docs/templates/contribute.md" %}
 
+# Changelog
+
+{% include "./docs/about/changelog.md" %}
+
 # Thanks
 
 {% include "./docs/templates/motivation.md" %}
@@ -163,5 +167,5 @@ if __name__ == "__main__":
 
     print(rendered_readme)
 
-    with open("README.md", "w") as f:
+    with open("README.md", "w", encoding="utf-8") as f:
         f.write(rendered_readme)
