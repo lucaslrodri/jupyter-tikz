@@ -253,6 +253,11 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
+## v0.3.1
+
+**🐞 Bug Fixes**
+- Fixed DOCs links
+
 ## v0.3.0
 
 **🚀 Features**
