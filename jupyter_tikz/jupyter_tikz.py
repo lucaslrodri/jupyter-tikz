@@ -1,19 +1,19 @@
 """Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks."""
 
 import os
+import re
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
-from shutil import copy
 from string import Template
 from textwrap import indent
+import textwrap
 from typing import Any, Literal
 
 from IPython import display
-from IPython.display import Image, SVG
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
+from IPython.display import SVG, Image
 
 _EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
 _PRINT_CONFLICT_ERR = (
@@ -71,6 +71,18 @@ class TexDocument:
     def _build_full_latex(self) -> None:
         self.full_latex = self._code
 
+    @property
+    def tikz_code(self) -> str | None:
+        pattern = r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}"
+        match = re.search(pattern, self.full_latex, re.DOTALL)
+        if match:
+            return textwrap.dedent("    " + match.group(0))
+        return None
+
+    def __hash__(self) -> int:
+        """Returns the hash value of the full LaTeX code."""
+        return hash(self.full_latex)
+
     @staticmethod
     def _arg_head(arg, limit=60) -> str:
         if type(arg) == str:
@@ -121,9 +133,13 @@ class TexDocument:
 
         return env
 
-    def _run_command(
-        self, command: str, working_dir: str, full_err: bool = False, **kwargs
-    ) -> int:
+    def _clearup_latex_garbage(self) -> None:
+        files = Path().glob(f"{self.__hash__()}.*")
+        for file in files:
+            if file.exists():
+                file.unlink()
+
+    def _run_command(self, command: str, full_err: bool = False, **kwargs) -> int:
 
         result = subprocess.run(
             command,
@@ -131,7 +147,6 @@ class TexDocument:
             capture_output=True,
             text=True,
             check=False,
-            cwd=working_dir,
             **kwargs,
         )
         if result.returncode != 0:
@@ -141,37 +156,9 @@ class TexDocument:
             print(err_msg, file=sys.stderr)
         return result.returncode
 
-    def save(
-        self,
-        dest: str,
-        src: str | None = None,
-        format: Literal["svg", "png", "code"] = "code",
-    ) -> str | None:
-        """Save the TikZ or LaTeX code to a file.
-
-        Args:
-            dest: The destination file path.
-            src: The source file path if the format is a image ("svg" or "png") or code source string if the format is "code".
-            format: The format to save the file. It can be "svg", "png", or "code". If the format is "code", it saves to a text file.
-
-        Raises:
-            ValueError: If the format is not valid.
-            ValueError: If the format is a image ("svg" or "png") and the source file path is not provided.
-
-        Returns:
-            str | None: The destination file absolute path. None if an error occurs.
-        """
-        if dest is None:
-            return None
-
-        if format not in ["svg", "png", "code"]:
-            raise ValueError(
-                f"`{format}` is not a valid format. Valid formats are `svg`, `png`, and `code`."
-            )
-
-        if format != "code" and src is None:
-            raise ValueError("src must be provided when format is not code.")
-
+    def _save(
+        self, dest: str, ext: Literal["tikz", "tex", "png", "svg", "pdf"]
+    ) -> None:
         dest_path = Path(dest)
 
         if os.environ.get("JUPYTER_TIKZ_SAVEDIR"):
@@ -181,24 +168,19 @@ class TexDocument:
 
         dest_path = dest_path.resolve()
 
-        if format == "svg" and (dest_path.suffix != ".svg"):
-            dest_path = dest_path.with_suffix(dest_path.suffix + ".svg")
-        elif format == "png" and (dest_path.suffix != ".png"):
-            dest_path = dest_path.with_suffix(dest_path.suffix + ".png")
-        elif format == "code" and (not dest_path.suffix):
-            dest_path = dest_path.with_suffix(".tex")
+        if dest_path.suffix != f".{ext}":
+            dest_path = dest_path.with_suffix(dest_path.suffix + f".{ext}")
 
         dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if format == "code":
-            if src is None:
-                src = self._code
-            dest_path.write_text(src)
+        if ext == "tikz":
+            if not self.tikz_code:
+                raise ValueError("No TikZ code to save.")
+            dest_path.with_suffix(".tikz").write_text(self.tikz_code, encoding="utf-8")
         else:
-            if src is not None:
-                src_path = Path(src).resolve()
-                copy(src_path, dest_path)
-        return f"{dest_path}"
+            Path(str(self.__hash__())).with_suffix(f".{ext}").replace(
+                dest_path.with_suffix(f".{ext}")
+            )
 
     def run_latex(
         self,
@@ -208,6 +190,9 @@ class TexDocument:
         full_err: bool = False,
         save_image: str | None = None,
         dpi: int = 96,
+        save_tex: str | None = None,
+        save_tikz: str | None = None,
+        save_pdf: str | None = None,
     ) -> Image | SVG | None:
         """Run the LaTeX program to render the LaTeX code.
 
@@ -218,27 +203,25 @@ class TexDocument:
             full_err: Print the full error message when an error occurs. If False, it prints only the last 20 lines.
             save_image: Save the output image to file.
             dpi: DPI to use when rasterizing the image.
+            save_tex: Save the full LaTeX code to file.
+            save_tikz: Save the TikZ code to file.
+            save_pdf: Save the output PDF to file.
 
         Returns:
             Image | SVG | None: The rendered image. None if an error occurs.
         """
-        current_dir = os.getcwd()  # get current working directory
-
-        with tempfile.TemporaryDirectory() as working_dir:
-            tex_path = Path(working_dir) / "tikz.tex"
-
-            env = self._modify_texinputs(current_dir)
-            output_stem = tex_path.parent.resolve() / tex_path.stem
-
+        try:
+            tex_path = Path().resolve() / f"{self.__hash__()}.tex"
             tex_path.write_text(self.full_latex, encoding="utf-8")
 
             tex_command = tex_program
             if tex_args:
                 tex_command += f" {tex_args}"
-            tex_command += f" {tex_path.resolve()}"
+            tex_command += f" {tex_path}"
 
-            res = self._run_command(tex_command, working_dir, full_err, env=env)
+            res = self._run_command(tex_command, full_err=full_err)
             if res != 0:
+                self._clearup_latex_garbage()
                 return None
 
             image_format = "svg" if not rasterize else "png"
@@ -252,22 +235,40 @@ class TexDocument:
             if rasterize:
                 pdftocairo_command += f" -singlefile -transp -r {dpi}"
 
-            pdftocairo_command += f" {output_stem}.pdf"
+            pdftocairo_command += f" {tex_path.with_suffix('.pdf')}"
             pdftocairo_command += (
-                f" {output_stem}.svg" if not rasterize else f" {output_stem}"
+                f" {tex_path.with_suffix('.svg')}"
+                if not rasterize
+                else f" {tex_path.parent / tex_path.stem}"
             )
-            res = self._run_command(pdftocairo_command, working_dir, full_err)
+            res = self._run_command(pdftocairo_command, full_err=full_err)
+
             if res != 0:
+                self._clearup_latex_garbage()
                 return None
 
-            if not rasterize:
-                if save_image:
-                    self.save(save_image, f"{output_stem}.svg", "svg")
-                return display.SVG(f"{output_stem}.svg")
-            else:
-                if save_image:
-                    self.save(save_image, f"{output_stem}.png", "png")
-                return display.Image(f"{output_stem}.png")
+            image = (
+                display.Image(tex_path.with_suffix(".png"))
+                if rasterize
+                else display.SVG(tex_path.with_suffix(".svg"))
+            )
+
+            if save_image:
+                self._save(save_image, image_format)
+            if save_tex:
+                self._save(save_tex, "tex")
+            if save_pdf:
+                self._save(save_pdf, "pdf")
+            if save_tikz and self.tikz_code:
+                self._save(save_tikz, "tikz")
+
+            self._clearup_latex_garbage()
+
+            return image
+        except Exception as e:
+            raise e
+        finally:
+            self._clearup_latex_garbage()
 
     def _render_jinja(self, ns) -> None:
         try:
@@ -405,7 +406,7 @@ class TexFragment(TexDocument):
 
 
 _ARGS = {
-    "input-type": {  # New
+    "input-type": {
         "short-arg": "as",
         "dest": "input_type",
         "type": str,
@@ -475,7 +476,7 @@ _ARGS = {
         "type": bool,
         "desc": "Print the rendered Jinja2 template",
     },
-    "print-tex": {  # New
+    "print-tex": {
         "short-arg": "pt",
         "dest": "print_tex",
         "type": bool,
@@ -531,13 +532,29 @@ _ARGS = {
         "type": bool,
         "desc": "Do not compile the TeX code",
     },
-    "save-text": {
+    "save-tikz": {
         "short-arg": "s",
+        "dest": "save_tikz",
+        "type": str,
+        "default": None,
+        "desc": "Save the TikZ code to file",
+        "example": "`-s filename.tikz`",
+    },
+    "save-tex": {
+        "short-arg": "st",
         "dest": "save_tex",
         "type": str,
         "default": None,
-        "desc": "Save the TikZ or LaTeX code to file",
-        "example": "`-s filename.tikz`",
+        "desc": "Save full LaTeX code to file",
+        "example": "`-st filename.tex`",
+    },
+    "save-pdf": {
+        "short-arg": "sp",
+        "dest": "save_pdf",
+        "type": str,
+        "default": None,
+        "desc": "Save PDF file",
+        "example": "`-sp filename.pdf`",
     },
     "save-image": {
         "short-arg": "S",
@@ -545,7 +562,7 @@ _ARGS = {
         "type": str,
         "default": None,
         "desc": "Save the output image to file",
-        "example": "`-S filename.png`",
+        "example": "`-S filename.svg` or `-S filename.png`",
     },
     "save-var": {
         "short-arg": "sv",
@@ -735,6 +752,9 @@ class TikZMagics(Magics):
                 tex_args=self.args.tex_args,
                 rasterize=self.args.rasterize,
                 full_err=self.args.full_err,
+                save_tikz=self.args.save_tikz,
+                save_tex=self.args.save_tex,
+                save_pdf=self.args.save_pdf,
                 save_image=self.args.save_image,
                 dpi=self.args.dpi,
             )
@@ -743,8 +763,5 @@ class TikZMagics(Magics):
 
         if self.args.save_var:
             local_ns[self.args.save_var] = str(self.tex_obj)
-
-        if self.args.save_tex:
-            self.saved_path = self.tex_obj.save(self.args.save_tex, format="code")
 
         return image

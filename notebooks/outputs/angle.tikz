@@ -1,0 +1,12 @@
+    \begin{tikzpicture}
+		% Example from Paul Gaborit
+		% http://www.texample.net/tikz/examples/angles-quotes/
+		\draw
+		    (3,-1) coordinate (a) node[right] {a}
+		    -- (0,0) coordinate (b) node[left] {b}
+		    -- (2,2) coordinate (c) node[above right] {c}
+		    pic["$\alpha$", draw=orange, <->, angle eccentricity=1.2, angle radius=1cm]
+		    {angle=a--b--c};
+
+		\node[rotate=10] (r) at (2.5, 0.65) {Something about in $\mathbb{R}^2$};
+	\end{tikzpicture}

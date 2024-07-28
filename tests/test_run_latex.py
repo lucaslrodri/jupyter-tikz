@@ -80,12 +80,12 @@ def test_run_command_failure(
     assert expected_err == err
 
 
-def test_run_command_invalid_command(tex_document, capsys, tmp_path):
+def test_run_command_invalid_command(tex_document, capsys):
     # Arrange
     command = "invalid_command"
 
     # Act
-    res = tex_document._run_command(command, working_dir=tmp_path)
+    res = tex_document._run_command(command)
 
     # Assert
     _, err = capsys.readouterr()
@@ -155,7 +155,7 @@ def test_run_command_invalid_pdflatex(tex_document, capsys, tmp_path):
     command = "pdflatex not_exists.tex"
 
     # Act
-    res = tex_document._run_command(command, working_dir=tmp_path)
+    res = tex_document._run_command(command)
 
     # Assert
     _, err = capsys.readouterr()
@@ -165,12 +165,12 @@ def test_run_command_invalid_pdflatex(tex_document, capsys, tmp_path):
 
 
 @pytest.mark.needs_latex
-def test_run_command_valid_pdflatex(tex_document, tmp_path):
+def test_run_command_valid_pdflatex(tex_document):
     # Arrange
     command = "pdflatex --help"
 
     # Act
-    res = tex_document._run_command(command, working_dir=tmp_path)
+    res = tex_document._run_command(command)
 
     # Assert
     assert res == 0
@@ -225,17 +225,21 @@ def tex_document_mock__run_latex(mocker, tex_document, tmpdir):
     ],
 )
 def test_run_latex__valid_tex_program(
-    tex_document_mock__run_latex, tmp_path, mocker, tex_program, tex_args
+    tex_document_mock__run_latex, tmp_path, mocker, tex_program, tex_args, monkeypatch
 ):
     # Arrange
+    monkeypatch.chdir(tmp_path)
+
     full_err = False
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
 
+    path = Path().resolve() / str(hash(tex_document_mock__run_latex))
+
     if tex_args:
-        expected_command = f"{tex_program} {tex_args} {tmp_path / 'tikz.tex'}"
+        expected_command = f"{tex_program} {tex_args} {path}.tex"
     else:
-        expected_command = f"{tex_program} {tmp_path / 'tikz.tex'}"
+        expected_command = f"{tex_program} {path}.tex"
 
     # Act
     tex_document_mock__run_latex.run_latex(
@@ -243,20 +247,22 @@ def test_run_latex__valid_tex_program(
     )
 
     # Assert
-    spy.assert_any_call(expected_command, ANY, ANY, env=ANY)
+    spy.assert_any_call(expected_command, ANY)
 
 
 def test_pdf_cairo_custom_path(
     tex_document_mock__run_latex, monkeypatch, mocker, tmp_path
 ):
     # Arrange
+    monkeypatch.chdir(tmp_path)
+
     pdf_to_cairo_path = f"{tmp_path / 'pdftocairo_dir'/ 'pdftocairo.exe'}"
 
     monkeypatch.setenv(
         "JUPYTER_TIKZ_PDFTOCAIROPATH",
         pdf_to_cairo_path,
     )
-    output_stem = tmp_path / "tikz"
+    output_stem = Path().resolve() / str(hash(tex_document_mock__run_latex))
     full_err = False
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
@@ -267,12 +273,16 @@ def test_pdf_cairo_custom_path(
     tex_document_mock__run_latex.run_latex(full_err=full_err)
 
     # Assert
-    spy.assert_called_with(expected_command, tmp_path, full_err)
+    spy.assert_called_with(expected_command, full_err)
 
 
-def test_pdf_cairo_default_path(tex_document_mock__run_latex, mocker, tmp_path):
+def test_pdf_cairo_default_path(
+    tex_document_mock__run_latex, mocker, tmp_path, monkeypatch
+):
     # Arrange
-    output_stem = tmp_path / "tikz"
+    monkeypatch.chdir(tmp_path)
+
+    output_stem = Path().resolve() / str(hash(tex_document_mock__run_latex))
     full_err = False
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
@@ -283,13 +293,17 @@ def test_pdf_cairo_default_path(tex_document_mock__run_latex, mocker, tmp_path):
     res = tex_document_mock__run_latex.run_latex(full_err=full_err)
 
     # Assert
-    spy.assert_called_with(expected_command, tmp_path, full_err)
+    spy.assert_called_with(expected_command, full_err)
     assert res == "SVG"
 
 
-def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path):
+def test_pdf_cairo_rasterize(
+    tex_document_mock__run_latex, mocker, tmp_path, monkeypatch
+):
     # Arrange
-    output_stem = tmp_path / "tikz"
+    monkeypatch.chdir(tmp_path)
+
+    output_stem = Path().resolve() / str(hash(tex_document_mock__run_latex))
     full_err = False
     rasterize = True
     dpi = 300
@@ -306,7 +320,7 @@ def test_pdf_cairo_rasterize(tex_document_mock__run_latex, mocker, tmp_path):
     )
 
     # Assert
-    spy.assert_called_with(expected_command, tmp_path, full_err)
+    spy.assert_called_with(expected_command, full_err)
     assert res == "Image"
 
 
@@ -360,6 +374,24 @@ def test_passed_latex_but_failed_pdftocairo(
     assert "error" in err.lower()
 
 
+def test_run_latex_exeption_cleanup(tmp_path, monkeypatch, mocker):
+    # Arrange
+    monkeypatch.chdir(tmp_path)
+
+    mocker.patch.object(Path, "write_text", side_effect=Exception("Write error"))
+
+    # Act
+    tex_document = TexDocument(
+        r"\\documentclass{article}\\begin{document}Hello, world!\\end{document}"
+    )
+    spy = mocker.spy(tex_document, "_clearup_latex_garbage")
+
+    # Assert
+    with pytest.raises(Exception, match="Write error"):
+        tex_document.run_latex()
+        spy.assert_called_once()
+
+
 @pytest.mark.parametrize("rasterize", [False, True])
 def test_run_latex_save_image_call(
     tex_document_mock__run_latex, mocker, tmp_path, rasterize
@@ -374,16 +406,14 @@ def test_run_latex_save_image_call(
 
     image = f"image.{format}"
     mocker.patch.object(
-        tex_document_mock__run_latex, "save", side_effect=side_effect_save_image
+        tex_document_mock__run_latex, "_save", side_effect=side_effect_save_image
     )
 
     # Act
     res = tex_document_mock__run_latex.run_latex(save_image=image, rasterize=rasterize)
 
     # Assert
-    tex_document_mock__run_latex.save.assert_called_once_with(
-        image, str(expected_path), format
-    )
+    tex_document_mock__run_latex._save.assert_called_once_with(image, format)
 
 
 # ========================= texinputs env - no mocks =========================
