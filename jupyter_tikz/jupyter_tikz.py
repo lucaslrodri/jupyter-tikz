@@ -4,10 +4,10 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
 from pathlib import Path
 from string import Template
 from textwrap import indent
-import textwrap
 from typing import Any, Literal
 
 from IPython import display
@@ -24,20 +24,6 @@ _JINJA_NOT_INTALLED_ERR = (
     "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
 )
 _NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
-
-
-# _DEPRECATED_I_ERR = (
-#     "Deprecated: Do not use `--implicit-pic`. Use `-as=tikzpicture` instead."
-# )
-# _DEPRECATED_F_ERR = (
-#     "Deprecated: Do not use `--full-document`. Use `-as=full-document` instead."
-# )
-# _DEPRECATED_I_AND_F_ERR = (
-#     "Deprecated: Do not use `-i` or `-f`. Use `-as=<input_type>` instead."
-# )
-# _DEPRECATED_ASJINJA_ERR = (
-#     "Deprecated: Do not use `--as-jinja`. Use `--use-jinja` instead."
-# )
 
 
 class TexDocument:
@@ -118,26 +104,12 @@ class TexDocument:
         """
         return self._code
 
-    @staticmethod
-    def _modify_texinputs(current_dir: str) -> dict[str, str]:
-        env = os.environ.copy()
-        # TEXINPUTS is a environment variable that tells LaTeX where to look for files
-        # https://tex.stackexchange.com/questions/410350/texinputs-on-windows
-        if "TEXINPUTS" in env:
-            env["TEXINPUTS"] = current_dir + os.pathsep + env["TEXINPUTS"]
-        else:
-            env["TEXINPUTS"] = "." + os.pathsep + current_dir + os.pathsep * 2
-            # note that the trailing double pathsep will insert the standard
-            # search path (otherwise we would lose access to all packages)
-            # TEXINPUTS=.;C:\Users\user\Documents\LaTeX\local\\;
-
-        return env
-
-    def _clearup_latex_garbage(self) -> None:
-        files = Path().glob(f"{self.__hash__()}.*")
-        for file in files:
-            if file.exists():
-                file.unlink()
+    def _clearup_latex_garbage(self, keep_temp) -> None:
+        if not (keep_temp):  # F
+            files = Path().glob(f"{self.__hash__()}.*")
+            for file in files:
+                if file.exists():
+                    file.unlink()
 
     def _run_command(self, command: str, full_err: bool = False, **kwargs) -> int:
 
@@ -188,8 +160,10 @@ class TexDocument:
         tex_args: str | None = None,
         rasterize: bool = False,
         full_err: bool = False,
+        keep_temp: bool = False,
         save_image: str | None = None,
         dpi: int = 96,
+        grayscale: bool = False,
         save_tex: str | None = None,
         save_tikz: str | None = None,
         save_pdf: str | None = None,
@@ -201,8 +175,10 @@ class TexDocument:
             tex_args: Arguments to pass to the TeX program.
             rasterize: Output a rasterized image (PNG) instead of SVG.
             full_err: Print the full error message when an error occurs. If False, it prints only the last 20 lines.
+            keep_temp: Keep temporary LaTeX files.
             save_image: Save the output image to file.
             dpi: DPI to use when rasterizing the image.
+            grayscale: Set grayscale to a rasterized image.
             save_tex: Save the full LaTeX code to file.
             save_tikz: Save the TikZ code to file.
             save_pdf: Save the output PDF to file.
@@ -211,6 +187,7 @@ class TexDocument:
             Image | SVG | None: The rendered image. None if an error occurs.
         """
         try:
+
             tex_path = Path().resolve() / f"{self.__hash__()}.tex"
             tex_path.write_text(self.full_latex, encoding="utf-8")
 
@@ -221,7 +198,7 @@ class TexDocument:
 
             res = self._run_command(tex_command, full_err=full_err)
             if res != 0:
-                self._clearup_latex_garbage()
+                self._clearup_latex_garbage(keep_temp)
                 return None
 
             image_format = "svg" if not rasterize else "png"
@@ -233,7 +210,9 @@ class TexDocument:
 
             pdftocairo_command = f"{pdftocairo_path} -{image_format}"
             if rasterize:
-                pdftocairo_command += f" -singlefile -transp -r {dpi}"
+                pdftocairo_command += (
+                    f" -singlefile -{'gray' if grayscale else 'transp'} -r {dpi}"
+                )
 
             pdftocairo_command += f" {tex_path.with_suffix('.pdf')}"
             pdftocairo_command += (
@@ -244,7 +223,7 @@ class TexDocument:
             res = self._run_command(pdftocairo_command, full_err=full_err)
 
             if res != 0:
-                self._clearup_latex_garbage()
+                self._clearup_latex_garbage(keep_temp)
                 return None
 
             image = (
@@ -262,13 +241,13 @@ class TexDocument:
             if save_tikz and self.tikz_code:
                 self._save(save_tikz, "tikz")
 
-            self._clearup_latex_garbage()
+            self._clearup_latex_garbage(keep_temp)
 
             return image
         except Exception as e:
             raise e
         finally:
-            self._clearup_latex_garbage()
+            self._clearup_latex_garbage(keep_temp)
 
     def _render_jinja(self, ns) -> None:
         try:
@@ -464,7 +443,7 @@ _ARGS = {
         "desc": "Comma-separated list of pgfplots libraries",
         "example": "`-pl=groupplots,external`",
     },
-    "use-jinja": {  # Changed
+    "use-jinja": {
         "short-arg": "j",
         "dest": "use_jinja",
         "type": bool,
@@ -504,11 +483,23 @@ _ARGS = {
         "desc": "DPI to use when rasterizing the image",
         "example": "`--dpi=300`",
     },
+    "gray": {  # New
+        "short-arg": "g",
+        "dest": "gray",
+        "type": bool,
+        "desc": "Set grayscale to a rasterized image",
+    },
     "full-err": {
         "short-arg": "e",
         "dest": "full_err",
         "type": bool,
         "desc": "Print the full error message when an error occurs",
+    },
+    "keep-temp": {  # New
+        "short-arg": "k",
+        "dest": "keep_temp",
+        "type": bool,
+        "desc": "Keep temporary LaTeX files",
     },
     "tex-program": {
         "short-arg": "tp",
@@ -532,7 +523,7 @@ _ARGS = {
         "type": bool,
         "desc": "Do not compile the TeX code",
     },
-    "save-tikz": {
+    "save-tikz": {  # New
         "short-arg": "s",
         "dest": "save_tikz",
         "type": str,
@@ -540,7 +531,7 @@ _ARGS = {
         "desc": "Save the TikZ code to file",
         "example": "`-s filename.tikz`",
     },
-    "save-tex": {
+    "save-tex": {  # Changed
         "short-arg": "st",
         "dest": "save_tex",
         "type": str,
@@ -548,7 +539,7 @@ _ARGS = {
         "desc": "Save full LaTeX code to file",
         "example": "`-st filename.tex`",
     },
-    "save-pdf": {
+    "save-pdf": {  # New
         "short-arg": "sp",
         "dest": "save_pdf",
         "type": str,
@@ -569,7 +560,7 @@ _ARGS = {
         "dest": "save_var",
         "type": str,
         "default": None,
-        "desc": "Save the TikZ or LaTeX code to an IPython variable",
+        "desc": "Save cell content (TikZ or LaTeX code) to an IPython variable",
         "example": "`-sv my_var`",
     },
 }
@@ -752,11 +743,13 @@ class TikZMagics(Magics):
                 tex_args=self.args.tex_args,
                 rasterize=self.args.rasterize,
                 full_err=self.args.full_err,
+                keep_temp=self.args.keep_temp,
                 save_tikz=self.args.save_tikz,
                 save_tex=self.args.save_tex,
                 save_pdf=self.args.save_pdf,
                 save_image=self.args.save_image,
                 dpi=self.args.dpi,
+                grayscale=self.args.gray,
             )
             if image is None:
                 return None

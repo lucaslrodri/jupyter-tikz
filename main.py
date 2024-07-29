@@ -1,5 +1,6 @@
 import sys
 from textwrap import dedent
+
 import jinja2
 
 sys.path.insert(1, "./jupyter_tikz")

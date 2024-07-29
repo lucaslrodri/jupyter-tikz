@@ -75,6 +75,29 @@ def test__save_tikz_replace(tmpdir, monkeypatch, file_name, expected_file_name):
     assert expected_file.read_text() == TIKZ_CODE
 
 
+def test__tikz_code_no_tikz_code(tmp_path, monkeypatch):
+    # Arrange
+    monkeypatch.chdir(tmp_path)
+
+    # Act
+    tex_document = TexDocument("No tikz code")
+
+    # Assert
+    assert tex_document.tikz_code == None
+
+
+def test__save_tikz_no_tikz(tmpdir, monkeypatch):
+    # Arrange
+    monkeypatch.chdir(tmpdir)
+
+    # Act
+    tex_document = TexDocument("No tikz code")
+
+    # Assert
+    with pytest.raises(ValueError, match="No TikZ code to save."):
+        tex_document._save("file", "tikz")
+
+
 @pytest.mark.parametrize(**DESTINATIONS_TIKZ_PARAMETRIZE)
 def test__save_tikz_env_dest(tmpdir, monkeypatch, file_name, expected_file_name):
     # Arrange

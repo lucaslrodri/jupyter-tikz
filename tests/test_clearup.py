@@ -5,8 +5,11 @@ import pytest
 from jupyter_tikz import TexDocument
 
 
-@pytest.mark.parametrize("code", ["test code", "any code", "multi\nline\ncode"])
-def test_clearup_latex_garbage(tmpdir, monkeypatch, code):
+@pytest.mark.parametrize(
+    "code, keep",
+    [("test code", False), ("any code", False), ("multi\nline\ncode", True)],
+)
+def test_clearup_latex_garbage(tmpdir, monkeypatch, code, keep):
     # Arrange
     monkeypatch.chdir(tmpdir)
     exts = ["tex", "aux", "log", "pdf", "svg", "png"]
@@ -19,11 +22,15 @@ def test_clearup_latex_garbage(tmpdir, monkeypatch, code):
 
     # Assert
     tex_document = TexDocument(code)
-    tex_document._clearup_latex_garbage()
+    tex_document._clearup_latex_garbage(keep)
 
     # Act
     for ext in exts:
-        assert not file_path.with_suffix(f".{ext}").exists()
+        if not keep:
+            assert not file_path.with_suffix(f".{ext}").exists()
+        else:
+            assert file_path.with_suffix(f".{ext}").exists()
+            assert file_path.with_suffix(f".{ext}").read_text() == dummy_content
 
 
 EXAMPLE_BAD_TIKZ = "HELLO WORLD"

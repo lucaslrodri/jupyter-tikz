@@ -24,13 +24,15 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.urls]
-"Homepage" = "https://github.com/lucaslrodri/jupyter-tikz"
-"Repository" = "https://github.com/lucaslrodri/jupyter-tikz"
+"Homepage" = "https://jupyter-tikz.readthedocs.io/"
+"Documentation" = "https://jupyter-tikz.readthedocs.io/"
+"Repository" = "https://github.com/lucaslrodri/jupyter-tikz/"
+"Tracker" = "https://github.com/lucaslrodri/jupyter-tikz/issues/"
 
 
 [tool.poetry.dependencies]
 python = "^3.10"
-ipython = "^8.25.0"
+ipython = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
@@ -42,10 +44,11 @@ pytest-cov = "^5.0.0"
 pytest-mock = "^3.14.0"
 
 [tool.poetry.group.doc.dependencies]
-mkdocstrings = { extras = ["python"], version = "^0.25.1" }
-mkdocs-material = "^9.5.28"
-mkdocs-macros-plugin = "^1.0.5"
-jinja2 = "^3.1.4"
+mkdocs = "~1.6.0"
+mkdocs-material = "~9.5.28"
+mkdocstrings = { extras = ["python"], version = "~0.25.1" }
+jinja2 = "~3.1.4"
+mkdocs-macros-plugin = "~1.0.5"
 
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
@@ -63,3 +66,4 @@ profile = "black"
 lint = "black . && isort ."
 test = "pytest -vv --cov=jupyter_tikz"
 post_test = "coverage lcov"
+readme = "python main.py"

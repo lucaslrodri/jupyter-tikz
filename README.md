@@ -156,13 +156,17 @@ All additional options are listed below:
 | `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |
 | `-r`<br>`--rasterize` | Output a rasterized image (PNG) instead of SVG. |
 | `-d=<int>`<br>`--dpi=<int>` | DPI to use when rasterizing the image.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `--dpi=300`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-d=96`. |
+| `-g`<br>`--gray` | Set grayscale to a rasterized image. |
 | `-e`<br>`--full-err` | Print the full error message when an error occurs. |
+| `-k`<br>`--keep-temp` | Keep temporary LaTeX files. |
 | `-tp=<str>`<br>`--tex-program=<str>` | TeX program to use for compilation.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-tp=xelatex` or `-tp=lualatex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-tp=pdflatex`. |
 | `-ta=<str>`<br>`--tex-args=<str>` | Arguments to pass to the TeX program.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-ta="$tex_args_ipython_variable"`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-nc`<br>`--no-compile` | Do not compile the TeX code. |
-| `-s=<str>`<br>`--save-text=<str>` | Save the TikZ or LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
-| `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
-| `-sv=<str>`<br>`--save-var=<str>` | Save the TikZ or LaTeX code to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-s=<str>`<br>`--save-tikz=<str>` | Save the TikZ code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-st=<str>`<br>`--save-tex=<str>` | Save full LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-st filename.tex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-sp=<str>`<br>`--save-pdf=<str>` | Save PDF file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sp filename.pdf`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.svg` or `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-sv=<str>`<br>`--save-var=<str>` | Save cell content (TikZ or LaTeX code) to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 
 # Adding TikZ Syntax highlight
 

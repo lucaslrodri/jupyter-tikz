@@ -15,40 +15,6 @@ def tex_document():
     return TexDocument("any code")
 
 
-# ========================= texinputs env =========================
-
-
-def test_texinputs_already_set(tex_document, tmp_path, monkeypatch):
-    # Arrange
-    initial_texinputs = f'{tmp_path / "LaTeX" / "local"}' + os.pathsep * 2
-    monkeypatch.setenv("TEXINPUTS", initial_texinputs)
-
-    current_dir = f'{tmp_path / "current_dir"}'
-
-    expected_res = f"{current_dir}" + os.pathsep + initial_texinputs
-
-    # Act
-    res = tex_document._modify_texinputs(current_dir)
-
-    # Assert
-    assert res["TEXINPUTS"] == expected_res
-
-
-def test_texinputs_not_set(tex_document, tmp_path, monkeypatch):
-    # Arrange
-    monkeypatch.delenv("TEXINPUTS", raising=False)
-
-    current_dir = f'{tmp_path / "current_dir"}'
-
-    expected_res = "." + os.pathsep + f"{current_dir}" + os.pathsep * 2
-
-    # Act
-    res = tex_document._modify_texinputs(current_dir)
-
-    # Assert
-    assert res["TEXINPUTS"] == expected_res
-
-
 # ========================= run_command =========================
 
 
@@ -317,6 +283,34 @@ def test_pdf_cairo_rasterize(
     # Act
     res = tex_document_mock__run_latex.run_latex(
         full_err=full_err, rasterize=rasterize, dpi=dpi
+    )
+
+    # Assert
+    spy.assert_called_with(expected_command, full_err)
+    assert res == "Image"
+
+
+def test_pdf_cairo_rasterize_with_grayscale(
+    tex_document_mock__run_latex, mocker, tmp_path, monkeypatch
+):
+    # Arrange
+    monkeypatch.chdir(tmp_path)
+
+    output_stem = Path().resolve() / str(hash(tex_document_mock__run_latex))
+    full_err = False
+    rasterize = True
+    dpi = 300
+    grayscale = True
+
+    spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
+
+    expected_command = (
+        f"pdftocairo -png -singlefile -gray -r {dpi} {output_stem}.pdf {output_stem}"
+    )
+
+    # Act
+    res = tex_document_mock__run_latex.run_latex(
+        full_err=full_err, rasterize=rasterize, dpi=dpi, grayscale=grayscale
     )
 
     # Assert

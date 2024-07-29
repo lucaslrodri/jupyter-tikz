@@ -2,9 +2,8 @@ import pytest
 
 from jupyter_tikz import TexDocument, TexFragment, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
-    _PRINT_CONFLICT_ERR,
-    _INPUT_TYPE_CONFLIT_ERR,
     _EXTRAS_CONFLITS_ERR,
+    _INPUT_TYPE_CONFLIT_ERR,
     _PRINT_CONFLICT_ERR,
 )
 
@@ -106,7 +105,7 @@ RES_TIKZ_BASIC_STANDALONE = r"""\documentclass{standalone}
 
 def test_print_tex(tikz_magic_mock, capsys):
     # Arrange
-    line = "-pt -as=full"
+    line = "-pt -as=full -sv=var -g"
     cell = "EXAMPLE_TIKZ"
 
     # Act

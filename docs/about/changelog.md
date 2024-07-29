@@ -5,14 +5,17 @@ All notable changes to this project are presented below.
 **🚀 Features**
 
 - Added support for PGFPlots with external data files.
+- Introduced a new flag (`-k`) to retain LaTeX temporary files.
 - Added support for grayscale output in rasterized mode.
-- Introduced new flags `--save-tikz` and `--save-pdf` to save the TikZ file and pdf, `--save-tex` now saves the full LaTeX file.
-- Added metadata to the documentation.
+- Introduced new flags `--save-tikz` and `--save-pdf` to save the TikZ and PDF files respectively; `--save-tex` now explicitly saves the full LaTeX document.
+- Added metadata docs.
 
 **🚨 Breaking Changes**
 
-- Changed how save works (You should pass the option in `TexDocument.run_latex(...)`, no longer uses `TexDocument.save()`).
-- LaTeX rendering is now performed in the current folder instead of a `tempdir`.
+- Modified the save functionality: Options must now be passed in `TexDocument.run_latex(...)` as `TexDocument.save()` is no longer used.
+- LaTeX rendering is now performed in the current folder, moving away from the use of a temporary directory (`tempdir`). This change facilitates access to external files for PGFPlots.
+
+
 
 ## v0.3.2
 
