@@ -1,4 +1,5 @@
 import pytest
+
 from jupyter_tikz.jupyter_tikz import _get_arg_params
 
 

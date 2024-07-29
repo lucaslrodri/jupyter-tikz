@@ -231,11 +231,15 @@ All additional options are listed below:
 | `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |
 | `-r`<br>`--rasterize` | Output a rasterized image (PNG) instead of SVG. |
 | `-d=<int>`<br>`--dpi=<int>` | DPI to use when rasterizing the image.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `--dpi=300`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-d=96`. |
+| `-g`<br>`--gray` | Set grayscale to a rasterized image. |
 | `-e`<br>`--full-err` | Print the full error message when an error occurs. |
+| `-k`<br>`--keep-temp` | Keep temporary LaTeX files. |
 | `-tp=<str>`<br>`--tex-program=<str>` | TeX program to use for compilation.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-tp=xelatex` or `-tp=lualatex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-tp=pdflatex`. |
 | `-ta=<str>`<br>`--tex-args=<str>` | Arguments to pass to the TeX program.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-ta="$tex_args_ipython_variable"`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-nc`<br>`--no-compile` | Do not compile the TeX code. |
-| `-s=<str>`<br>`--save-text=<str>` | Save the TikZ or LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-s=<str>`<br>`--save-tikz=<str>` | Save the TikZ code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-st=<str>`<br>`--save-tex=<str>` | Save full LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-st filename.tex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-sp=<str>`<br>`--save-pdf=<str>` | Save PDF file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sp filename.pdf`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-sv=<str>`<br>`--save-var=<str>` | Save the TikZ or LaTeX code to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 
@@ -253,14 +257,30 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
+## v0.4.0
+
+**🚀 Features**
+
+- Added support for PGFPlots with external data files.
+- Introduced a new flag (`-k`) to retain LaTeX temporary files.
+- Added support for grayscale output in rasterized mode.
+- Introduced new flags `--save-tikz` and `--save-pdf` to save the TikZ and PDF files respectively; `--save-tex` now explicitly saves the full LaTeX document.
+
+**🚨 Breaking Changes**
+
+- Modified the save functionality: Options must now be passed in `TexDocument.run_latex(...)` as `TexDocument.save()` is no longer used.
+- LaTeX rendering is now performed in the current folder, moving away from the use of a temporary directory (`tempdir`). This change facilitates access to external files for PGFPlots.
+
 ## v0.3.2
 
 **🐞 Bug Fixes**
+
 - Improved documentation visibility on mobile devices.
 
 ## v0.3.1
 
 **🐞 Bug Fixes**
+
 - Fixed DOCs links.
 
 ## v0.3.0

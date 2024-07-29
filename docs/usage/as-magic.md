@@ -339,7 +339,7 @@ Which also works with standalone documents(1):
 </div>
 
 
-## Rasterize the output
+## Rasterizing the output
 
 You can display the output as a rasterized (`png`) image by setting the `-r` (or `--rasterize`) parameter.
 
@@ -349,13 +349,31 @@ It is also possible to set the resolution (dots per inch) by using `-d=<dpi_of_i
 %%tikz -r --dpi=150
 \begin{tikzpicture}
     \draw[help lines] grid (5, 5);
-    \draw[fill=black!50] (1, 1) rectangle (2, 2);
-    \draw[fill=black!50] (2, 1) rectangle (3, 2);
-    \draw[fill=black!50] (3, 1) rectangle (4, 2);
+    \draw[fill=red!50] (1, 1) rectangle (2, 2);
+    \draw[fill=red!50] (2, 1) rectangle (3, 2);
+    \draw[fill=red!50] (3, 1) rectangle (4, 2);
 \end{tikzpicture}
 ```
 <div class="result" markdown>
 ![Conway - rasterized](../assets/tikz/conway_rasterized.png)
+</div>
+
+### Setting to grayscale
+
+When using a rasterized image, you can use the `-g` (or `--gray`) option to apply grayscale to the image. This is useful for previewing how printed versions will appear:
+
+```latex
+%%tikz -r --dpi=150 -g
+\begin{tikzpicture}
+    \draw[help lines] grid (5, 5);
+    \draw[fill=red!50] (1, 1) rectangle (2, 2);
+    \draw[fill=red!50] (2, 1) rectangle (3, 2);
+    \draw[fill=red!50] (3, 1) rectangle (4, 2);
+\end{tikzpicture}
+```
+
+<div class="result" markdown>
+![Conway - rasterized - grayscale](../assets/tikz/conway_rasterized_gray.png)
 </div>
 
 ## Save to file
@@ -418,9 +436,9 @@ Which results in the following directory structure:
    └─ conway.png
 </pre>
 
-### Save code to file
+### Save TikZ code to file
 
-You can save TikZ (or LaTeX) output by using `-s=<tikz_file.tikz>` (or `--save-tex=<tex_file.tikz>`)(1):
+You can save TikZ output by using `-s=<tikz_file.tikz>` (or `--save-tikz=<tikz_file.tikz>`)(1):
 { .annotate }
 
 1.  This command saves the cell content to a file.
@@ -444,6 +462,50 @@ Which results in the following directory structure:
 └─ outputs/
    └─ a_dot.svg
    └─ a_dot.tikz
+</pre>
+
+### Save LaTeX code to file
+
+If you want to save the full LaTeX code for use in an external IDE (e.g., TeXstudio), you can use `-st=<tex_file>` (or `--save-tex=<tex_file.tex>`):
+
+```latex
+%%tikz -st=outputs/a_dot.tex
+\begin{tikzpicture}[scale=3]
+    \draw (0,0) rectangle (1,1);
+    \filldraw (0.5,0.5) circle (.1);
+\end{tikzpicture}
+```
+
+<pre class="log-card">
+.
+└─ outputs/
+   └─ a_dot.tex
+</pre>
+
+<div class="result" markdown>
+![Conway - saved - rasterized](../assets/tikz/a_dot.svg)
+</div>
+
+### Save PDF
+
+You can even save PDF files using the flag `-sp=<pdf_name.pdf>` or `--save-pdf=<pdf_name.pdf>`:
+
+```latex
+%%tikz -sp=outputs/a_dot.pdf
+\begin{tikzpicture}[scale=3]
+    \draw (0,0) rectangle (1,1);
+    \filldraw (0.5,0.5) circle (.1);
+\end{tikzpicture}
+```
+
+<div class="result" markdown>
+![Conway - saved - rasterized](../assets/tikz/a_dot.svg)
+</div>
+
+<pre class="log-card">
+.
+└─ outputs/
+   └─ a_dot.pdf
 </pre>
 
 ## Input from other files
@@ -492,6 +554,45 @@ Then, load it using the `\input` command:
 ```
 <div class="result" markdown>
 ![Complex grid](../assets/tikz/grid-complex.svg)
+</div>
+
+### PGFPlots with .tsv files 
+
+You can import external data using PGFPlots `table {...}`:
+
+```python
+# import pandas as pd
+# import numpy as np
+
+# t = np.linspace(0,1)
+# x = np.sin(2*np.pi*t)+0.1*np.random.rand(*t.shape)
+
+# df = pd.DataFrame(dict(x=x), t).rename_axis(index='t')
+# display(df.head(5))
+# df.to_csv('data.tsv', sep=" ")
+```
+
+```latex
+%%tikz -t=pgfplots -sc=2
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={$t$ (ms)},
+        ylabel={Data},
+        xmin=0, 
+        xmax=1,
+        ymin=-1.2, 
+        ymax=1.2,
+        xmajorgrids,
+        ymajorgrids,
+        title={PGFPlots graph with external data}
+    ]
+    \addplot [semithick, red] table {data.tsv};  % External data.tsv 
+    \end{axis}
+\end{tikzpicture}
+```
+
+<div class="result" markdown>
+![PGFPlots with external data](../assets/tikz/pgfplots-external.svg)
 </div>
 
 ## Using IPython strings
@@ -1050,7 +1151,7 @@ Transcript written on tikz.log.
 
 ### Print entire LaTeX
 
-Finally, if you want to print the entire LaTeX string for any reason, you can use the `-pt` (or `--print-tex`) option:
+If you want to print the entire LaTeX string for any reason, you can use the `-pt` (or `--print-tex`) option:
 
 ```latex
 %%tikz -as=t -sc=2 --print-tex
@@ -1081,3 +1182,31 @@ Finally, if you want to print the entire LaTeX string for any reason, you can us
 </pre>
 ![Loggin output](../assets/tikz/conway_black10_sc2.svg)
 </div>
+
+
+Finally, you can keep the temporary files (LaTeX, PDF and image) for further investigation by using `-k` (or `--keep`). The file names are hex representation of hash of the full LaTeX code.
+
+```latex
+%%tikz -as=t -sc=2 -k
+\draw[help lines] grid (5, 5);
+\draw[fill=black!10] (1, 1) rectangle (2, 2);
+\draw[fill=black!10] (2, 1) rectangle (3, 2);
+\draw[fill=black!10] (3, 1) rectangle (4, 2);
+\draw[fill=black!10] (3, 2) rectangle (4, 3);
+\draw[fill=black!10] (2, 3) rectangle (3, 4);
+```
+
+<div class="result" markdown>
+![Loggin output](../assets/tikz/conway_black10_sc2.svg)
+</div>
+
+Which results in the following directory structure:
+
+<pre class="log-card">
+.
+└─ outputs/
+   └─ 5c9ece67a5163316.aux
+   └─ 5c9ece67a5163316.log
+   └─ 5c9ece67a5163316.pdf
+   └─ 5c9ece67a5163316.svg
+</pre>

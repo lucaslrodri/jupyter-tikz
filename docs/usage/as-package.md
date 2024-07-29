@@ -82,30 +82,22 @@ print(tex_document)  # To print the object displays the code
 Finally, run LaTeX and display the output(1):
 { .annotate }
 
-1.  You can configure the output by passing options to `run_latex`. In this example, `save_image` was used.
+1.  You can configure the output by passing options to `run_latex`. In this example, `save_image` and `save_tikz` were used.
 
 ```python
-tex_document.run_latex(save_image="outputs/angle")
+tex_document.run_latex(save_tikz="outputs/angle", save_image="outputs/angle")
 ```
 <div class="result" markdown>
 ![Angle](../assets/tikz/angle.svg)
 </div>
-
-### Save the code
-
-And save the code to a file:
-
-```python
-tex_document.save("outputs/angle.tex");
-```
 
 The output image and code will be saved in:
 
 <pre class="log-card">
 .
 └─ outputs/
-   └─ angle.tex
    └─ angle.svg
+   └─ angle.tikz
 </pre>
 
 ## Working with Jinja

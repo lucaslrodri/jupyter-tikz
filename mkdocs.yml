@@ -5,6 +5,7 @@ theme:
   name: material
   logo: assets/logo.svg
   favicon: assets/favicon.svg
+  site_url: https://jupyter-tikz.readthedocs.io/
   palette:
     primary: white
     accent: custom
@@ -40,6 +41,7 @@ extra_javascript:
   - javascripts/extra.js
 
 extra:
+  homepage: https://jupyter-tikz.readthedocs.io/
   social:
     - icon: fontawesome/brands/github 
       link: https://github.com/lucaslrodri/jupyter-tikz

@@ -2,9 +2,8 @@ import pytest
 
 from jupyter_tikz import TexDocument, TexFragment, TikZMagics
 from jupyter_tikz.jupyter_tikz import (
-    _PRINT_CONFLICT_ERR,
-    _INPUT_TYPE_CONFLIT_ERR,
     _EXTRAS_CONFLITS_ERR,
+    _INPUT_TYPE_CONFLIT_ERR,
     _PRINT_CONFLICT_ERR,
 )
 
@@ -33,7 +32,6 @@ def tikz_magic_mock(mocker, tmp_path):
     #     return None
 
     mocker.patch.object(TexDocument, "run_latex", side_effect=run_latex_mock)
-    mocker.patch.object(TexDocument, "save", side_effect=save_mock)
     # mocker.patch.object(TexFragment, "_build_full_latex", return_value="dummy_code")
     mocker.patch.object(
         TexFragment, "_build_standalone_preamble", return_value="dummy preamble"
@@ -107,7 +105,7 @@ RES_TIKZ_BASIC_STANDALONE = r"""\documentclass{standalone}
 
 def test_print_tex(tikz_magic_mock, capsys):
     # Arrange
-    line = "-pt -as=full"
+    line = "-pt -as=full -sv=var -g"
     cell = "EXAMPLE_TIKZ"
 
     # Act
@@ -148,36 +146,42 @@ def test_image_none(tikz_magic_mock, mocker, capsys):
     assert res is None
 
 
-def test_save_tex(tikz_magic_mock):
-    # Arrange
-    line = "-s=any_file.tex -sv=any_local_var"
-    cell = "any cell content"
-
-    # Act
-    tikz_magic_mock.tikz(line, cell)
-
-    # Assert
-    assert "any_file.tex" in tikz_magic_mock.saved_path
+TIKZ_CODE = r"""\begin{tikzpicture}
+    \draw[fill=blue] (0, 0) rectangle (1, 1);
+\end{tikzpicture}"""
 
 
-@pytest.mark.needs_latex
-@pytest.mark.needs_pdftocairo
-def test_save_tex_no_mocks(tikz_magic, tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+# def test_save_tikz(tikz_magic_mock):
+#     # Arrange
+#     line = "-s=any_file.tikz"
+#     cell = TIKZ_CODE
 
-    # Arrange
-    file_name = "any_file.tex"
-    file_path = tmp_path / "any_file.tex"
+#     # Act
+#     tikz_magic_mock.tikz(line, cell)
 
-    line = f"-s={file_name} -sv=any_local_var"
-    cell = "any cell content"
+#     # Assert
+#     assert "any_file.tikz" in tikz_magic_mock.saved_path
 
-    # Act
-    tikz_magic.tikz(line, cell)
 
-    # Assert
-    assert file_path.read_text() == cell
-    assert "any_file.tex" in tikz_magic.saved_path
+# @pytest.mark.needs_latex
+# @pytest.mark.needs_pdftocairo
+# def test_save_tikz(tikz_magic, tmp_path, monkeypatch, mocker):
+#     monkeypatch.chdir(tmp_path)
+
+#     # Arrange
+#     file_name = "any_file.tikz"
+#     file_path = tmp_path / "any_file.tikz"
+
+#     line = f"-s={file_name}"
+#     cell = TIKZ_CODE
+
+#     # Act
+#     tikz_magic.tikz(line, cell)
+#     spy = mocker.spy(tikz_magic, "TexDocument")
+
+#     # Assert
+#     assert file_path.read_text() == cell
+#     assert "any_file.tex" in tikz_magic.saved_path
 
 
 # =================== Test input type ===================

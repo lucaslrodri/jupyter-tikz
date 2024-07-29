@@ -8,7 +8,6 @@ All notable changes to this project are presented below.
 - Introduced a new flag (`-k`) to retain LaTeX temporary files.
 - Added support for grayscale output in rasterized mode.
 - Introduced new flags `--save-tikz` and `--save-pdf` to save the TikZ and PDF files respectively; `--save-tex` now explicitly saves the full LaTeX document.
-- Added metadata docs.
 
 **🚨 Breaking Changes**
 

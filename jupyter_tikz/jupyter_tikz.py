@@ -12,9 +12,9 @@ from textwrap import indent
 from typing import Any, Literal
 
 from IPython import display
-from IPython.display import Image, SVG
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
+from IPython.display import SVG, Image
 
 _EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
 _PRINT_CONFLICT_ERR = (
@@ -58,6 +58,7 @@ class TexDocument:
 
     @property
     def tikz_code(self) -> str | None:
+        """Returns the TikZ code (tikzpicture) from the full LaTeX code."""
         pattern = r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}"
         match = re.search(pattern, self.full_latex, re.DOTALL)
         if match:
@@ -73,6 +74,15 @@ class TexDocument:
         else:
             arg = str(arg)
         return arg
+
+    def __hash__(self) -> int:
+        """Returns the hash value of the full LaTeX code."""
+        return hash(self.full_latex)
+
+    @property
+    def hex_hash(self) -> str:
+        """Returns the hexadecimal representation of the hash value of the full LaTeX code."""
+        return f"{abs(self.__hash__()):x}"
 
     def __repr__(self) -> str:
         params_dict = self.__dict__
@@ -101,7 +111,7 @@ class TexDocument:
 
     def _clearup_latex_garbage(self, keep_temp) -> None:
         if not (keep_temp):  # F
-            files = Path().glob(f"{self.__hash__()}.*")
+            files = Path().glob(f"{self.hex_hash}.*")
             for file in files:
                 if file.exists():
                     file.unlink()
@@ -145,7 +155,7 @@ class TexDocument:
                 raise ValueError("No TikZ code to save.")
             dest_path.with_suffix(".tikz").write_text(self.tikz_code, encoding="utf-8")
         else:
-            Path(str(self.__hash__())).with_suffix(f".{ext}").replace(
+            Path(self.hex_hash).with_suffix(f".{ext}").replace(
                 dest_path.with_suffix(f".{ext}")
             )
 
@@ -183,7 +193,7 @@ class TexDocument:
         """
         try:
 
-            tex_path = Path().resolve() / f"{self.__hash__()}.tex"
+            tex_path = Path().resolve() / f"{self.hex_hash}.tex"
             tex_path.write_text(self.full_latex, encoding="utf-8")
 
             tex_command = tex_program
