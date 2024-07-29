@@ -7,7 +7,7 @@ hide:
 
 ---
 
-<div style="display: flex; justify-content: center; align-items: center; column-gap: 1em; margin: 0 auto; flex-wrap: wrap" markdown>
+<div class="code-showcase" markdown>
 ```latex
 %%tikz
 \begin{tikzpicture}
@@ -16,15 +16,17 @@ hide:
      \filldraw [color=cyan, opacity=0.3] (4.5,2.5) circle (1.5);
 \end{tikzpicture}
 ```
-![A dot and a gridline](./assets/tikz/dots_in_grid.svg){height="300"}
+<div class="result-showcase">
+<img src="./assets/tikz/dots_in_grid.svg" alt="A dot and a gridline">
+</div>
 </div>
 
 
 ---
 
 <div style="display: flex; justify-content: center; margin: 0 auto;">
-<pre style="min-width: 16em; height: 2em;">
-<code class="language-shell">pip install jupyter-tikz</code>
+<pre style="height: 4em; overflow-x: auto;">
+<code class="language-shell" style="padding-right: 3em;">pip install jupyter-tikz</code>
 </pre>
 </div>
 
@@ -32,8 +34,9 @@ hide:
 ---
 
 # Getting started
-
 {{ description }}
+
+## Basic Usage
 
 {% include "templates/basic-usage.md" %}
 
@@ -77,6 +80,4 @@ Explore additional resources and related links for this project:
 
 ## License
 
-Copyright 2024 © [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
-
-Distributed under the terms of the [MIT License](./about/license.md), Jupyter-TikZ is free and open-source software.
+{% include "templates/copyright.md" %}

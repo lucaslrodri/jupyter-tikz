@@ -33,6 +33,30 @@
   color: #f37726;
 } */
 
+@media (min-width: 1024px) {
+  .code-showcase{
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    column-gap: 1em; 
+    margin: 0 auto; 
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 1024px) {
+  .result-showcase{
+    align: center;
+    margin: auto 0;
+    hei
+  }
+}
+.result-showcase{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 300px;
+}
+
 .card-link {
   color: var(--md-typeset-color) !important;
 }
@@ -69,6 +93,10 @@
   font-family: monospace;
   max-height: 20rem;
   font-size: 0.65rem;
+}
+
+.log-terminal{
+  font-family: monospace;
 }
 
 .log-output {

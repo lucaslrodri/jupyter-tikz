@@ -1,11 +1,15 @@
 import sys
+import os
 from textwrap import dedent
 
 import jinja2
+import re
 
 sys.path.insert(1, "./jupyter_tikz")
 
 import jupyter_tikz
+
+DESCRIPTION = "Jupyter TikZ is an IPython Cell and Line Magic for rendering TeX/TikZ outputs in Jupyter Notebooks."
 
 
 def _args_table():
@@ -53,7 +57,7 @@ def define_env(env):
     """
 
     # add to the dictionary of variables available to markdown pages:
-    env.variables["description"] = jupyter_tikz.__doc__
+    env.variables["description"] = DESCRIPTION
 
     env.variables["icons"] = {
         "computer": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M384 96v224H64V96h320zM64 32C28.7 32 0 60.7 0 96v224c0 35.3 28.7 64 64 64h117.3l-10.7 32H96c-17.7 0-32 14.3-32 32s14.3 32 32 32h256c17.7 0 32-14.3 32-32s-14.3-32-32-32h-74.7l-10.7-32H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm464 0c-26.5 0-48 21.5-48 48v352c0 26.5 21.5 48 48 48h64c26.5 0 48-21.5 48-48V80c0-26.5-21.5-48-48-48h-64zm16 64h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16s7.2-16 16-16zm-16 80c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16s-7.2 16-16 16h-32c-8.8 0-16-7.2-16-16zm32 160a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"></path></svg>',
@@ -72,5 +76,97 @@ def define_env(env):
         return _args_table()
 
 
+README_TEMPLATE = r"""
+{% include "docs/templates/logo.html" %}
+
+<p align="center">
+<a 
+    href="https://jupyter-tikz.readthedocs.io/"
+>Documentation</a> | <a
+    href="https://github.com/lucaslrodri/jupyter-tikz/blob/main/notebooks/GettingStarted.ipynb"
+>Getting Started notebook</a>
+</p>
+
+# Installation
+
+{% include "./docs/installation.md" %}
+
+# Basic usage
+
+{% include "./docs/templates/basic-usage.md" %}
+
+# Additional options
+
+All additional options are listed below:
+
+{{ args_table }}
+
+# Contribute
+
+{% include "./docs/templates/contribute.md" %}
+
+# Changelog
+
+{% include "./docs/about/changelog.md" %}
+
+# Thanks
+
+{% include "./docs/templates/motivation.md" %}
+
+# License
+
+{% include "./docs/templates/copyright.md" %}
+""".strip()
+
 if __name__ == "__main__":
-    print(_args_table())
+
+    args_table = _args_table()
+
+    print(os.getcwd())
+
+    fs_loader = jinja2.FileSystemLoader(os.getcwd())
+    tmpl_env = jinja2.Environment(loader=fs_loader)
+
+    tmpl = tmpl_env.from_string(README_TEMPLATE)
+
+    rendered_readme = tmpl.render(locals())
+
+    rendered_readme = re.sub(
+        r"\s\{\s\.(shell|python|latex)\s\.annotate\s\}", r"\1", rendered_readme
+    )
+
+    logterminal_div_pattern = '<div class="result log-terminal".*?>.*?</div>'
+
+    rendered_readme = re.sub(
+        logterminal_div_pattern, "", rendered_readme, flags=re.DOTALL
+    )
+
+    result_div_pattern = r'<div class="result"(.*?)>\s*(.*?)\s*</div>'
+
+    rendered_readme = re.sub(
+        result_div_pattern, r"\2", rendered_readme, flags=re.DOTALL
+    )
+
+    # License
+    rendered_readme = rendered_readme.replace(
+        "./about/license.md",
+        "https://github.com/lucaslrodri/jupyter-tikz/blob/main/LICENSE",
+    )
+
+    # Internal links
+
+    domain = "https://jupyter-tikz.readthedocs.io/en/stable/"
+
+    rendered_readme = rendered_readme.replace("./", domain).replace(".md", "")
+
+    yaml_pattern = r"---\s*\n.*?\n---\s*\n"
+    rendered_readme = re.sub(yaml_pattern, "", rendered_readme, flags=re.DOTALL)
+
+    # Remove code annotations
+    rendered_readme = re.sub(r"^1\.\s+.*$\n", "", rendered_readme, flags=re.MULTILINE)
+    rendered_readme = re.sub(r" #\s*\(\d+\)!", "", rendered_readme, flags=re.DOTALL)
+
+    print(rendered_readme)
+
+    with open("README.md", "w", encoding="utf-8") as f:
+        f.write(rendered_readme)

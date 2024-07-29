@@ -522,7 +522,7 @@ conway_str = r"""\documentclass[tikz]{standalone}
 
 ## Jinja templates
 
-To help ensure that TikZ Pictures stay aligned with your data, you can use [Jinja2 templates](http://jinja.pocoo.org/docs/latest/templates/).
+To help ensure that TikZ Pictures stay aligned with your data, you can use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/).
 
 !!! warning
     Before using it, you must install Jinja2:

@@ -5,7 +5,10 @@ hide:
 
 ## Prerequisites
 
-Before start the installation, you should verify if the minimal dependencies are installed.
+Jupyter-TikZ is a Python (3.10+) and IPython Magics library. However, in order for Jupyter-TikZ to work properly, some non-Python dependencies need to be installed first:
+
+- LaTeX
+- Poppler
 
 ### LaTeX
 
@@ -20,7 +23,7 @@ You can test if a LaTeX distribution is installed by using the following command
 ```latex
 pdflatex --version
 ```
-<div class="result" style="font-family: monospace;">
+<div class="result log-terminal">
 MiKTeX-pdfTeX 4.19 (MiKTeX 24.4)<br>
 © 1982 D. E. Knuth, © 1996-2023 Hàn Thế Thành<br>
 TeX is a trademark of the American Mathematical Society.
@@ -28,7 +31,7 @@ TeX is a trademark of the American Mathematical Society.
 
 ### Poppler
 
-This application requires Poppler’s `pdftocairo`. You must install it beforehand.
+This application requires Poppler's `pdftocairo`. You must install it beforehand.
 
 #### Conda - Platform Independent
 
@@ -60,7 +63,7 @@ Finally, you can check if the `pdftocairo` utility is installed by using the fol
 pdftocairo -v
 ```
 
-<div class="result" style="font-family: monospace;">
+<div class="result log-terminal">
 pdftocairo version 24.04.0<br>
 Copyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org<br>
 Copyright 1996-2011, 2022 Glyph & Cog, LLC
@@ -83,7 +86,7 @@ os.environ["JUPYTER_TIKZ_PDFTOCAIROPATH"] = custom_pdftocairo_path
 
 ### Jinja2 (Optional)
 
-Jinja2 is only necessary if you plan to use [Jinja2 templates](https://jinja.pocoo.org/docs/latest/templates/). To install it, use:
+Jinja2 is only necessary if you plan to use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/). To install it, use:
 
 ```shell
 pip install jinja2

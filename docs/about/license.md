@@ -1,5 +1,5 @@
 # License
 
 ```
-{% include "templates/license" %}
+{% include "templates/license.md" %}
 ```

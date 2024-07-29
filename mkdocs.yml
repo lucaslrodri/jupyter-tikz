@@ -39,6 +39,15 @@ extra_css:
 extra_javascript:
   - javascripts/extra.js
 
+extra:
+  social:
+    - icon: fontawesome/brands/github 
+      link: https://github.com/lucaslrodri/jupyter-tikz
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/jupyter-tikz/
+
+copyright: Copyright &copy; 2024 Lucas Lima Rodrigues
+
 markdown_extensions:
   - attr_list
   - md_in_html

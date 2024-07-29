@@ -1,8 +1,8 @@
 <p align="center">
-  <a
+  <a href="https://jupyter-tikz.readthedocs.io/en/stable/"
     ><img
       alt="Logo of Jupyter-TikZ"
-      src="docs/assets/logo_wide.svg"
+      src="https://jupyter-tikz.readthedocs.io/en/stable/assets/logo_wide.svg"
       style="width: calc(100% - 2rem); max-width: 800px; max-height: 10rem"
   /></a>
 </p>
@@ -12,39 +12,45 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/jupyter-tikz/" target="_blank"
+  <a href="https://jupyter-tikz.readthedocs.io/en/stable/"
+    ><img
+      alt="Read the Docs"
+      src="https://img.shields.io/readthedocs/jupyter-tikz"
+  /></a> <a href="https://pypi.org/project/jupyter-tikz/"
     ><img
       src="https://img.shields.io/pypi/v/jupyter_tikz?color=4cc71e"
       alt="PyPI - Version"
-  /></a>
-  <a href="https://pepy.tech/project/jupyter-tikz" target="_blank"
+  /></a> <a href="https://pepy.tech/project/jupyter-tikz"
     ><img
       src="https://static.pepy.tech/badge/jupyter-tikz"
       alt="Pypi - Downloads"
-  /></a>
-  <a
+  /></a> <a href="https://codecov.io/github/lucaslrodri/jupyter-tikz">
+    <img
+      src="https://codecov.io/github/lucaslrodri/jupyter-tikz/graph/badge.svg?token=6QVANQMJYC"
+  /></a> <a
     href="https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE"
-    target="_blank"
     ><img src="https://img.shields.io/pypi/l/jupyter_tikz" alt="License"
   /></a>
 </p>
 
-
-# Demonstration notebook
-
-A complete guide is available in the [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb).
+<p align="center">
+<a 
+    href="https://jupyter-tikz.readthedocs.io/"
+>Documentation</a> | <a
+    href="https://github.com/lucaslrodri/jupyter-tikz/blob/main/notebooks/GettingStarted.ipynb"
+>Getting Started notebook</a>
+</p>
 
 # Installation
 
-```shell
-pip install jupyter-tikz
-```
+## Prerequisites
 
-# Dependencies
+Jupyter-TikZ is a Python (3.10+) and IPython Magics library. However, in order for Jupyter-TikZ to work properly, some non-Python dependencies need to be installed first:
 
-Before installation, you should verify the dependencies.
+- LaTeX
+- Poppler
 
-## LaTeX
+### LaTeX
 
 LaTeX must be installed using one of the following distributions:
 
@@ -52,9 +58,16 @@ LaTeX must be installed using one of the following distributions:
 - [MikTeX](https://miktex.org/) (Windows)
 - [MacTeX](https://www.tug.org/mactex/) (Mac)
 
-## Poppler
+You can test if a LaTeX distribution is installed by using the following command:
 
-This application requires Poppler’s `pdftocairo`. You must install it beforehand.
+```latex
+pdflatex --version
+```
+
+
+### Poppler
+
+This application requires Poppler's `pdftocairo`. You must install it beforehand.
 
 #### Conda - Platform Independent
 
@@ -78,15 +91,68 @@ Install using `brew`:
 brew install poppler
 ```
 
-## Jinja2 (Optional)
+#### Checking the Installation
 
-Jinja2 is only necessary if you plan to use [Jinja2 templates](http://jinja.pocoo.org/docs/latest/templates/). To install it, use:
+Finally, you can check if the `pdftocairo` utility is installed by using the following command in your terminal:
+
+```shell
+pdftocairo -v
+```
+
+
+
+#### Using custom pdftocairo path
+
+Alternatively, if you are facing issues, you can configure the `pdftocairo` location (exclusive for use in `jupyter_tikz`) by setting the environment variable `JUPYTER_TIKZ_PDFTOCAIROPATH`:
+
+
+```python
+import os
+custom_pdftocairo_path = os.path.join(
+  os.getenv("LOCALAPPDATA"), "Poppler", "Library", "bin", "pdftocairo.exe"
+)
+os.environ["JUPYTER_TIKZ_PDFTOCAIROPATH"] = custom_pdftocairo_path
+```
+
+
+### Jinja2 (Optional)
+
+Jinja2 is only necessary if you plan to use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/). To install it, use:
 
 ```shell
 pip install jinja2
 ```
 
-# Basic Usage
+## Install Jupyter TikZ
+
+You can install `jupyter-tikz` by using the following command in your terminal:
+
+```shell
+pip install jupyter-tikz
+```
+
+
+## Adding TikZ Syntax highlight
+
+If you are using Jupyter Lab 4. You can add LaTeX highlight to `%%tikz` magic cells by using [JupyterLab-lsp](https://jupyterlab-lsp.readthedocs.io/en/latest/Installation.html) and editing [this part of the code in JupyterLab-lsp](https://github.com/jupyter-lsp/jupyterlab-lsp/blob/b159ae2736b26463d8cc8f0ef78f4b2ce9913370/packages/jupyterlab-lsp/src/transclusions/ipython/extractors.ts#L68-L74) in the file `extractor.ts`:
+
+```ts
+new RegExpForeignCodeExtractor({
+  language: 'latex',
+  pattern: '^%%(latex|tikz)( .*?)?\n([^]*)', // Add tikz support to this line
+  foreignCaptureGroups: [3],
+  isStandalone: false,
+  fileExtension: 'tex'
+}),
+```
+
+Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as demonstrated below:
+
+![Using Jupyter TikZ with LaTeX syntax highlight](https://jupyter-tikz.readthedocs.io/en/stable/assets/highlight_cell_tikz.png)
+
+For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).
+
+# Basic usage
 
 To begin, load the `jupyter_tikz` extension:
 
@@ -100,17 +166,14 @@ Use it as cell magic, it executes the TeX/TikZ code within the cell:
 %%tikz
 \begin{tikzpicture}
     \draw[help lines] grid (5, 5);
-    \draw[fill=black] (1, 1) rectangle (2, 2);
-    \draw[fill=black] (2, 1) rectangle (3, 2);
-    \draw[fill=black] (3, 1) rectangle (4, 2);
-    \draw[fill=black] (3, 2) rectangle (4, 3);
-    \draw[fill=black] (2, 3) rectangle (3, 4);
+    \draw[fill=black!10] (1, 1) rectangle (2, 2);
+    \draw[fill=black!10] (2, 1) rectangle (3, 2);
+    \draw[fill=black!10] (3, 1) rectangle (4, 2);
+    \draw[fill=black!10] (3, 2) rectangle (4, 3);
+    \draw[fill=black!10] (2, 3) rectangle (3, 4);
 \end{tikzpicture}
 ```
-
-which produces:
-
-![Conway example](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/conway.svg)
+![Conway example](https://jupyter-tikz.readthedocs.io/en/stable/assets/conway.svg)
 
 Or use it as line magic, where the TeX/TikZ code is passed as an IPython string variable:
 
@@ -129,16 +192,28 @@ Additional options can be passed to the magic command:
     \addplot [red] {x^2 + 4};
 \end{axis}
 ```
+![Quadratic formula](https://jupyter-tikz.readthedocs.io/en/stable/assets/quadratic.png)
 
-which produces:
+Going further, it is also possible to use it as a Python package:
 
-![Quadratic formula](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/quadratic.png)
+```python
+from jupyter_tikz import TexFragment
 
-Don't forget visit the [Documentation]() and [Getting Started Notebook](https://github.com/lucaslrodri/jupyter-tikz/blob/main/GettingStarted.ipynb) to learn more.
+tikz_code = tex_template_code = r"""\begin{tikzpicture}
+    \draw[help lines] grid (5, 5);
+     \filldraw [color=orange, opacity=0.3] (2.5,2.5) circle (1.5);
+\end{tikzpicture}"""
+
+tikz = TexFragment(tikz_code)  # Create the tex template object
+
+tikz.run_latex()  # Run LaTeX and shows the output
+```
+![Orange dot in a grid](https://jupyter-tikz.readthedocs.io/en/stable/assets/dot_in_grid.svg)
 
 # Additional options
 
 All additional options are listed below:
+
 
 | Argument | Description |
 | -------- | ----------- |
@@ -168,39 +243,79 @@ All additional options are listed below:
 | `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.svg` or `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-sv=<str>`<br>`--save-var=<str>` | Save cell content (TikZ or LaTeX code) to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 
-# Adding TikZ Syntax highlight
-
-If you are using Jupyter Lab 4. You can add LaTeX highlight by using [JupyterLab-lsp](https://jupyterlab-lsp.readthedocs.io/en/latest/Installation.html) and editing [this part of the code](https://github.com/jupyter-lsp/jupyterlab-lsp/blob/b159ae2736b26463d8cc8f0ef78f4b2ce9913370/packages/jupyterlab-lsp/src/transclusions/ipython/extractors.ts#L68-L74) in the file `extractor.ts`:
-
-```ts
-    new RegExpForeignCodeExtractor({
-      language: 'latex',
-      pattern: '^%%(latex|tikz)( .*?)?\n([^]*)', // Add tikz support to this line
-      foreignCaptureGroups: [3],
-      isStandalone: false,
-      fileExtension: 'tex'
-    }),
-```
-
-Now, you will have LaTeX syntax code highlighting for `%%tikz` magic cells, as demonstrated below:
-
-![Using Jupyter TikZ with LaTeX syntax highlight](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/docs/assets/highlight_cell_tikz.png)
-
-For more information refer to this [link](https://discourse.jupyter.org/t/getting-syntax-highlighting-to-work-for-custom-cell-magic/11734/9).
 
 # Contribute
 
-Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here’s how you can contribute:
+Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here's how you can contribute:
 
-1. If you encounter any issues or have suggestions for improvements, please report them using the [issues page](https://github.com/lucaslrodri/jupyter-tikz/issues).
-2. If you're interested in developing the software further, please refer to [contributing guide](./DEVELOPMENT.md). 
+<ol>
+<li>If you encounter any issues or have suggestions for improvements, please report them using the <a href="https://github.com/lucaslrodri/jupyter-tikz/issues">issues page</a>.</li>
+<li>If you're interested in developing the software further, please refer to <a href="about/development/">development guide</a>.</li>
+</ol>
+
+# Changelog
+
+All notable changes to this project are presented below.
+
+## v0.3.2
+
+**🐞 Bug Fixes**
+- Improved documentation visibility on mobile devices.
+
+## v0.3.1
+
+**🐞 Bug Fixes**
+- Fixed DOCs links.
+
+## v0.3.0
+
+**🚀 Features**
+
+- Web documentation.
+- Flag (`--print-tex`) to print the full LaTeX document.
+- UTF-8 support.
+- Added support for Python 3.10.
+
+**🚨 Breaking Changes**
+
+- Replaced `--full-document` and `--implicit-pic` with `--input-type=<str>`. `-f` and `-i` still working as aliases.
+- Changed the `--as-jinja` flag to `--use-jinja`.
+- Reworked the API to an object-oriented approach.
+
+## v0.2.1
+
+**🐞 Bug Fixes**
+
+- Minor adjustments in the README and Getting Started Notebook.
+
+## v0.2.0
+
+**🚀 Features**
+
+- Option to save output code to an IPython variable (`-sv=<var_name>`).
+- Flag (`--no-compile`) to prevent LaTeX compilation and image rendering.
+- Support for LaTeX `\input{...}` commands.
+
+## v0.1.1
+
+**🐞 Bug Fixes**
+
+- Minor fixes in README.
+
+**🚀 Features**
+
+- Added PyPI badge.
+
+## v0.1.0
+
+- First version released on PyPI.
 
 # Thanks
 
-I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
+I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [IPython TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles and save the LaTeX result to IPython variables. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
 
 # License
 
-© Copyright 2024 [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
+Copyright 2024 &copy; [Lucas Lima Rodrigues](https://github.com/lucaslrodri).
 
-Distributed under the terms of the [MIT License](https://raw.githubusercontent.com/lucaslrodri/jupyter-tikz/main/LICENSE), `jupyter-tikz` is free and open-source software.
+Distributed under the terms of the [MIT License](https://github.com/lucaslrodri/jupyter-tikz/blob/main/LICENSE), Jupyter-TikZ is free and open-source software.

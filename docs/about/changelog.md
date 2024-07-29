@@ -15,8 +15,6 @@ All notable changes to this project are presented below.
 - Modified the save functionality: Options must now be passed in `TexDocument.run_latex(...)` as `TexDocument.save()` is no longer used.
 - LaTeX rendering is now performed in the current folder, moving away from the use of a temporary directory (`tempdir`). This change facilitates access to external files for PGFPlots.
 
-
-
 ## v0.3.2
 
 **🐞 Bug Fixes**
