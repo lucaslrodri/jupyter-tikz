@@ -40,59 +40,92 @@ Finally, if you forget the usage, as for help by typing `%tikz?`, or visit **add
         [--as-jinja]
         [code]
 
+Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
+
+When used as cell magic, it executes the TeX/TikZ code within the cell:
+    Example:
+        In [3]: %%tikz
+           ...:  \begin{tikzpicture}
+           ...:     \draw (0,0) rectangle (1,1);
+           ...: \end{tikzpicture}
+
+When used as line magic, the TeX/TikZ code is passed as an IPython string variable:
+    Example:
+        In [4]: %tikz "$ipython_string_variable_with_code"
+
+Additional options can be passed to the magic command to customize LaTeX code and rendering output:
+    Example:
+        In [5]: %%tikz -l=arrows,matrix
+           ...: \matrix (m) [matrix of math nodes, row sep=3em, column sep=4em] {
+           ...:     A & B \
+           ...:     C & D \
+           ...: };
+           ...: \path[-stealth, line width=.4mm]
+           ...:     (m-1-1) edge node [left ] {$ac$} (m-2-1)
+           ...:     (m-1-1) edge node [above] {$ab$} (m-1-2)
+           ...:     (m-1-2) edge node [right] {$bd$} (m-2-2)
+           ...:     (m-2-1) edge node [below] {$cd$} (m-2-2);
+
+
 positional arguments:
-code                  the variable in IPython with the Tex/TikZ code
+  code                  the variable in IPython with the Tex/TikZ code
 
 options:
--as INPUT_TYPE, --input-type INPUT_TYPE
-                        Type of the input. Possible values are: \`full-
-                        document\`, \`standalone-document\` and \`tikzpicture\`,
-                        e.g., \`-as=full-document\`. Defaults to
-                        \`-as=standalone-document\`.
--i, --implicit-pic    Alias for \`-as=tikzpicture\`.
--f, --full-document   Alias for \`-as=full-document\`.
--p LATEX_PREAMBLE, --latex-preamble LATEX_PREAMBLE
+  -as INPUT_TYPE, --input-type INPUT_TYPE
+                        Type of the input. Possible values are: `full-
+                        document`, `standalone-document` and `tikzpicture`,
+                        e.g., `-as=full-document`. Defaults to
+                        `-as=standalone-document`.
+  -i, --implicit-pic    Alias for `-as=tikzpicture`.
+  -f, --full-document   Alias for `-as=full-document`.
+  -p LATEX_PREAMBLE, --latex-preamble LATEX_PREAMBLE
                         LaTeX preamble to insert before the document, e.g.,
-                        \`-p="$preamble"\`, with the preamble being an IPython
+                        `-p="$preamble"`, with the preamble being an IPython
                         variable.
--t TEX_PACKAGES, --tex-packages TEX_PACKAGES
+  -t TEX_PACKAGES, --tex-packages TEX_PACKAGES
                         Comma-separated list of TeX packages, e.g.,
-                        \`-t=amsfonts,amsmath\`.
--nt, --no-tikz        Force to not import the TikZ package.
--l TIKZ_LIBRARIES, --tikz-libraries TIKZ_LIBRARIES
+                        `-t=amsfonts,amsmath`.
+  -nt, --no-tikz        Force to not import the TikZ package.
+  -l TIKZ_LIBRARIES, --tikz-libraries TIKZ_LIBRARIES
                         Comma-separated list of TikZ libraries, e.g.,
-                        \`-l=calc,arrows\`.
--lp PGFPLOTS_LIBRARIES, --pgfplots-libraries PGFPLOTS_LIBRARIES
+                        `-l=calc,arrows`.
+  -lp PGFPLOTS_LIBRARIES, --pgfplots-libraries PGFPLOTS_LIBRARIES
                         Comma-separated list of pgfplots libraries, e.g.,
-                        \`-pl=groupplots,external\`.
--j, --use-jinja       Render the code using Jinja2.
--pj, --print-jinja    Print the rendered Jinja2 template.
--pt, --print-tex      Print the full LaTeX document.
--sc SCALE, --scale SCALE
+                        `-pl=groupplots,external`.
+  -j, --use-jinja       Render the code using Jinja2.
+  -pj, --print-jinja    Print the rendered Jinja2 template.
+  -pt, --print-tex      Print the full LaTeX document.
+  -sc SCALE, --scale SCALE
                         The scale factor to apply to the TikZ diagram, e.g.,
-                        \`-sc=0.5\`. Defaults to \`-sc=1.0\`.
--r, --rasterize       Output a rasterized image (PNG) instead of SVG.
--d DPI, --dpi DPI     DPI to use when rasterizing the image, e.g.,
-                        \`--dpi=300\`. Defaults to \`-d=96\`.
--e, --full-err        Print the full error message when an error occurs.
--tp TEX_PROGRAM, --tex-program TEX_PROGRAM
+                        `-sc=0.5`. Defaults to `-sc=1.0`.
+  -r, --rasterize       Output a rasterized image (PNG) instead of SVG.
+  -d DPI, --dpi DPI     DPI to use when rasterizing the image, e.g.,
+                        `--dpi=300`. Defaults to `-d=96`.
+  -g, --gray            Set grayscale to a rasterized image.
+  -e, --full-err        Print the full error message when an error occurs.
+  -k, --keep-temp       Keep temporary LaTeX files.
+  -tp TEX_PROGRAM, --tex-program TEX_PROGRAM
                         TeX program to use for compilation, e.g.,
-                        \`-tp=xelatex\` or \`-tp=lualatex\`. Defaults to
-                        \`-tp=pdflatex\`.
--ta TEX_ARGS, --tex-args TEX_ARGS
+                        `-tp=xelatex` or `-tp=lualatex`. Defaults to
+                        `-tp=pdflatex`.
+  -ta TEX_ARGS, --tex-args TEX_ARGS
                         Arguments to pass to the TeX program, e.g.,
-                        \`-ta="$tex_args_ipython_variable"\`.
--nc, --no-compile     Do not compile the TeX code.
--s SAVE_TEX, --save-text SAVE_TEX
-                        Save the TikZ or LaTeX code to file, e.g., \`-s
-                        filename.tikz\`.
--S SAVE_IMAGE, --save-image SAVE_IMAGE
-                        Save the output image to file, e.g., \`-S
-                        filename.png\`.
--sv SAVE_VAR, --save-var SAVE_VAR
+                        `-ta="$tex_args_ipython_variable"`.
+  -nc, --no-compile     Do not compile the TeX code.
+  -s SAVE_TIKZ, --save-tikz SAVE_TIKZ
+                        Save the TikZ code to file, e.g., `-s filename.tikz`.
+  -st SAVE_TEX, --save-tex SAVE_TEX
+                        Save full LaTeX code to file, e.g., `-st
+                        filename.tex`.
+  -sp SAVE_PDF, --save-pdf SAVE_PDF
+                        Save PDF file, e.g., `-sp filename.pdf`.
+  -S SAVE_IMAGE, --save-image SAVE_IMAGE
+                        Save the output image to file, e.g., `-S
+                        filename.png`.
+  -sv SAVE_VAR, --save-var SAVE_VAR
                         Save the TikZ or LaTeX code to an IPython variable,
-                        e.g., \`-sv my_var\`.
---as-jinja            Deprecated. Use \`--use-jinja\` instead.
+                        e.g., `-sv my_var`.
+  --as-jinja            Deprecated. Use `--use-jinja` instead.
 </pre>
 </div>
 </div>
