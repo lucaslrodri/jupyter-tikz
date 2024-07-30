@@ -1,4 +1,5 @@
 site_name: Jupyter-TikZ
+site_description: IPython Magics for rendering TeX/TikZ in Jupyter Notebooks
 repo_url: https://github.com/lucaslrodri/jupyter-tikz
 
 theme:
@@ -6,6 +7,7 @@ theme:
   logo: assets/logo.svg
   favicon: assets/favicon.svg
   site_url: https://jupyter-tikz.readthedocs.io/
+  language: en
   palette:
     primary: white
     accent: custom
@@ -62,7 +64,8 @@ markdown_extensions:
 plugins:
   - search
   - macros
-  - social
+  - social:
+      cards_layout: default
   - mkdocstrings:
       default_handler: python
       handlers:
