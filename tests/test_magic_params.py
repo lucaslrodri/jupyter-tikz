@@ -9,22 +9,26 @@ from jupyter_tikz.jupyter_tikz import (
 
 
 @pytest.fixture
-def tikz_magic():
+def tikz_magic(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TikZMagics()
 
 
 @pytest.fixture
-def tikz_magic_mock(mocker, tmp_path):
+def tikz_magic_mock(mocker, monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     tikz_magic = TikZMagics()
 
     def run_latex_mock(*args, **kwargs):
         _ = kwargs
         return "dummy_image"
 
-    def save_mock(*args, **kwargs):
-        _ = args
-        _ = kwargs
-        return args
+    # def save_mock(*args, **kwargs):
+    #     _ = args
+    #     _ = kwargs
+    #     return args
 
     # def jinja_mock(*args, **kwargs):
     #     _ = args

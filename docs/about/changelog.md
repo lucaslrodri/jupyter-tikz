@@ -1,5 +1,19 @@
 All notable changes to this project are presented below.
 
+## v0.4.1
+
+**✨ Improvements**
+
+- Switched temporary file names to MD5 hashing for deterministic hashes.
+
+**🚀 Features**
+
+- Support to mkdocs social plugin.
+
+**🐞 Bug Fixes**
+
+- Fixed indentation in `TexDocument.tikz_code`.
+
 ## v0.4.0
 
 **🚀 Features**

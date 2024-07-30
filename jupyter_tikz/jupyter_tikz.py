@@ -4,9 +4,10 @@ import os
 import re
 import subprocess
 import sys
+from hashlib import md5
 from pathlib import Path
 from string import Template
-from textwrap import indent
+from textwrap import dedent, indent
 from typing import Any, Literal
 
 from IPython import display
@@ -57,10 +58,10 @@ class TexDocument:
     @property
     def tikz_code(self) -> str | None:
         r"""Returns the TikZ code."""
-        pattern = r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}"
-        match = re.search(pattern, self.full_latex, re.DOTALL)
+        pattern = r"^\s*\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}"
+        match = re.search(pattern, self.full_latex, re.DOTALL | re.MULTILINE)
         if match:
-            return match.group(0)
+            return dedent(match.group(0))
         return None
 
     @staticmethod
@@ -73,16 +74,14 @@ class TexDocument:
             arg = str(arg)
         return arg
 
-    def __hash__(self) -> int:
-        """Returns the hash value of the full LaTeX code."""
-        return hash(self.full_latex)
-
     @property
     def _hex_hash(self) -> str:
-        """Returns the hexadecimal representation of the hash value of the full LaTeX code."""
-        return f"{abs(self.__hash__()):x}"
+        """Returns the md5 hash value of the full LaTeX code."""
+        # return f"{abs(hash(self.full_latex)):x}"
+        return md5(self.full_latex.encode()).hexdigest()
 
     def __repr__(self) -> str:
+        """Returns a compact string representation of the object."""
         params_dict = self.__dict__
         if "scale" in params_dict.keys():
             if params_dict["scale"] == 1.0:
@@ -100,11 +99,7 @@ class TexDocument:
         return f"{self.__class__.__name__}({self._arg_head(self._code)}{params})"
 
     def __str__(self) -> str:
-        """Returns the LaTeX code string to render.
-
-        Returns:
-            str: The LaTeX code to render.
-        """
+        """Returns the LaTeX code string to render."""
         return self._code
 
     def _clearup_latex_garbage(self, keep_temp) -> None:

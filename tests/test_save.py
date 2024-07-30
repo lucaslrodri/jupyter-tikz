@@ -4,23 +4,12 @@ import pytest
 from IPython.display import SVG, Image
 
 from jupyter_tikz import TexDocument
-
-LATEX_CODE = r"""\documentclass{standalone}
-\usepackage{tikz}
-\begin{document}
-\begin{tikzpicture}
-    \draw[fill=blue] (0, 0) rectangle (1, 1);
-\end{tikzpicture}
-\end{document}"""
-
-TIKZ_CODE = r"""\begin{tikzpicture}
-    \draw[fill=blue] (0, 0) rectangle (1, 1);
-\end{tikzpicture}"""
+from tests.conftest import *
 
 
 def test_tikz_code():
     # Arrange
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     res = tex_document.tikz_code
@@ -45,7 +34,7 @@ DESTINATIONS_TIKZ_PARAMETRIZE = {
 def test__save_tikz(tmpdir, monkeypatch, file_name, expected_file_name):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document._save(file_name, "tikz")
@@ -60,7 +49,7 @@ def test__save_tikz(tmpdir, monkeypatch, file_name, expected_file_name):
 def test__save_tikz_replace(tmpdir, monkeypatch, file_name, expected_file_name):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     file_path = Path(file_name)
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -104,7 +93,7 @@ def test__save_tikz_env_dest(tmpdir, monkeypatch, file_name, expected_file_name)
     monkeypatch.chdir(tmpdir)
     env_dir = tmpdir / "env_var_dir"
     monkeypatch.setenv("JUPYTER_TIKZ_SAVEDIR", str(env_dir))
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document._save(file_name, "tikz")
@@ -138,9 +127,9 @@ DESTINATIONS_OTHER_EXTS_PARAMETRIZE = {
 def test__save_others_exts(tmpdir, monkeypatch, ext, file_name, expected_file_name):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
-    dummy_file = Path(hex(abs(hash(LATEX_CODE)))[2:]).with_suffix(f".{ext}")
-    dummy_file.write_text("Dummy content")
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
+    dummy_file = Path(HASH_EXAMPLE_GOOD_TEX).with_suffix(f".{ext}")
+    dummy_file.write_text(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document._save(file_name, ext)
@@ -149,7 +138,7 @@ def test__save_others_exts(tmpdir, monkeypatch, ext, file_name, expected_file_na
     # Assert
 
     assert expected_file.exists()
-    assert expected_file.read_text() == "Dummy content"
+    assert expected_file.read_text() == EXAMPLE_GOOD_TEX
 
 
 @pytest.mark.parametrize(**DESTINATIONS_OTHER_EXTS_PARAMETRIZE)
@@ -158,8 +147,8 @@ def test__save_others_exts_replace(
 ):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
-    dummy_file = Path(hex(abs(hash(LATEX_CODE)))[2:]).with_suffix(f".{ext}")
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
+    dummy_file = Path(HASH_EXAMPLE_GOOD_TEX).with_suffix(f".{ext}")
     dummy_file.write_text("Dummy content")
 
     file_path = Path(file_name)
@@ -185,9 +174,9 @@ def test__save_others_exts_env_dest(
     env_dir = tmpdir / "env_var_dir"
     monkeypatch.setenv("JUPYTER_TIKZ_SAVEDIR", str(env_dir))
 
-    dummy_file = Path(hex(abs(hash(LATEX_CODE)))[2:]).with_suffix(f".{ext}")
+    dummy_file = Path(HASH_EXAMPLE_GOOD_TEX).with_suffix(f".{ext}")
     dummy_file.write_text("Dummy content")
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document._save(file_name, ext)
@@ -212,14 +201,15 @@ def test__save_others_exts_env_dest(
 def test_save_latex(tmpdir, monkeypatch, save_tex, expected_file):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document.run_latex(save_tex=save_tex)
+    expected_res = EXAMPLE_GOOD_TEX.strip()
 
     # Assert
     assert Path(expected_file).exists()
-    assert Path(expected_file).read_text() == LATEX_CODE
+    assert Path(expected_file).read_text() == expected_res
 
 
 @pytest.mark.needs_latex
@@ -235,7 +225,7 @@ def test_save_latex(tmpdir, monkeypatch, save_tex, expected_file):
 def test_save_tikz(tmpdir, monkeypatch, save_tikz, expected_file):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     res = tex_document.run_latex(save_tikz=save_tikz)
@@ -260,7 +250,7 @@ def test_save_tikz(tmpdir, monkeypatch, save_tikz, expected_file):
 def test_save_image_svg(tmpdir, monkeypatch, save_image, expected_file):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     res = tex_document.run_latex(save_image=save_image)
@@ -284,7 +274,7 @@ def test_save_image_svg(tmpdir, monkeypatch, save_image, expected_file):
 def test_save_image_png(tmpdir, monkeypatch, save_image, expected_file):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     res = tex_document.run_latex(save_image=save_image, rasterize=True)
@@ -308,7 +298,7 @@ def test_save_image_png(tmpdir, monkeypatch, save_image, expected_file):
 def test_save_pdf(tmpdir, monkeypatch, save_pdf, expected_file):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(LATEX_CODE)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     res = tex_document.run_latex(save_pdf=save_pdf)

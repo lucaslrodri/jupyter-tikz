@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jupyter-tikz"
-version = "0.4"
+version = "0.4.1"
 description = "IPython Magics for rendering TeX/TikZ in Jupyter Notebooks"
 license = "MIT"
 authors = ["lucaslrodri"]
@@ -45,10 +45,10 @@ pytest-mock = "^3.14.0"
 
 [tool.poetry.group.doc.dependencies]
 mkdocs = "~1.6.0"
-mkdocs-material = "~9.5.28"
 mkdocstrings = { extras = ["python"], version = "~0.25.1" }
 jinja2 = "~3.1.4"
 mkdocs-macros-plugin = "~1.0.5"
+mkdocs-material = {extras = ["imaging"], version = "^9.5.30"}
 
 [tool.pytest.ini_options]
 pythonpath = "./jupyter_tikz"
@@ -67,3 +67,4 @@ lint = "black . && isort ."
 test = "pytest -vv --cov=jupyter_tikz"
 post_test = "coverage lcov"
 readme = "python main.py"
+build = "task lint && task test && task readme && poetry build"

@@ -1238,8 +1238,8 @@ Which results in the following directory structure:
 <pre class="log-card">
 .
 └─ outputs/
-   └─ 5c9ece67a5163316.aux
-   └─ 5c9ece67a5163316.log
-   └─ 5c9ece67a5163316.pdf
-   └─ 5c9ece67a5163316.svg
+   └─ 7f91d338e3919e6dafebb8c59a160504.aux
+   └─ 7f91d338e3919e6dafebb8c59a160504.log
+   └─ 7f91d338e3919e6dafebb8c59a160504.pdf
+   └─ 7f91d338e3919e6dafebb8c59a160504.svg
 </pre>

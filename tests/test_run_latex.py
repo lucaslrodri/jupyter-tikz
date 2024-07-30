@@ -1,6 +1,6 @@
 import os
 import subprocess
-import tempfile
+from hashlib import md5
 from pathlib import Path
 from unittest.mock import ANY
 
@@ -8,12 +8,7 @@ import pytest
 from IPython import display
 
 from jupyter_tikz import TexDocument
-
-
-@pytest.fixture
-def tex_document():
-    return TexDocument("any code")
-
+from tests.conftest import *
 
 # ========================= run_command =========================
 
@@ -57,9 +52,6 @@ def test_run_command_invalid_command(tex_document, capsys):
     _, err = capsys.readouterr()
     assert command in err.lower()
     assert res != 0
-
-
-DUMMY_COMMAND = "dummy_command"
 
 
 @pytest.fixture
@@ -142,6 +134,28 @@ def test_run_command_valid_pdflatex(tex_document):
     assert res == 0
 
 
+ANOTHER_CODE_HASH = md5("another code".encode()).hexdigest()
+
+
+@pytest.mark.parametrize(
+    "code, expected_hash",
+    [
+        ("any code", ANY_CODE_HASH),
+        ("another code", ANOTHER_CODE_HASH),
+        (EXAMPLE_GOOD_TEX, HASH_EXAMPLE_GOOD_TEX),
+    ],
+)
+def test_hash_repr(code, expected_hash):
+    # Arrange
+    tex_document = TexDocument(code)
+
+    # Act
+    tex_document_hash = tex_document._hex_hash
+
+    # Assert
+    assert tex_document_hash == expected_hash
+
+
 # =========================== run_latex ===========================
 
 
@@ -200,7 +214,7 @@ def test_run_latex__valid_tex_program(
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
 
-    path = Path().resolve() / hex(abs(hash(tex_document_mock__run_latex)))[2:]
+    path = Path().resolve() / ANY_CODE_HASH
 
     if tex_args:
         expected_command = f"{tex_program} {tex_args} {path}.tex"
@@ -228,7 +242,7 @@ def test_pdf_cairo_custom_path(
         "JUPYTER_TIKZ_PDFTOCAIROPATH",
         pdf_to_cairo_path,
     )
-    output_stem = Path().resolve() / hex(abs(hash(tex_document_mock__run_latex)))[2:]
+    output_stem = Path().resolve() / ANY_CODE_HASH
     full_err = False
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
@@ -248,7 +262,7 @@ def test_pdf_cairo_default_path(
     # Arrange
     monkeypatch.chdir(tmp_path)
 
-    output_stem = Path().resolve() / hex(abs(hash(tex_document_mock__run_latex)))[2:]
+    output_stem = Path().resolve() / ANY_CODE_HASH
     full_err = False
 
     spy = mocker.spy(tex_document_mock__run_latex, "_run_command")
@@ -269,7 +283,7 @@ def test_pdf_cairo_rasterize(
     # Arrange
     monkeypatch.chdir(tmp_path)
 
-    output_stem = Path().resolve() / hex(abs(hash(tex_document_mock__run_latex)))[2:]
+    output_stem = Path().resolve() / ANY_CODE_HASH
     full_err = False
     rasterize = True
     dpi = 300
@@ -296,7 +310,7 @@ def test_pdf_cairo_rasterize_with_grayscale(
     # Arrange
     monkeypatch.chdir(tmp_path)
 
-    output_stem = Path().resolve() / hex(abs(hash(tex_document_mock__run_latex)))[2:]
+    output_stem = Path().resolve() / ANY_CODE_HASH
     full_err = False
     rasterize = True
     dpi = 300
@@ -418,19 +432,6 @@ def test_run_latex_save_image_call(
 
 # ========================= texinputs env - no mocks =========================
 
-EXAMPLE_VIEWBOX_CODE_INPUT = r"""
-\draw (-2.5,-2.5) rectangle (5,5);
-"""
-EXAMPLE_PARENT_WITH_INPUT_COMMANDT = r"""
-\documentclass[tikz]{standalone}
-\begin{document}
-    \begin{tikzpicture}
-        \input{viewbox.tex}
-        \node[draw] at (0,0) {Hello, World!};
-    \end{tikzpicture}
-\end{document}    
-"""
-
 
 @pytest.mark.needs_latex
 @pytest.mark.needs_pdftocairo
@@ -450,16 +451,6 @@ def test_texinputs_no_mocks(monkeypatch, tmpdir):
 
 
 # =========================== run_latex - no mocks ===========================
-EXAMPLE_BAD_TIKZ = "HELLO WORLD"
-
-EXAMPLE_GOOD_TIKZ = r"""
-\documentclass[tikz]{standalone}
-\begin{document}
-	\begin{tikzpicture}
-		\draw[fill=blue] (0, 0) rectangle (1, 1);
-	\end{tikzpicture}
-\end{document}"""
-RENDERED_SVG_PATH_GOOD_TIKZ = "M -0.00195486 -0.00189963 L -0.00195486 28.345014 L 28.344959 28.345014 L 28.344959 -0.00189963 Z M -0.00195486 -0.00189963"
 
 
 @pytest.mark.needs_latex
@@ -469,7 +460,7 @@ def test_run_latex_good_input_with_no_aditional_params(monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex()
     expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
@@ -529,7 +520,7 @@ def test_run_latex_custom_tex_command(monkeypatch, tmpdir, texprogram, texargs):
     monkeypatch.chdir(tmpdir)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex(tex_program=texprogram, tex_args=texargs)
     expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
@@ -544,7 +535,7 @@ def test_run_latex_rasterize_with_no_additional_commands(monkeypatch, tmpdir):
     monkeypatch.chdir(tmpdir)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex(rasterize=True)
 
     assert isinstance(res, display.Image)
@@ -558,7 +549,7 @@ def test_run_latex_rasterize_with_dpi(monkeypatch, tmpdir, dpi):
     monkeypatch.chdir(tmpdir)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex(rasterize=True, dpi=dpi)
     expected_res = display.Image
 
@@ -584,7 +575,7 @@ def test_run_latex_with_custom_pdftocairo_path(monkeypatch, tmpdir):
     monkeypatch.setenv("JUPYTER_TIKZ_PDFTOCAIROPATH", pdftocairo_path)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex()
     expected_res = RENDERED_SVG_PATH_GOOD_TIKZ
 
@@ -601,7 +592,7 @@ def test_run_latex_invalid_pdftocairo_path(monkeypatch, tmpdir, capsys):
     monkeypatch.setenv("JUPYTER_TIKZ_PDFTOCAIROPATH", pdfcairo_path)
 
     # Act
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
     res = tex_document.run_latex()
 
     # Assert
@@ -640,7 +631,7 @@ def test_run_latex_save_image(
     image_path = Path(tmpdir) / expected_dest
 
     # Arrange
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)
@@ -662,7 +653,7 @@ def test_run_latex_save_image_absolute_tmp_path(
     image_path = env_dir / expected_dest
 
     # Arrange
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)
@@ -684,7 +675,7 @@ def test_run_latex_save_image_relative_tmp_path(
     image_path = env_dir / expected_dest
 
     # Arrange
-    tex_document = TexDocument(EXAMPLE_GOOD_TIKZ)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX)
 
     # Act
     tex_document.run_latex(save_image=dest, rasterize=rasterize)
@@ -695,21 +686,13 @@ def test_run_latex_save_image_relative_tmp_path(
 
 # =========================== jinja - no mocks ===========================
 
-EXAMPLE_JINJA_TEMPLATE = r"""
-\documentclass[tikz]{standalone}
-\begin{document}
-    \begin{tikzpicture}
-        {% for person in people %}
-        \node[draw] at (0,{{ person.y }}) {Hello, {{ person.name }}!};
-        {% endfor %}
-    \end{tikzpicture}
-\end{document}"""
-
 
 @pytest.mark.needs_latex
 @pytest.mark.needs_pdftocairo
-def test_jinja_template():
+def test_jinja_template(monkeypatch, tmp_path):
     # Arrange
+    monkeypatch.chdir(tmp_path)
+
     people = [
         {"name": "Alice", "y": 0},
         {"name": "Bob", "y": 2},

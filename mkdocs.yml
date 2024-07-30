@@ -62,6 +62,7 @@ markdown_extensions:
 plugins:
   - search
   - macros
+  - social
   - mkdocstrings:
       default_handler: python
       handlers:

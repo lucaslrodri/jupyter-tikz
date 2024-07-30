@@ -1,8 +1,8 @@
 \begin{tikzpicture}
-        \begin{axis}[
-          xlabel=$x$,
-          ylabel={$f(x) = x^2 - x +4$}
-        ]
-        \addplot {x^2 - x +4};
-        \end{axis}
-    \end{tikzpicture}
+    \begin{axis}[
+      xlabel=$x$,
+      ylabel={$f(x) = x^2 - x +4$}
+    ]
+    \addplot {x^2 - x +4};
+    \end{axis}
+\end{tikzpicture}

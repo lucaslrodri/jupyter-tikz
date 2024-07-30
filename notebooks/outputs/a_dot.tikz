@@ -1,4 +1,4 @@
 \begin{tikzpicture}[scale=3]
-        \draw (0,0) rectangle (1,1);
-        \filldraw (0.5,0.5) circle (.1);
-    \end{tikzpicture}
+    \draw (0,0) rectangle (1,1);
+    \filldraw (0.5,0.5) circle (.1);
+\end{tikzpicture}

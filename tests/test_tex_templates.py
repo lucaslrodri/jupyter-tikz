@@ -1,7 +1,7 @@
 import pytest
 from IPython import display
 
-from jupyter_tikz import TexDocument, TexFragment
+from jupyter_tikz import TexFragment
 from jupyter_tikz.jupyter_tikz import _EXTRAS_CONFLITS_ERR
 
 
@@ -182,7 +182,9 @@ RES_IMPLICIT_PIC = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_implicit_pic():
+def tex_template_implicit_pic(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True)
 
 
@@ -218,7 +220,9 @@ RES_IMPLICIT_PIC_WITH_SCALE = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_implicit_pic_with_scale():
+def tex_template_implicit_pic_with_scale(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(EXAMPLE_SRC_IMPLICIT_PIC, implicit_tikzpicture=True, scale=3)
 
 
@@ -260,7 +264,9 @@ RES_IMPLICT_PIC_WITH_PACKAGES_AND_SCALE = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_implicit_pic_with_packages_and_scale():
+def tex_template_implicit_pic_with_packages_and_scale(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(
         EXAMPLE_SRC_IMPLICIT_PIC,
         implicit_tikzpicture=True,
@@ -315,7 +321,9 @@ RES_NO_IMPLICT_PIC_NO_TIKZ = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_implicit_pic_no_tikz():
+def tex_template_implicit_pic_no_tikz(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(
         EXAMPLE_SRC_CIRCUITIKZ,
         implicit_tikzpicture=True,
@@ -363,7 +371,9 @@ RES_NO_IMPLICT_PIC_WITH_SCALE_AND_NO_EXTRAS = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_no_implicit_pic_with_scale_and_no_extras():
+def tex_template_no_implicit_pic_with_scale_and_no_extras(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(EXAMPLE_SRC_STANDALONE, scale=1.5)
 
 
@@ -407,7 +417,9 @@ RES_NO_IMPLICT_PIC_WITH_SCALE_AND_PACKAGES = r"""\documentclass{standalone}
 
 
 @pytest.fixture
-def tex_template_no_implicit_pic_with_scale_and_packages():
+def tex_template_no_implicit_pic_with_scale_and_packages(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+
     return TexFragment(EXAMPLE_SRC_STANDALONE, scale=0.5, tex_packages="xcolor,amsmath")
 
 
