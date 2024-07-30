@@ -153,6 +153,12 @@ if __name__ == "__main__":
         "https://github.com/lucaslrodri/jupyter-tikz/blob/main/LICENSE",
     )
 
+    # Development
+    rendered_readme = rendered_readme.replace(
+        "about/development/",
+        "https://github.com/lucaslrodri/jupyter-tikz/blob/main/docs/about/development.md",
+    )
+
     # Internal links
 
     domain = "https://jupyter-tikz.readthedocs.io/stable/"
