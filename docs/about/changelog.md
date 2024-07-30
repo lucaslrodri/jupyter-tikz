@@ -8,7 +8,7 @@ All notable changes to this project are presented below.
 
 **🚀 Features**
 
-- Support to mkdocs social plugin.
+- Support to social cards (Twitter and Facebook OG).
 
 **🐞 Bug Fixes**
 
