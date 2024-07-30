@@ -257,6 +257,12 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
+## v0.4.2
+
+**🐞 Bug Fixes**
+
+- Doc: Fixed social cards image links.
+
 ## v0.4.1
 
 **✨ Improvements**
@@ -265,7 +271,7 @@ All notable changes to this project are presented below.
 
 **🚀 Features**
 
-- Docs: Support to social cards (Twitter and Facebook OG).
+- Doc: Support to social cards (Twitter and Facebook OG).
 
 **🐞 Bug Fixes**
 
