@@ -13,6 +13,7 @@ All notable changes to this project are presented below.
 **🐞 Bug Fixes**
 
 - Fixed indentation in `TexDocument.tikz_code`.
+- Fixed docs issues.
 
 ## v0.4.0
 
