@@ -250,7 +250,7 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 <ol>
 <li>If you encounter any issues or have suggestions for improvements, please report them using the <a href="https://github.com/lucaslrodri/jupyter-tikz/issues">issues page</a>.</li>
-<li>If you're interested in developing the software further, please refer to <a href="https://github.com/lucaslrodri/jupyter-tikz/blob/main/docs/about/development">development guide</a>.</li>
+<li>If you're interested in developing the software further, please refer to <a href="https://jupyter-tikz.readthedocs.io/stable/about/development/">development guide</a>.</li>
 </ol>
 
 # Changelog
@@ -270,6 +270,7 @@ All notable changes to this project are presented below.
 **🐞 Bug Fixes**
 
 - Fixed indentation in `TexDocument.tikz_code`.
+- Fixed docs issues.
 
 ## v0.4.0
 

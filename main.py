@@ -156,7 +156,7 @@ if __name__ == "__main__":
     # Development
     rendered_readme = rendered_readme.replace(
         "about/development/",
-        "https://github.com/lucaslrodri/jupyter-tikz/blob/main/docs/about/development.md",
+        "https://jupyter-tikz.readthedocs.io/stable/about/development/",
     )
 
     # Internal links
