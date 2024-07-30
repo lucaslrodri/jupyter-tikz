@@ -2,7 +2,7 @@ site_name: Jupyter-TikZ
 site_author: Lucas Lima Rodrigues
 site_description: IPython Magics for rendering TeX/TikZ in Jupyter Notebooks
 repo_url: https://github.com/lucaslrodri/jupyter-tikz/
-site_url: https://jupyter-tikz.readthedocs.io/en/latest/
+site_url: https://jupyter-tikz.readthedocs.io/latest/
 
 theme:
   name: material
