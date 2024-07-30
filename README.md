@@ -265,7 +265,7 @@ All notable changes to this project are presented below.
 
 **🚀 Features**
 
-- Support to social cards (Twitter and Facebook OG).
+- Docs: Support to social cards (Twitter and Facebook OG).
 
 **🐞 Bug Fixes**
 
