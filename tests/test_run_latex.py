@@ -700,9 +700,7 @@ def test_jinja_template(monkeypatch, tmp_path):
     ]
 
     # Act
-    tex_document = TexDocument(
-        EXAMPLE_JINJA_TEMPLATE, use_jinja=True, ns={"people": people}
-    )
+    tex_document = TexDocument(EXAMPLE_JINJA_TEMPLATE, ns={"people": people})
     res = tex_document.run_latex()
 
     # Assert
@@ -714,14 +712,14 @@ EXAMPLE_JINJA_PARENT_TEMPLATE = r"""
 \begin{document}
 	\begin{tikzpicture}
         \draw (-2.5,-2.5) rectangle (5,5);
-        {% block content %}{% endblock %}
+        (** block content **)(** endblock **)
 	\end{tikzpicture}
 \end{document}"""
 
-EXAMPLE_JINJA_CHILD_TEMPLATE = """{% extends 'parent_tmpl.tex' %}
-{% block content %}
-    \node[draw] at (0,0) {Hello, {{ name }}!};
-{% endblock %}
+EXAMPLE_JINJA_CHILD_TEMPLATE = """(** extends 'parent_tmpl.tex' **)
+(** block content **)
+    \node[draw] at (0,0) {Hello, (* name *)!};
+(** endblock **)
 """
 
 
@@ -735,9 +733,7 @@ def test_jinja_extends_template(tmpdir, monkeypatch):
     parent.write(parent_code)
 
     # Act
-    tex_document = TexDocument(
-        EXAMPLE_JINJA_CHILD_TEMPLATE, use_jinja=True, ns={"name": "World"}
-    )
+    tex_document = TexDocument(EXAMPLE_JINJA_CHILD_TEMPLATE, ns={"name": "World"})
     res = tex_document.run_latex()
 
     # Assert

@@ -58,7 +58,7 @@ def test_show_help_on_empy_code(tikz_magic, capsys):
 
 
 EXAMPLE_TIKZ_JINJA_TEMPLATE = """\\begin{tikzpicture}
-    \\node[draw] at (0,0) {Hello, {{ name }}!};
+    \\node[draw] at (0,0) {Hello, (* name *)!};
 \\end{tikzpicture}
 """
 
@@ -284,20 +284,6 @@ def test_alternative_tex_obj_type(tikz_magic_mock, params, expected_input_type):
 
     # Assert
     assert tikz_magic_mock.input_type == expected_input_type
-
-
-def test_as_jinja_same_as_use_jinja(tikz_magic_mock, monkeypatch):
-    # Arrange
-    line = "--as-jinja"
-    code = "any code"
-
-    monkeypatch.setattr(TexDocument, "__init__", lambda *args, **kwargs: None)
-
-    # Act
-    tikz_magic_mock.tikz(line, code)
-
-    # Assert
-    assert tikz_magic_mock.args.use_jinja is True
 
 
 # =================== Test src content ===================

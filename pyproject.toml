@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "jupyter-tikz"
-version = "0.4.2"
+version = "0.5"
 description = "IPython Magics for rendering TeX/TikZ in Jupyter Notebooks"
 license = "MIT"
 authors = ["lucaslrodri"]
@@ -32,11 +32,11 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+jinja2= "^3"
 ipython = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
-jinja2 = "^3.1.4"
 isort = "^5.13.2"
 black = "^24.4.2"
 taskipy = "^1.13.0"

@@ -49,9 +49,10 @@ EXAMPLE_JINJA_TEMPLATE = r"""
 \documentclass[tikz]{standalone}
 \begin{document}
     \begin{tikzpicture}
-        {% for person in people %}
-        \node[draw] at (0,{{ person.y }}) {Hello, {{ person.name }}!};
-        {% endfor %}
+        (~ A Jinja Template Commentary ~)
+        (** for person in people **)
+        \node[draw] at (0,(* person.y *)) {Hello, (* person.name *)!};
+        (** endfor **)
     \end{tikzpicture}
 \end{document}"""
 

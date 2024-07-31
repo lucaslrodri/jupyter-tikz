@@ -1,5 +1,12 @@
 All notable changes to this project are presented below.
 
+## v0.5
+
+**🚨 Breaking Changes**
+
+- Modifired Jinja2 syntax, because the `{}` braces clash with LaTeX itself.
+- Since the new syntax doesn't conflits with LaTeX, Jinja2 is enabled by default and now is a mandatory dependence. No long necessary to use `--use-jinja` to enable Jinja. However if you want to disable it use the new flag `--disable-jinja`.
+
 ## v0.4.2
 
 **🐞 Bug Fixes**
