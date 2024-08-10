@@ -656,6 +656,9 @@ conway_str = r"""\documentclass[tikz]{standalone}
 
 To help ensure that TikZ Pictures stay aligned with your data, you can use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/).
 
+!!! tip
+    Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), Jinja2 templates are enabled by default, so it's no longer necessary to use the `-j` flag. The `jinja2` package is automatically installed during the installation of `jupyter_tikz`.
+
 First, we need to populate some data:
 
 ```python
@@ -678,15 +681,9 @@ Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/)
 |  `{% raw %}{% logic/block %}{% endraw %}`   | `(** logic/block **)` | `(** for n1 in range(n) **)` |
 |    `{% raw %}{# comment #}{% endraw %}`     |   `(~ comment ~)`   | `(~ This won’t render ~)`  |
 
-
-
-!!! tip
-    Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), Jinja2 templates are enabled by default, so it's no longer necessary to use the `-j` flag. The `jinja2` package is automatically installed during the installation of `jupyter_tikz`.
-
-
 ```latex
 %%tikz -l=arrows,automata -sc=2
-{% raw %}
+{%- raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
 
@@ -703,7 +700,7 @@ Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/)
   (** endfor **)
   (** endfor **)
 \end{tikzpicture}
-{% endraw %}
+{% endraw -%}
 ```
 
 <div class="result" markdown>
@@ -714,7 +711,7 @@ It also works for full documents and implicit pictures:
 
 ```latex
 %%tikz -as=f -r -d=200
-{% raw %}
+{%- raw %}
 \documentclass[tikz]{standalone}
 \usetikzlibrary{arrows,automata}
 \definecolor{mymagenta}{RGB}{226,0,116}
@@ -736,7 +733,7 @@ It also works for full documents and implicit pictures:
   (** endfor **)
 \end{tikzpicture}
 \end{document}
-{% endraw %}
+{% endraw -%}
 ```
 <div class="result" markdown>
 ![Using Jinja - Full latex](../assets/tikz/jinja_full.png)
@@ -754,7 +751,7 @@ Sometimes, you'll make mistakes. Debugging transpiled code is challenging, espec
 
 ```latex
 %%tikz -pj -l=arrows,automata -sc=2 --save-tex=outputs/jinja_rendered.tikz
-{% raw %}
+{%- raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
 
@@ -771,7 +768,7 @@ Sometimes, you'll make mistakes. Debugging transpiled code is challenging, espec
   (** endfor -**)
 (** endfor **)
 \end{tikzpicture}
-{% endraw %}
+{% endraw -%}
 ```
 
 <div class="result" style="padding-right: 0;" markdown>
@@ -843,13 +840,13 @@ In this example, we are going to save the code in the variable `my_frame`:
 Now, we can reuse the variable in the code with Jinja:
 
 ```latex
-%%tikz -as=t --use-jinja
-{% raw %}
+%%tikz -as=t
+{%- raw %}
 \begin{tikzpicture}[scale=3]
     (* my_frame -*) % This is my_frame that I rendered before
     \filldraw (0.5,0.5) circle (.1);
 \end{tikzpicture}
-{% endraw %}
+{% endraw -%}
 ```
 
 <div class="result" markdown>
@@ -862,11 +859,11 @@ You can also combine `-sv` with Jinja blocks:
 
 ```latex
 %%tikz -as=t -sv=node_names -sc=2
-{% raw %}
+{%- raw %}
 (** for name, angle in nodes.items() -**)
     \node[color=red] (v(* loop.index0 *)) at((* angle *):1) {$(* name *)$};
 (** endfor -**)
-{% endraw %}
+{% endraw -%}
 ```
 <div class="result" markdown>
 ![sv + jinja](../assets/tikz/node_name_sv_j.svg)
@@ -886,7 +883,7 @@ Now, incorporate it into another `tikzpicture`:
 
 ```latex
 %%tikz -l=arrows,automata -sc=2
-{% raw %}
+{%- raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
 
@@ -900,7 +897,7 @@ Now, incorporate it into another `tikzpicture`:
     (** endfor **)
   (** endfor **)
 \end{tikzpicture}
-{% endraw %}
+{% endraw -%}
 ```
 
 <div class="result" markdown>
