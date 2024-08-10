@@ -102,6 +102,8 @@ The output image and code will be saved in:
 
 ## Working with Jinja
 
+You can render Jinja by simply creating an object with Jinja code.
+
 Firstly, let's create a Jinja template:
 
 ```python
@@ -130,13 +132,13 @@ jinja_code = r"""\documentclass[tikz]{standalone}
 {% endraw %}
 ```
 
-You can render Jinja by passing the `use-jinja` option(1):
+Then, pass the `jinja_code` into the creation of the `TexDocument` (1):
 { .annotate }
 
-1.  If you are using Jinja, you must pass the `ns=<namespace>` parameter in order to allow the method to access the variables.
+1.  You must pass the `ns=<namespace>` parameter in other to allow the method to access the variable.
 
 ```python
-tex_jinja_document = TexDocument(jinja_code, use_jinja=True, ns=locals())
+tex_jinja_document = TexDocument(jinja_code, ns=locals())
 print(tex_jinja_document)  # It prints the rendered Jinja Code
 ```
 <div class="result">
@@ -148,29 +150,32 @@ print(tex_jinja_document)  # It prints the rendered Jinja Code
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm,
                     semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
+
+  \node[color=mymagenta] (v0) at(0:1) {$A$};
+  \node[color=mymagenta] (v1) at(60:1) {$B$};
+  \node[color=mymagenta] (v2) at(121:1) {$C$};
+  \node[color=mymagenta] (v3) at(182:1) {$D$};
+  \node[color=mymagenta] (v4) at(243:1) {$E$};
+  \node[color=mymagenta] (v5) at(304:1) {$F$};
   
-  \node[color=mymagenta] (v0) at (0:1) {$A$};
-  \node[color=mymagenta] (v1) at (60:1) {$B$};
-  \node[color=mymagenta] (v2) at (121:1) {$C$};
-  \node[color=mymagenta] (v3) at (182:1) {$D$};
-  \node[color=mymagenta] (v4) at (243:1) {$E$};
-  \node[color=mymagenta] (v5) at (304:1) {$F$};
+
   \path (v0) edge (v1);
-         \path (v0) edge (v2);
-         \path (v0) edge (v3);
-         \path (v0) edge (v4);
-         \path (v0) edge (v5);
-         \path (v1) edge (v2);
-         \path (v1) edge (v3);
-         \path (v1) edge (v4);
-         \path (v1) edge (v5);
-         \path (v2) edge (v3);
-         \path (v2) edge (v4);
-         \path (v2) edge (v5);
-         \path (v3) edge (v4);
-         \path (v3) edge (v5);
-         \path (v4) edge (v5);
-         \end{tikzpicture}
+  \path (v0) edge (v2);
+  \path (v0) edge (v3);
+  \path (v0) edge (v4);
+  \path (v0) edge (v5);
+  \path (v1) edge (v2);
+  \path (v1) edge (v3);
+  \path (v1) edge (v4);
+  \path (v1) edge (v5);
+  \path (v2) edge (v3);
+  \path (v2) edge (v4);
+  \path (v2) edge (v5);
+  \path (v3) edge (v4);
+  \path (v3) edge (v5);
+  \path (v4) edge (v5);
+  
+\end{tikzpicture}
 \end{document}
 </pre>
 </div>

@@ -225,7 +225,7 @@ All additional options are listed below:
 | `-nt`<br>`--no-tikz` | Force to not import the TikZ package. |
 | `-l=<str>`<br>`--tikz-libraries=<str>` | Comma-separated list of TikZ libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-l=calc,arrows`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-lp=<str>`<br>`--pgfplots-libraries=<str>` | Comma-separated list of pgfplots libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-pl=groupplots,external`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
-| `-j`<br>`--use-jinja` | Render the code using Jinja2. |
+| `-dj`<br>`--disable-jinja` | Disable Jinja2 rendering. |
 | `-pj`<br>`--print-jinja` | Print the rendered Jinja2 template. |
 | `-pt`<br>`--print-tex` | Print the full LaTeX document. |
 | `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |
@@ -256,6 +256,15 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 # Changelog
 
 All notable changes to this project are presented below.
+
+## v0.5
+
+**🚨 Breaking Changes**
+
+- Significant changes to Jinja2 rendering:
+    - Replaced the default Jinja2 syntax with a custom one to avoid clashes with LaTeX braces (`{}`).
+    - With the new syntax, conflicts with LaTeX are significantly reduced, thus Jinja2 is now enabled by default and has become a mandatory dependency.
+    - Added a `--disable-jinja` flag to allow optional disabling of Jinja2 rendering.
 
 ## v0.4.2
 
@@ -349,7 +358,7 @@ All notable changes to this project are presented below.
 
 # Thanks
 
-I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [IPython TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles and save the LaTeX result to IPython variables. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
+I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` for converting PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [IPython TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as support for preambles, new Jinja syntax, and the ability to save the LaTeX result to IPython variables. I also switched from `pdf2svg` to Poppler, which works perfectly on all plataforms, including Windows.
 
 # License
 

@@ -10,6 +10,7 @@ from string import Template
 from textwrap import dedent, indent
 from typing import Any, Literal
 
+import jinja2
 from IPython import display
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
@@ -20,34 +21,30 @@ _PRINT_CONFLICT_ERR = (
     "You cannot use `--print-jinja` and `--print-tex` at the same time."
 )
 _INPUT_TYPE_CONFLIT_ERR = "You cannot use `--implicit-pic`, `--full-document` or/and `-as=<input_type>` at the same time."
-_JINJA_NOT_INTALLED_ERR = (
-    "Template cannot be rendered. Please install jinja2: `$ pip install jinja2`"
-)
-_NS_NOT_PROVIDED_ERR = 'Namespace must be provided when using `use_jinja`, i.e.: `ns=locals()` or `ns={"my_var": value}`'
 
 
 class TexDocument:
     """This class provides functionality to create and render a LaTeX document given the full LaTeX code. It can also constructs LaTeX code using Jinja2 templates."""
 
     def __init__(
-        self, code: str, use_jinja: bool = False, ns: dict[str, Any] | None = None
+        self, code: str, disable_jinja: bool = False, ns: dict[str, Any] | None = None
     ):
         """Initializes the `TexDocument` class.
 
         Args:
             code: LaTeX code to render.
-            use_jinja: A flag to indicate if the code uses Jinja2 template.
+            disable_jinja: Disable Jinja2 rendering.
             ns: A namespace dictionary with the variables to render the Jinja2 template. It must be provided when `use_jinja` is `True`.
 
         Raises:
             ValueError: If `use_jinja` is `True` and `ns` is not provided.
         """
         self._code: str = code.strip()
-        self._use_jinja: bool = use_jinja
-        if self._use_jinja and not ns:
-            raise ValueError(_NS_NOT_PROVIDED_ERR)
+        self._disable_jinja: bool = disable_jinja
+        if not ns:
+            ns = {}
 
-        if self._use_jinja:
+        if not self._disable_jinja:
             self._render_jinja(ns)
 
     @property
@@ -89,9 +86,9 @@ class TexDocument:
 
         params = ", ".join(
             [
-                f'{k if k != "_use_jinja" else "use_jinja"}={self._arg_head(v)}'
+                f'{k if k != "_disable_jinja" else "disable_jinja"}={self._arg_head(v)}'
                 for k, v in params_dict.items()
-                if k not in ["_code", "full_latex", "ns"] and v
+                if k not in ["_code", "full_latex", "tikz_code", "ns"] and v
             ]
         )
         if params:
@@ -248,13 +245,17 @@ class TexDocument:
             self._clearup_latex_garbage(keep_temp)
 
     def _render_jinja(self, ns) -> None:
-        try:
-            import jinja2
-        except ImportError:
-            raise ImportError(_JINJA_NOT_INTALLED_ERR)
-
         fs_loader = jinja2.FileSystemLoader(os.getcwd())
-        tmpl_env = jinja2.Environment(loader=fs_loader)
+
+        tmpl_env = jinja2.Environment(
+            loader=fs_loader,
+            block_start_string="(**",  # Normal is '{%'.
+            block_end_string="**)",  # Normal is '%}'.
+            variable_start_string="(*",  # Normal is '{{'.
+            variable_end_string="*)",  # Normal is '}}'.
+            comment_start_string="(~",  # Normal is '{#'.
+            comment_end_string="~)",  # Normal is '#}'.
+        )
 
         tmpl = tmpl_env.from_string(self._code)
 
@@ -293,7 +294,7 @@ class TexFragment(TexDocument):
         tikz_libraries: str | None = None,
         pgfplots_libraries: str | None = None,
         no_tikz: bool = False,
-        **kargs,
+        **kwargs,
     ):
         """Initializes the `TexFragment` class.
 
@@ -322,7 +323,7 @@ class TexFragment(TexDocument):
                 tex_packages, tikz_libraries, pgfplots_libraries, no_tikz
             )
 
-        super().__init__(code, **kargs)
+        super().__init__(code, **kwargs)
 
     def _build_standalone_preamble(
         self,
@@ -385,7 +386,7 @@ class TexFragment(TexDocument):
 
 
 _ARGS = {
-    "input-type": {  # New
+    "input-type": {
         "short-arg": "as",
         "dest": "input_type",
         "type": str,
@@ -393,13 +394,13 @@ _ARGS = {
         "desc": "Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`",
         "example": "`-as=full-document`",
     },
-    "implicit-pic": {  # Deprecated
+    "implicit-pic": {
         "short-arg": "i",
         "dest": "implicit_pic",
         "type": bool,
         "desc": "Alias for `-as=tikzpicture`",
     },
-    "full-document": {  # Deprecated
+    "full-document": {
         "short-arg": "f",
         "dest": "full_document",
         "type": bool,
@@ -443,11 +444,11 @@ _ARGS = {
         "desc": "Comma-separated list of pgfplots libraries",
         "example": "`-pl=groupplots,external`",
     },
-    "use-jinja": {  # Changed
-        "short-arg": "j",
-        "dest": "use_jinja",
+    "disable-jinja": {  # New
+        "short-arg": "dj",
+        "dest": "disable_jinja",
         "type": bool,
-        "desc": "Render the code using Jinja2",
+        "desc": "Disable Jinja2 rendering",
     },
     "print-jinja": {
         "short-arg": "pj",
@@ -619,13 +620,6 @@ class TikZMagics(Magics):
     @line_cell_magic
     @magic_arguments()
     @_apply_args()
-    @argument(  # Deprecated
-        "--as-jinja",
-        dest="as_jinja",
-        action="store_true",
-        default=False,
-        help="Deprecated. Use `--use-jinja` instead.",
-    )
     @argument("code", nargs="?", help="the variable in IPython with the Tex/TikZ code")
     @needs_local_scope
     def tikz(self, line, cell: str | None = None, local_ns=None) -> Image | SVG | None:
@@ -676,8 +670,6 @@ class TikZMagics(Magics):
                 file=sys.stderr,
             )
             return
-        if self.args.as_jinja:
-            self.args.use_jinja = True
         if self.args.print_jinja and self.args.print_tex:
             print(
                 _PRINT_CONFLICT_ERR,
@@ -714,7 +706,7 @@ class TikZMagics(Magics):
 
         if self.input_type == "full-document":
             self.tex_obj = TexDocument(
-                self.src, use_jinja=self.args.use_jinja, ns=local_ns
+                self.src, disable_jinja=self.args.disable_jinja, ns=local_ns
             )
         else:
             implicit_tikzpicture = self.input_type == "tikzpicture"
@@ -727,7 +719,7 @@ class TikZMagics(Magics):
                 tikz_libraries=self.args.tikz_libraries,
                 pgfplots_libraries=self.args.pgfplots_libraries,
                 scale=self.args.scale,
-                use_jinja=self.args.use_jinja or self.args.print_jinja,
+                disable_jinja=self.args.disable_jinja,
                 ns=local_ns,
             )
 
