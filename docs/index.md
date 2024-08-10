@@ -46,10 +46,10 @@ Choose the following links to continue your journey:
 
 <div class="grid">
   {% for href, icon, text in [
-    ("/install/", "computer", "<strong>Install</strong> Jupyter-TikZ"), 
-    ("/arguments/", "terminal", "IPython Magics <strong>additional options</strong>"),
-    ("/usage/as-magic/", "magic", "<strong>Usage</strong> as IPython Magics"), 
-    ("/usage/as-package/", "package", "<strong>Usage</strong> as a Python Package"), 
+    ("./installation/", "computer", "<strong>Install</strong> Jupyter-TikZ"), 
+    ("./arguments/", "terminal", "IPython Magics <strong>additional options</strong>"),
+    ("./usage/as-magic/", "magic", "<strong>Usage</strong> as IPython Magics"), 
+    ("./usage/as-package/", "package", "<strong>Usage</strong> as a Python Package"), 
   ] %}
     <a class="card card-link" href="{{ href }}"><span class="twemoji">{{ icons[icon] }}</span> {{ text }}</a>
   {% endfor %}

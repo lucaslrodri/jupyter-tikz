@@ -1,5 +1,11 @@
 All notable changes to this project are presented below.
 
+## v0.5.2
+
+**🐞 Bug Fixes**
+
+- Docs: Fixed internal links in index.md.
+
 ## v0.5.1
 
 **🐞 Bug Fixes**
