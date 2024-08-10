@@ -10,11 +10,11 @@ from string import Template
 from textwrap import dedent, indent
 from typing import Any, Literal
 
+import jinja2
 from IPython import display
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments, parse_argstring
 from IPython.display import SVG, Image
-import jinja2
 
 _EXTRAS_CONFLITS_ERR = "You cannot provide `preamble` and (`tex_packages`, `tikz_libraries`, and/or `pgfplots_libraries`) at the same time."
 _PRINT_CONFLICT_ERR = (

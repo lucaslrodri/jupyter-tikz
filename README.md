@@ -225,7 +225,7 @@ All additional options are listed below:
 | `-nt`<br>`--no-tikz` | Force to not import the TikZ package. |
 | `-l=<str>`<br>`--tikz-libraries=<str>` | Comma-separated list of TikZ libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-l=calc,arrows`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-lp=<str>`<br>`--pgfplots-libraries=<str>` | Comma-separated list of pgfplots libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-pl=groupplots,external`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
-| `-j`<br>`--use-jinja` | Render the code using Jinja2. |
+| `-dj`<br>`--disable-jinja` | Disable Jinja2 rendering. |
 | `-pj`<br>`--print-jinja` | Print the rendered Jinja2 template. |
 | `-pt`<br>`--print-tex` | Print the full LaTeX document. |
 | `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |
@@ -256,6 +256,17 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 # Changelog
 
 All notable changes to this project are presented below.
+
+## v0.5
+
+**🚨 Breaking Changes**
+
+- Great changing in Jinja2 rendering:
+    - Modifired Jinja2 syntax, because the `{}` braces clash with LaTeX itself.
+    - Since the new syntax doesn't conflits with LaTeX, Jinja2 is enabled by default 
+    - Jinja2 and now is a mandatory dependence. 
+    - Removed `--use-jinja` flag, since Jinja2 is enabled by default.
+    - Added `--disable-jinja` flag to disable Jinja2 rendering.
 
 ## v0.4.2
 

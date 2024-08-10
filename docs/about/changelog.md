@@ -4,8 +4,10 @@ All notable changes to this project are presented below.
 
 **🚨 Breaking Changes**
 
-- Modifired Jinja2 syntax, because the `{}` braces clash with LaTeX itself.
-- Since the new syntax doesn't conflits with LaTeX, Jinja2 is enabled by default and now is a mandatory dependence. No long necessary to use `--use-jinja` to enable Jinja. However if you want to disable it use the new flag `--disable-jinja`.
+- Significant changes to Jinja2 rendering:
+    - Replaced the default Jinja2 syntax with a custom one to avoid clashes with LaTeX braces (`{}`).
+    - With the new syntax, conflicts with LaTeX are significantly reduced, thus Jinja2 is now enabled by default and has become a mandatory dependency.
+    - Added a `--disable-jinja` flag to allow optional disabling of Jinja2 rendering.
 
 ## v0.4.2
 

@@ -34,11 +34,11 @@ Finally, if you forget the usage, as for help by typing `%tikz?`, or visit **add
 <div class="log-output">
 <pre>
 %tikz [-as INPUT_TYPE] [-i] [-f] [-p LATEX_PREAMBLE] [-t TEX_PACKAGES]
-        [-nt] [-l TIKZ_LIBRARIES] [-lp PGFPLOTS_LIBRARIES] [-j] [-pj]
-        [-pt] [-sc SCALE] [-r] [-d DPI] [-e] [-tp TEX_PROGRAM]
-        [-ta TEX_ARGS] [-nc] [-s SAVE_TEX] [-S SAVE_IMAGE] [-sv SAVE_VAR]
-        [--as-jinja]
-        [code]
+            [-nt] [-l TIKZ_LIBRARIES] [-lp PGFPLOTS_LIBRARIES] [-dj] [-pj]
+            [-pt] [-sc SCALE] [-r] [-d DPI] [-g] [-e] [-k] [-tp TEX_PROGRAM]
+            [-ta TEX_ARGS] [-nc] [-s SAVE_TIKZ] [-st SAVE_TEX] [-sp SAVE_PDF]
+            [-S SAVE_IMAGE] [-sv SAVE_VAR]
+            [code]
 
 Renders a TikZ diagram in a Jupyter notebook cell. This function can be used as both a line magic (%tikz) and a cell magic (%%tikz).
 
@@ -66,7 +66,6 @@ Additional options can be passed to the magic command to customize LaTeX code an
            ...:     (m-1-2) edge node [right] {$bd$} (m-2-2)
            ...:     (m-2-1) edge node [below] {$cd$} (m-2-2);
 
-
 positional arguments:
   code                  the variable in IPython with the Tex/TikZ code
 
@@ -92,7 +91,7 @@ options:
   -lp PGFPLOTS_LIBRARIES, --pgfplots-libraries PGFPLOTS_LIBRARIES
                         Comma-separated list of pgfplots libraries, e.g.,
                         `-pl=groupplots,external`.
-  -j, --use-jinja       Render the code using Jinja2.
+  -dj, --disable-jinja  Disable Jinja2 rendering.
   -pj, --print-jinja    Print the rendered Jinja2 template.
   -pt, --print-tex      Print the full LaTeX document.
   -sc SCALE, --scale SCALE
@@ -101,9 +100,9 @@ options:
   -r, --rasterize       Output a rasterized image (PNG) instead of SVG.
   -d DPI, --dpi DPI     DPI to use when rasterizing the image, e.g.,
                         `--dpi=300`. Defaults to `-d=96`.
-  -g, --gray            Set grayscale to a rasterized image.
+  -g, --gray            Set grayscale to the rasterized image.
   -e, --full-err        Print the full error message when an error occurs.
-  -k, --keep-temp       Keep temporary LaTeX files.
+  -k, --keep-temp       Keep temporary files.
   -tp TEX_PROGRAM, --tex-program TEX_PROGRAM
                         TeX program to use for compilation, e.g.,
                         `-tp=xelatex` or `-tp=lualatex`. Defaults to
@@ -125,7 +124,6 @@ options:
   -sv SAVE_VAR, --save-var SAVE_VAR
                         Save the TikZ or LaTeX code to an IPython variable,
                         e.g., `-sv my_var`.
-  --as-jinja            Deprecated. Use `--use-jinja` instead.
 </pre>
 </div>
 </div>
@@ -658,12 +656,6 @@ conway_str = r"""\documentclass[tikz]{standalone}
 
 To help ensure that TikZ Pictures stay aligned with your data, you can use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/).
 
-!!! warning
-    Before using it, you must install Jinja2:
-    ```shell
-    pip install jinja2
-    ```
-
 First, we need to populate some data:
 
 ```python
@@ -677,25 +669,36 @@ nodes
 {"'A': 0, 'B': 60, 'C': 121, 'D': 182, 'E': 243, 'F': 304}
 </div>
 
-Then, you can interpret the cell source as a Jinja2 template using the `-j` (or `--use-jinja`) parameter:
+Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), we have modified the standard Jinja2 syntax because `{}` braces clash with LaTeX. The table below shows the differences between the standard Jinja2 syntax and the Jupyter TikZ Jinja syntax:
+
+| Standard Jinja2 Syntax |     Jupyter TikZ Syntax     |           Example            |
+| :--------------------: | :-------------------------: | :--------------------------: |
+|   `{{ expression }}`   |   `(** expression **)`      | `(** for n1 in range(n) **)` |
+|  `{% logic/block %}`   |    `(* logic/block *)`      |  `\node at((* angle *):1);`  |
+|    `{# comment #}`     |    `(~ comment ~)`          |  `(~ This won’t render ~)`   |
+
+!!! tip
+    Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), Jinja2 templates are enabled by default, so it's no longer necessary to use the `-j` flag. The `jinja2` package is automatically installed during the installation of `jupyter_tikz`.
+
 
 ```latex
-%%tikz -j -l=arrows,automata -sc=2
+%%tikz -l=arrows,automata -sc=2
 {% raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
-  
-  {% for name, angle in nodes.items() -%}
-       \node[color=magenta] (v{{ loop.index0 }}) at ({{ angle }}:1) {${{ name }}$};
-  {% endfor -%}
-  
-  {% for n1 in range(n) -%}
-      {% for n2 in range(n) -%}
-         {%if n1 < n2 -%}
-             \path (v{{n1}}) edge (v{{n2}});
-         {% endif -%}
-      {% endfor -%}
-  {% endfor -%}
+
+  % Nodes
+  (** for name, angle in nodes.items() **)(~ For expression ~)
+    \node[color=magenta] (v(* loop.index0 *)) at ((* angle *):1) {$(* name *)$}; 
+  (** endfor **)
+  % Paths
+  (** for n1 in range(n) **)
+      (** for n2 in range(n) **)
+          (** if n1 < n2 **)
+            \path (v(* n1 *)) edge (v(* n2 *));
+  (** endif **)
+  (** endfor **)
+  (** endfor **)
 \end{tikzpicture}
 {% endraw %}
 ```
@@ -707,7 +710,7 @@ Then, you can interpret the cell source as a Jinja2 template using the `-j` (or 
 It also works for full documents and implicit pictures:
 
 ```latex
-%%tikz --use-jinja -as=f -r -d=200
+%%tikz -as=f -r -d=200
 {% raw %}
 \documentclass[tikz]{standalone}
 \usetikzlibrary{arrows,automata}
@@ -716,18 +719,18 @@ It also works for full documents and implicit pictures:
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm,
                     semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
-  
-  {% for name, angle in nodes.items() -%}
-       \node[color=mymagenta] (v{{loop.index0}}) at ({{angle}}:1) {${{name}}$};
-  {% endfor -%}
-  
-  {% for n1 in range(n) -%}
-      {% for n2 in range(n) -%}
-         {%if n1 < n2 -%}
-             \path (v{{n1}}) edge (v{{n2}});
-         {% endif -%}
-      {% endfor -%}
-  {% endfor -%}
+
+  (** for name, angle in nodes.items() **)
+    \node[color=mymagenta] (v(* loop.index0 *)) at((* angle *):1) {$(* name *)$};
+  (** endfor **)
+
+  (** for n1 in range(n) **)
+    (** for n2 in range(n) **)
+        (** if n1 < n2 **)
+            \path (v(* n1 *)) edge (v(* n2 *));
+        (** endif **)
+    (** endfor **)
+  (** endfor **)
 \end{tikzpicture}
 \end{document}
 {% endraw %}
@@ -738,29 +741,32 @@ It also works for full documents and implicit pictures:
 
 ### Print Jinja
 
-Sometimes, you'll make mistakes. Debugging transpiled code is challenging, especially without a mapping. To assist, you can print the Jinja template using `-pj` (or `--print-jinja`)(1):
+Sometimes, you'll make mistakes. Debugging transpiled code is challenging, especially without a mapping. To assist, you can print the Jinja rendered output using the `-pj` (or `--print-jinja`) flag (1):
 { .annotate }
 
-1.  The saved code file is also the interpolated code source.
+1. The `-pj` printed code is also the source of the interpolated code.
+
+!!! tip
+    Use a minus (`-`) before and/or after a block for whitespace control. For more information, refer to the [Jinja2 documentation](https://jinja.palletsprojects.com/en/3.0.x/templates/#whitespace-control).
 
 ```latex
 %%tikz -pj -l=arrows,automata -sc=2 --save-tex=outputs/jinja_rendered.tikz
 {% raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
-  
-  {% for name, angle in nodes.items() -%}
-       \node[color=magenta] (v{{ loop.index0 }}) at ({{ angle }}:1) {${{ name }}$};
-  {% endfor -%}
-  
-  {% for n1 in range(n) -%}
-      {% for n2 in range(n) -%}
-         {%if n1 < n2 -%}
-             \path (v{{n1}}) edge (v{{n2}});
-         {% endif -%}
-      {% endfor -%}
-  {% endfor -%}
 
+  (~ Using minus `-` before/after each block to whitespace control. -~)
+  (~- https://jinja.palletsprojects.com/en/3.0.x/templates/#whitespace-control -~)
+  (** for name, angle in nodes.items() -**)
+      \node[color=magenta] (v(* loop.index0 *)) at((* angle *):1) {$(* name *)$};
+  (** endfor **)
+  (** for n1 in range(n) -**)
+  (** for n2 in range(n) -**)
+  (**- if n1 < n2 -**)
+    \path (v(* n1 *)) edge (v(* n2 *));
+  (** endif -**)
+  (** endfor -**)
+(** endfor **)
 \end{tikzpicture}
 {% endraw %}
 ```
@@ -769,31 +775,46 @@ Sometimes, you'll make mistakes. Debugging transpiled code is challenging, espec
 <pre class="log-output">
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
+
+  \node[color=magenta] (v0) at(0:1) {$A$};
+  \node[color=magenta] (v1) at(60:1) {$B$};
+  \node[color=magenta] (v2) at(121:1) {$C$};
+  \node[color=magenta] (v3) at(182:1) {$D$};
+  \node[color=magenta] (v4) at(243:1) {$E$};
+  \node[color=magenta] (v5) at(304:1) {$F$};
   
-  \node[color=magenta] (v0) at (0:1) {$A$};
-  \node[color=magenta] (v1) at (60:1) {$B$};
-  \node[color=magenta] (v2) at (121:1) {$C$};
-  \node[color=magenta] (v3) at (182:1) {$D$};
-  \node[color=magenta] (v4) at (243:1) {$E$};
-  \node[color=magenta] (v5) at (304:1) {$F$};
   \path (v0) edge (v1);
-         \path (v0) edge (v2);
-         \path (v0) edge (v3);
-         \path (v0) edge (v4);
-         \path (v0) edge (v5);
-         \path (v1) edge (v2);
-         \path (v1) edge (v3);
-         \path (v1) edge (v4);
-         \path (v1) edge (v5);
-         \path (v2) edge (v3);
-         \path (v2) edge (v4);
-         \path (v2) edge (v5);
-         \path (v3) edge (v4);
-         \path (v3) edge (v5);
-         \path (v4) edge (v5);
-         \end{tikzpicture}
+  \path (v0) edge (v2);
+  \path (v0) edge (v3);
+  \path (v0) edge (v4);
+  \path (v0) edge (v5);
+  \path (v1) edge (v2);
+  \path (v1) edge (v3);
+  \path (v1) edge (v4);
+  \path (v1) edge (v5);
+  \path (v2) edge (v3);
+  \path (v2) edge (v4);
+  \path (v2) edge (v5);
+  \path (v3) edge (v4);
+  \path (v3) edge (v5);
+  \path (v4) edge (v5);
+  
+\end{tikzpicture}
 </pre>
 ![Using Jinja](../assets/tikz/graph_letters.svg)
+</div>
+
+### Disabling Jinja rendering
+
+If you don't want to use Jinja2 rendering you can tell it using the flag `-dj` (or `--disable-jinja`):
+```latex
+%%tikz -dj -sc=2
+\begin{tikzpicture}
+    \node {(* Show `(*` because i'm not rendering Jinja*)};
+\end{tikzpicture}
+```
+<div class="result" markdown>
+![Disable jinja](../assets/tikz/disable_jinja.svg)
 </div>
 
 ## Exporting code to variables
@@ -820,7 +841,7 @@ Now, we can reuse the variable in the code with Jinja:
 %%tikz -as=t --use-jinja
 {% raw %}
 \begin{tikzpicture}[scale=3]
-    {{ my_frame }} % This is my_frame that I rendered before
+    (* my_frame -*) % This is my_frame that I rendered before
     \filldraw (0.5,0.5) circle (.1);
 \end{tikzpicture}
 {% endraw %}
@@ -832,14 +853,14 @@ Now, we can reuse the variable in the code with Jinja:
 
 ### Combining with Jinja2
 
-You can also combine `-sv` with `-j`:
+You can also combine `-sv` with Jinja blocks:
 
 ```latex
-%%tikz -as=t -j -sv=node_names -sc=2
+%%tikz -as=t -sv=node_names -sc=2
 {% raw %}
-{% for name, angle in nodes.items() -%}
-   \node[color=red] (v{{loop.index0}}) at ({{angle}}:1) {${{name}}$};
-{% endfor -%}
+(** for name, angle in nodes.items() -**)
+    \node[color=red] (v(* loop.index0 *)) at((* angle *):1) {$(* name *)$};
+(** endfor -**)
 {% endraw %}
 ```
 <div class="result" markdown>
@@ -853,27 +874,26 @@ node_names
 ```
 
 <div class="result log-output" style="overflow-x: scroll; white-space: nowrap;">
-'\\node[color=red] (v0) at (0:1) {$A$};\n\\node[color=red] (v1) at (60:1) {$B$};\n\\node[color=red] (v2) at (121:1) {$C$};\n\\node[color=red] (v3) at (182:1) {$D$};\n\\node[color=red] (v4) at (243:1) {$E$};\n\\node[color=red] (v5) at (304:1) {$F$};\n'
+'\\node[color=red] (v0) at(0:1) {$A$};\n\\node[color=red] (v1) at(60:1) {$B$};\n\\node[color=red] (v2) at(121:1) {$C$};\n\\node[color=red] (v3) at(182:1) {$D$};\n\\node[color=red] (v4) at(243:1) {$E$};\n\\node[color=red] (v5) at(304:1) {$F$};\n'
 </div>
 
 Now, incorporate it into another `tikzpicture`:
 
 ```latex
-%%tikz --use-jinja -l=arrows,automata -sc=2
+%%tikz -l=arrows,automata -sc=2
 {% raw %}
 \begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=2.8cm, semithick]
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
-  
-  {{ node_names }}
-  
-  {% for n1 in range(n) -%}
-      {% for n2 in range(n) -%}
-         {%if n1 < n2 -%}
-             \path (v{{n1}}) edge (v{{n2}});
-         {% endif -%}
-      {% endfor -%}
-  {% endfor -%}
 
+  (* node_names *)
+  
+  (** for n1 in range(n) -**)
+    (** for n2 in range(n) -**)
+        (** if n1 < n2 -**)
+            \path (v(* n1 *)) edge (v(* n2 *));
+        (** endif **)
+    (** endfor **)
+  (** endfor **)
 \end{tikzpicture}
 {% endraw %}
 ```

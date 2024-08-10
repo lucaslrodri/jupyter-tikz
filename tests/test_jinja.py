@@ -1,8 +1,8 @@
 import pytest
+from IPython.display import SVG
 
 from jupyter_tikz import TexDocument
 from tests.conftest import *
-from IPython.display import SVG
 
 EXAMPLE_TIKZ_JINJA_TEMPLATE = """\\begin{tikzpicture}
     \\node[draw] at (0,0) {Hello, (* name *)!};
