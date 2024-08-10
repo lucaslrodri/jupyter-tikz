@@ -84,13 +84,10 @@ os.environ["JUPYTER_TIKZ_PDFTOCAIROPATH"] = custom_pdftocairo_path
 
 1. The directory of `pdftocairo` binary.
 
-### Jinja2 (Optional)
+### Jinja2
 
-Jinja2 is only necessary if you plan to use [Jinja2 templates](https://jinja.palletsprojects.com/en/latest/templates/). To install it, use:
-
-```shell
-pip install jinja2
-```
+!!! note
+    Since [version 0.5](./about/changelog.md), [Jinja2](https://jinja.palletsprojects.com/en/latest) is installed automatically, so it is no longer necessary to install this dependency manually.
 
 ## Install Jupyter TikZ
 

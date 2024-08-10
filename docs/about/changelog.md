@@ -1,5 +1,11 @@
 All notable changes to this project are presented below.
 
+## v0.5.3
+
+**🐞 Bug Fixes**
+
+- Docs: Fixed Jinja section in installation.md.
+
 ## v0.5.2
 
 **🐞 Bug Fixes**
