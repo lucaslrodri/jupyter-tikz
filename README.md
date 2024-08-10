@@ -257,7 +257,13 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
-## v0.5
+## v0.5.1
+
+**🐞 Bug Fixes**
+
+- Docs: Minor fix in changelog.
+
+## v0.5.0
 
 **🚨 Breaking Changes**
 
