@@ -674,9 +674,10 @@ Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/)
 
 |          Standard Jinja2 Syntax          | Jupyter TikZ Syntax  |           Example            |
 | :--------------------------------------: | :------------------: | :--------------------------: |
-| `{% raw %}{{ expression }}{% endraw %}`  | `(** expression **)` | `(** for n1 in range(n) **)` |
-| `{% raw %}{% logic/block %}{% endraw %}` | `(* logic/block *)`  |  `\node at((* angle *):1);`  |
-|   `{% raw %}{# comment #}{% endraw %}`   |   `(~ comment ~)`    |  `(~ This won’t render ~)`   |
+|   `{% raw %}{{ expression }}{% endraw %}`   |  `(* expression *)`   |  `\node at((* angle *):1);`  |
+|  `{% raw %}{% logic/block %}{% endraw %}`   | `(** logic/block **)` | `(** for n1 in range(n) **)` |
+|    `{% raw %}{# comment #}{% endraw %}`     |   `(~ comment ~)`   | `(~ This won’t render ~)`  |
+
 
 
 !!! tip
@@ -690,7 +691,7 @@ Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/)
   \tikzstyle{every state}=[fill=mymagenta,draw=none,text=white]
 
   % Nodes
-  (** for name, angle in nodes.items() **)(~ For expression ~)
+  (** for name, angle in nodes.items() **)(~ For block ~)
     \node[color=magenta] (v(* loop.index0 *)) at ((* angle *):1) {$(* name *)$}; 
   (** endfor **)
   % Paths
@@ -809,12 +810,14 @@ Sometimes, you'll make mistakes. Debugging transpiled code is challenging, espec
 ### Disabling Jinja rendering
 
 If you don't want to use Jinja2 rendering you can tell it using the flag `-nj` (or `--no-jinja`):
+
 ```latex
 %%tikz -nj -sc=2
 \begin{tikzpicture}
     \node {(* Show `(*` because i'm not rendering Jinja*)};
 \end{tikzpicture}
 ```
+
 <div class="result" markdown>
 ![No jinja](../assets/tikz/no_jinja.svg)
 </div>
