@@ -671,11 +671,13 @@ nodes
 
 Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), we have modified the standard Jinja2 syntax because `{}` braces clash with LaTeX. The table below shows the differences between the standard Jinja2 syntax and the Jupyter TikZ Jinja syntax:
 
-| Standard Jinja2 Syntax |     Jupyter TikZ Syntax     |           Example            |
-| :--------------------: | :-------------------------: | :--------------------------: |
-|   `{{ expression }}`   |   `(** expression **)`      | `(** for n1 in range(n) **)` |
-|  `{% logic/block %}`   |    `(* logic/block *)`      |  `\node at((* angle *):1);`  |
-|    `{# comment #}`     |    `(~ comment ~)`          |  `(~ This won’t render ~)`   |
+
+|          Standard Jinja2 Syntax          | Jupyter TikZ Syntax  |           Example            |
+| :--------------------------------------: | :------------------: | :--------------------------: |
+| `{% raw %}{{ expression }}{% endraw %}`  | `(** expression **)` | `(** for n1 in range(n) **)` |
+| `{% raw %}{% logic/block %}{% endraw %}` | `(* logic/block *)`  |  `\node at((* angle *):1);`  |
+|   `{% raw %}{# comment #}{% endraw %}`   |   `(~ comment ~)`    |  `(~ This won’t render ~)`   |
+
 
 !!! tip
     Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog/), Jinja2 templates are enabled by default, so it's no longer necessary to use the `-j` flag. The `jinja2` package is automatically installed during the installation of `jupyter_tikz`.
