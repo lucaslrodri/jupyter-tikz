@@ -261,12 +261,10 @@ All notable changes to this project are presented below.
 
 **🚨 Breaking Changes**
 
-- Great changing in Jinja2 rendering:
-    - Modifired Jinja2 syntax, because the `{}` braces clash with LaTeX itself.
-    - Since the new syntax doesn't conflits with LaTeX, Jinja2 is enabled by default 
-    - Jinja2 and now is a mandatory dependence. 
-    - Removed `--use-jinja` flag, since Jinja2 is enabled by default.
-    - Added `--disable-jinja` flag to disable Jinja2 rendering.
+- Significant changes to Jinja2 rendering:
+    - Replaced the default Jinja2 syntax with a custom one to avoid clashes with LaTeX braces (`{}`).
+    - With the new syntax, conflicts with LaTeX are significantly reduced, thus Jinja2 is now enabled by default and has become a mandatory dependency.
+    - Added a `--disable-jinja` flag to allow optional disabling of Jinja2 rendering.
 
 ## v0.4.2
 
@@ -360,7 +358,7 @@ All notable changes to this project are presented below.
 
 # Thanks
 
-I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` to convert PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [IPython TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as the ability to work with preambles and save the LaTeX result to IPython variables. I also switched from `pdf2svg` to Poppler, which works perfectly in Windows.
+I had been using [ITikZ](https://github.com/jbn/itikz) for years. However, it doesn't update often and relies on the outdated `pdf2svg` for converting PDFs to images, which causes problems in Windows environments. Inspired by ITikZ and [IPython TikZ Magic](https://github.com/mkrphys/ipython-tikzmagic), I decided to create my own package, adding new features such as support for preambles, new Jinja syntax, and the ability to save the LaTeX result to IPython variables. I also switched from `pdf2svg` to Poppler, which works perfectly on all plataforms, including Windows.
 
 # License
 
