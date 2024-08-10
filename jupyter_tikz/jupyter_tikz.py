@@ -27,24 +27,24 @@ class TexDocument:
     """This class provides functionality to create and render a LaTeX document given the full LaTeX code. It can also constructs LaTeX code using Jinja2 templates."""
 
     def __init__(
-        self, code: str, disable_jinja: bool = False, ns: dict[str, Any] | None = None
+        self, code: str, no_jinja: bool = False, ns: dict[str, Any] | None = None
     ):
         """Initializes the `TexDocument` class.
 
         Args:
             code: LaTeX code to render.
-            disable_jinja: Disable Jinja2 rendering.
+            no_jinja: Disable Jinja2 rendering.
             ns: A namespace dictionary with the variables to render the Jinja2 template. It must be provided when `use_jinja` is `True`.
 
         Raises:
             ValueError: If `use_jinja` is `True` and `ns` is not provided.
         """
         self._code: str = code.strip()
-        self._disable_jinja: bool = disable_jinja
+        self._no_jinja: bool = no_jinja
         if not ns:
             ns = {}
 
-        if not self._disable_jinja:
+        if not self._no_jinja:
             self._render_jinja(ns)
 
     @property
@@ -86,7 +86,7 @@ class TexDocument:
 
         params = ", ".join(
             [
-                f'{k if k != "_disable_jinja" else "disable_jinja"}={self._arg_head(v)}'
+                f'{k if k != "_no_jinja" else "no_jinja"}={self._arg_head(v)}'
                 for k, v in params_dict.items()
                 if k not in ["_code", "full_latex", "tikz_code", "ns"] and v
             ]
@@ -444,9 +444,9 @@ _ARGS = {
         "desc": "Comma-separated list of pgfplots libraries",
         "example": "`-pl=groupplots,external`",
     },
-    "disable-jinja": {  # New
-        "short-arg": "dj",
-        "dest": "disable_jinja",
+    "no-jinja": {  # New
+        "short-arg": "nj",
+        "dest": "no_jinja",
         "type": bool,
         "desc": "Disable Jinja2 rendering",
     },
@@ -706,7 +706,7 @@ class TikZMagics(Magics):
 
         if self.input_type == "full-document":
             self.tex_obj = TexDocument(
-                self.src, disable_jinja=self.args.disable_jinja, ns=local_ns
+                self.src, no_jinja=self.args.no_jinja, ns=local_ns
             )
         else:
             implicit_tikzpicture = self.input_type == "tikzpicture"
@@ -719,7 +719,7 @@ class TikZMagics(Magics):
                 tikz_libraries=self.args.tikz_libraries,
                 pgfplots_libraries=self.args.pgfplots_libraries,
                 scale=self.args.scale,
-                disable_jinja=self.args.disable_jinja,
+                no_jinja=self.args.no_jinja,
                 ns=local_ns,
             )
 

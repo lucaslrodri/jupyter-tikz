@@ -23,12 +23,12 @@ COMPLEX_TIKZ_JINJA_TEMPLATE = r"""
 """
 
 
-def test_disable_jinja__render_jinja_not_called(mocker):
+def test_no_jinja__render_jinja_not_called(mocker):
     # Arrange
     spy = mocker.spy(TexDocument, "_render_jinja")
 
     # Act
-    TexDocument(EXAMPLE_GOOD_TEX, disable_jinja=True)
+    TexDocument(EXAMPLE_GOOD_TEX, no_jinja=True)
 
     # Assert
     assert not spy.assert_not_called()
@@ -36,10 +36,10 @@ def test_disable_jinja__render_jinja_not_called(mocker):
 
 @pytest.mark.needs_latex
 @pytest.mark.needs_pdftocairo
-def test_disable_jinja__render_correctly(tmpdir, monkeypatch):
+def test_no_jinja__render_correctly(tmpdir, monkeypatch):
     # Arrange
     monkeypatch.chdir(tmpdir)
-    tex_document = TexDocument(EXAMPLE_GOOD_TEX, disable_jinja=True)
+    tex_document = TexDocument(EXAMPLE_GOOD_TEX, no_jinja=True)
 
     # Act
     res = tex_document.run_latex()

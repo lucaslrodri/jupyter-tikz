@@ -225,7 +225,7 @@ All additional options are listed below:
 | `-nt`<br>`--no-tikz` | Force to not import the TikZ package. |
 | `-l=<str>`<br>`--tikz-libraries=<str>` | Comma-separated list of TikZ libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-l=calc,arrows`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-lp=<str>`<br>`--pgfplots-libraries=<str>` | Comma-separated list of pgfplots libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-pl=groupplots,external`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
-| `-dj`<br>`--disable-jinja` | Disable Jinja2 rendering. |
+| `-nj`<br>`--no-jinja` | Disable Jinja2 rendering. |
 | `-pj`<br>`--print-jinja` | Print the rendered Jinja2 template. |
 | `-pt`<br>`--print-tex` | Print the full LaTeX document. |
 | `-sc=<float>`<br>`--scale=<float>` | The scale factor to apply to the TikZ diagram.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sc=0.5`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-sc=1.0`. |

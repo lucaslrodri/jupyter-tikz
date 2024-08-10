@@ -46,17 +46,17 @@ def test_get_arg_head(code, expected_result):
         ),
         (
             "TexDocument",
-            {"ns": {"name": "World"}, "disable_jinja": True},
-            "TexDocument('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', disable_jinja=True)",
+            {"ns": {"name": "World"}, "no_jinja": True},
+            "TexDocument('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', no_jinja=True)",
         ),
         (
             "TexFragment",
             {
                 "ns": {"name": "World"},
-                "disable_jinja": True,
+                "no_jinja": True,
                 "preamble": "custom preamble",
             },
-            "TexFragment('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', preamble='custom preamble', disable_jinja=True)",
+            "TexFragment('\\\\node at(0,0) {};\\n\\\\draw (1,0) -- (2,0) -- (2,1) -- (1,1) -- ...', template='standalone-document', preamble='custom preamble', no_jinja=True)",
         ),
         (
             "TexFragment",

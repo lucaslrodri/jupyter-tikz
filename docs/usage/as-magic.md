@@ -34,7 +34,7 @@ Finally, if you forget the usage, as for help by typing `%tikz?`, or visit **add
 <div class="log-output">
 <pre>
 %tikz [-as INPUT_TYPE] [-i] [-f] [-p LATEX_PREAMBLE] [-t TEX_PACKAGES]
-            [-nt] [-l TIKZ_LIBRARIES] [-lp PGFPLOTS_LIBRARIES] [-dj] [-pj]
+            [-nt] [-l TIKZ_LIBRARIES] [-lp PGFPLOTS_LIBRARIES] [-nj] [-pj]
             [-pt] [-sc SCALE] [-r] [-d DPI] [-g] [-e] [-k] [-tp TEX_PROGRAM]
             [-ta TEX_ARGS] [-nc] [-s SAVE_TIKZ] [-st SAVE_TEX] [-sp SAVE_PDF]
             [-S SAVE_IMAGE] [-sv SAVE_VAR]
@@ -91,7 +91,7 @@ options:
   -lp PGFPLOTS_LIBRARIES, --pgfplots-libraries PGFPLOTS_LIBRARIES
                         Comma-separated list of pgfplots libraries, e.g.,
                         `-pl=groupplots,external`.
-  -dj, --disable-jinja  Disable Jinja2 rendering.
+  -nj, --no-jinja       Disable Jinja2 rendering.
   -pj, --print-jinja    Print the rendered Jinja2 template.
   -pt, --print-tex      Print the full LaTeX document.
   -sc SCALE, --scale SCALE
@@ -808,15 +808,15 @@ Sometimes, you'll make mistakes. Debugging transpiled code is challenging, espec
 
 ### Disabling Jinja rendering
 
-If you don't want to use Jinja2 rendering you can tell it using the flag `-dj` (or `--disable-jinja`):
+If you don't want to use Jinja2 rendering you can tell it using the flag `-nj` (or `--no-jinja`):
 ```latex
-%%tikz -dj -sc=2
+%%tikz -nj -sc=2
 \begin{tikzpicture}
     \node {(* Show `(*` because i'm not rendering Jinja*)};
 \end{tikzpicture}
 ```
 <div class="result" markdown>
-![Disable jinja](../assets/tikz/disable_jinja.svg)
+![No jinja](../assets/tikz/no_jinja.svg)
 </div>
 
 ## Exporting code to variables

@@ -62,10 +62,10 @@ from jupyter_tikz.jupyter_tikz import _get_arg_params
             },
         ),
         (
-            "disable-jinja",
-            ("-dj", "--disable-jinja"),
+            "no-jinja",
+            ("-nj", "--no-jinja"),
             {
-                "dest": "disable_jinja",
+                "dest": "no_jinja",
                 "action": "store_true",
                 "default": False,
                 "help": "Disable Jinja2 rendering.",
