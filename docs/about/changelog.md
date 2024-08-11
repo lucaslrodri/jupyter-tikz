@@ -1,16 +1,22 @@
 All notable changes to this project are presented below.
 
+## v0.5.4
+
+**🐞 Bug Fixes**
+
+- Docs: Removed the Jinja2 subsection from the README.
+
 ## v0.5.3
 
 **🐞 Bug Fixes**
 
-- Docs: Fixed Jinja section in installation.md.
+- Docs: Fixed Jinja section in `installation.md`.
 
 ## v0.5.2
 
 **🐞 Bug Fixes**
 
-- Docs: Fixed internal links in index.md.
+- Docs: Fixed internal links in `index.md`.
 
 ## v0.5.1
 

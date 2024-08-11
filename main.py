@@ -131,8 +131,22 @@ if __name__ == "__main__":
 
     rendered_readme = tmpl.render(locals())
 
+    # Remove mkdocs admonitions
+    # 1. Define the regex pattern to match MkDocs admonitions
+    admonition_pattern = re.compile(
+        r'!!!\s+(note|abstract|info|tip|success|question|warning|failure|danger|bug|example|quote)\s*(?: ".*?")?\n    (.+)(?:\s*)(?=.+)',
+    )
+
+    # 2. Replace MkDocs admonitions with GitHub alerts
+    print(re.findall(admonition_pattern, rendered_readme))
+    rendered_readme = admonition_pattern.sub("", rendered_readme)
+
+    # Remove code annotations
     rendered_readme = re.sub(
-        r"\s\{\s\.(shell|python|latex)\s\.annotate\s\}", r"\1", rendered_readme
+        r"\s\{\s\.(shell|python|latex)\s\.annotate\s\}",
+        r"\1",
+        rendered_readme,
+        flags=re.DOTALL,
     )
 
     logterminal_div_pattern = '<div class="result log-terminal".*?>.*?</div>'
@@ -171,6 +185,18 @@ if __name__ == "__main__":
     # Remove code annotations
     rendered_readme = re.sub(r"^1\.\s+.*$\n", "", rendered_readme, flags=re.MULTILINE)
     rendered_readme = re.sub(r" #\s*\(\d+\)!", "", rendered_readme, flags=re.DOTALL)
+
+    # # Remove empty subsections
+
+    # # 1. Define the regex pattern to match empty subsections
+    empty_subsection_pattern = re.compile(r"###\s+.*\s*(?=\n##.*)")
+
+    # # 2. Remove empty subsections
+    rendered_readme = empty_subsection_pattern.sub("", rendered_readme)
+
+    # Remove more than two consecutive new lines
+    consecutive_newlines_pattern = re.compile(r"\n{3,}")
+    rendered_readme = consecutive_newlines_pattern.sub("\n\n", rendered_readme)
 
     print(rendered_readme)
 

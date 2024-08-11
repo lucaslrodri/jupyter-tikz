@@ -64,7 +64,6 @@ You can test if a LaTeX distribution is installed by using the following command
 pdflatex --version
 ```
 
-
 ### Poppler
 
 This application requires Poppler's `pdftocairo`. You must install it beforehand.
@@ -99,12 +98,9 @@ Finally, you can check if the `pdftocairo` utility is installed by using the fol
 pdftocairo -v
 ```
 
-
-
 #### Using custom pdftocairo path
 
 Alternatively, if you are facing issues, you can configure the `pdftocairo` location (exclusive for use in `jupyter_tikz`) by setting the environment variable `JUPYTER_TIKZ_PDFTOCAIROPATH`:
-
 
 ```python
 import os
@@ -114,12 +110,6 @@ custom_pdftocairo_path = os.path.join(
 os.environ["JUPYTER_TIKZ_PDFTOCAIROPATH"] = custom_pdftocairo_path
 ```
 
-
-### Jinja2
-
-!!! note
-    Since [version 0.5](https://jupyter-tikz.readthedocs.io/stable/about/changelog), [Jinja2](https://jinja.palletsprojects.com/en/latest) is installed automatically, so it is no longer necessary to install this dependency manually.
-
 ## Install Jupyter TikZ
 
 You can install `jupyter-tikz` by using the following command in your terminal:
@@ -127,7 +117,6 @@ You can install `jupyter-tikz` by using the following command in your terminal:
 ```shell
 pip install jupyter-tikz
 ```
-
 
 ## Adding TikZ Syntax highlight
 
@@ -211,7 +200,6 @@ tikz.run_latex()  # Run LaTeX and shows the output
 
 All additional options are listed below:
 
-
 | Argument | Description |
 | -------- | ----------- |
 | `-as=<str>`<br>`--input-type=<str>` | Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-as=full-document`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-as=standalone-document`. |
@@ -240,7 +228,6 @@ All additional options are listed below:
 | `-S=<str>`<br>`--save-image=<str>` | Save the output image to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-S filename.png`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-sv=<str>`<br>`--save-var=<str>` | Save the TikZ or LaTeX code to an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-sv my_var`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 
-
 # Contribute
 
 Contributions are welcome from everyone! Whether you're reporting bugs, submitting feedback, or actively improving the codebase, your involvement is valuable. Here's how you can contribute:
@@ -254,17 +241,23 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
+## v0.5.4
+
+**🐞 Bug Fixes**
+
+- Docs: Removed the Jinja2 subsection from the README.
+
 ## v0.5.3
 
 **🐞 Bug Fixes**
 
-- Docs: Fixed Jinja section in installation.
+- Docs: Fixed Jinja section in `installation`.
 
 ## v0.5.2
 
 **🐞 Bug Fixes**
 
-- Docs: Fixed internal links in index.
+- Docs: Fixed internal links in `index`.
 
 ## v0.5.1
 
