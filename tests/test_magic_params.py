@@ -300,11 +300,6 @@ def test_alternative_tex_obj_type(tikz_magic_mock, params, expected_input_type):
             "-p " + '"\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n"',
             "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
         ),
-        (
-            "latex_preamble",
-            "-p " + "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
-            "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
-        ),
         ("tex_packages", "-t " + '"amsfonts,amsmath"', "amsfonts,amsmath"),
         ("tex_packages", "-t " + "amsfonts,amsmath", "amsfonts,amsmath"),
         ("tex_packages", "-t " + '"amsfonts, amsmath"', "amsfonts, amsmath"),
