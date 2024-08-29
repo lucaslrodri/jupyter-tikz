@@ -286,6 +286,48 @@ def test_alternative_tex_obj_type(tikz_magic_mock, params, expected_input_type):
     assert tikz_magic_mock.input_type == expected_input_type
 
 
+@pytest.mark.parametrize(
+    "key, params, expected_output",
+    [
+        (
+            "latex_preamble",
+            "-p "
+            + '"\\usepackage{tikz}\\usepackage{xcolor}\\definecolor{my_color}{RGB}{0,238,255}"',
+            "\\usepackage{tikz}\\usepackage{xcolor}\\definecolor{my_color}{RGB}{0,238,255}",
+        ),
+        (
+            "latex_preamble",
+            "-p " + '"\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n"',
+            "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
+        ),
+        (
+            "latex_preamble",
+            "-p " + "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
+            "\\usepackage{tikz}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
+        ),
+        ("tex_packages", "-t " + '"amsfonts,amsmath"', "amsfonts,amsmath"),
+        ("tex_packages", "-t " + "amsfonts,amsmath", "amsfonts,amsmath"),
+        ("tex_packages", "-t " + '"amsfonts, amsmath"', "amsfonts, amsmath"),
+        ("tikz_libraries", "-l " + '"calc, arrows"', "calc, arrows"),
+        ("tikz_libraries", "-l " + "calc,arrows", "calc,arrows"),
+        ("pgfplots_libraries", "-lp " + '"groupplots,external"', "groupplots,external"),
+        ("tex_args", "-ta=" + '"-shell-escape"', "-shell-escape"),
+    ],
+)
+def test_remove_quotation_marks_from_strings_args(
+    tikz_magic_mock, key, params, expected_output
+):
+    # Arrange
+    line = params
+    code = "any code"
+
+    # Act
+    tikz_magic_mock.tikz(line, code, local_ns={})
+
+    # Assert
+    assert tikz_magic_mock.args[key] == expected_output
+
+
 # =================== Test src content ===================
 def test_src_is_cell_content(tikz_magic_mock):
     # Arrange

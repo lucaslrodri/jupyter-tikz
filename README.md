@@ -205,7 +205,7 @@ All additional options are listed below:
 | `-as=<str>`<br>`--input-type=<str>` | Type of the input. Possible values are: `full-document`, `standalone-document` and `tikzpicture`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-as=full-document`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-as=standalone-document`. |
 | `-i`<br>`--implicit-pic` | Alias for `-as=tikzpicture`. |
 | `-f`<br>`--full-document` | Alias for `-as=full-document`. |
-| `-p=<str>`<br>`--latex-preamble=<str>` | LaTeX preamble to insert before the document.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-p="$preamble"`, with the preamble being an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-p=<str>`<br>`--latex-preamble=<str>` | LaTeX preamble to insert before the document.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-p "$preamble"`, with the preamble being an IPython variable.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-t=<str>`<br>`--tex-packages=<str>` | Comma-separated list of TeX packages.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-t=amsfonts,amsmath`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-nt`<br>`--no-tikz` | Force to not import the TikZ package. |
 | `-l=<str>`<br>`--tikz-libraries=<str>` | Comma-separated list of TikZ libraries.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-l=calc,arrows`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
@@ -220,7 +220,7 @@ All additional options are listed below:
 | `-e`<br>`--full-err` | Print the full error message when an error occurs. |
 | `-k`<br>`--keep-temp` | Keep temporary files. |
 | `-tp=<str>`<br>`--tex-program=<str>` | TeX program to use for compilation.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-tp=xelatex` or `-tp=lualatex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to `-tp=pdflatex`. |
-| `-ta=<str>`<br>`--tex-args=<str>` | Arguments to pass to the TeX program.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-ta="$tex_args_ipython_variable"`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
+| `-ta=<str>`<br>`--tex-args=<str>` | Arguments to pass to the TeX program.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-ta "$tex_args_ipython_variable"`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-nc`<br>`--no-compile` | Do not compile the TeX code. |
 | `-s=<str>`<br>`--save-tikz=<str>` | Save the TikZ code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-s filename.tikz`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
 | `-st=<str>`<br>`--save-tex=<str>` | Save full LaTeX code to file.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Example:* `-st filename.tex`.<br>&nbsp;&nbsp;&nbsp;&nbsp;*Defaults* to None. |
@@ -240,6 +240,12 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 # Changelog
 
 All notable changes to this project are presented below.
+
+## v0.5.5
+
+**🐞 Bug Fixes**
+
+- Removed quotation marks when using `arg "$var"` (e.g., `-p "$preamble"`).
 
 ## v0.5.4
 

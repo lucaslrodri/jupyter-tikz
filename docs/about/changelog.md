@@ -1,5 +1,11 @@
 All notable changes to this project are presented below.
 
+## v0.5.5
+
+**🐞 Bug Fixes**
+
+- Removed quotation marks when using `arg "$var"` (e.g., `-p "$preamble"`).
+
 ## v0.5.4
 
 **🐞 Bug Fixes**

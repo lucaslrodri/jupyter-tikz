@@ -412,7 +412,7 @@ _ARGS = {
         "type": str,
         "default": None,
         "desc": "LaTeX preamble to insert before the document",
-        "example": '`-p="$preamble"`, with the preamble being an IPython variable',
+        "example": '`-p "$preamble"`, with the preamble being an IPython variable',
     },
     "tex-packages": {
         "short-arg": "t",
@@ -516,7 +516,7 @@ _ARGS = {
         "type": str,
         "default": None,
         "desc": "Arguments to pass to the TeX program",
-        "example": '`-ta="$tex_args_ipython_variable"`',
+        "example": '`-ta "$tex_args_ipython_variable"`',
     },
     "no-compile": {
         "short-arg": "nc",
@@ -603,6 +603,14 @@ def _apply_args():
     return decorator
 
 
+def _remove_wrapping_quotes(text):
+    # Define the regex pattern to match a string wrapped with quotation marks
+    pattern = re.compile(r'^"(.*)"$', re.DOTALL)
+
+    # Use re.sub to replace the matched pattern with the content inside the quotation marks
+    return pattern.sub(r"\1", text)
+
+
 @magics_class
 class TikZMagics(Magics):
     def _get_input_type(self, input_type: str) -> str | None:
@@ -651,41 +659,46 @@ class TikZMagics(Magics):
                    ...:     (m-2-1) edge node [below] {$cd$} (m-2-2);
         """
 
-        self.args = parse_argstring(self.tikz, line)
+        self.args: dict = vars(parse_argstring(self.tikz, line))
 
-        if self.args.latex_preamble and (
-            self.args.tex_packages
-            or self.args.tikz_libraries
-            or self.args.pgfplots_libraries
+        for key, value in self.args.items():
+            if not (isinstance(value, str)):
+                continue
+            self.args[key] = _remove_wrapping_quotes(value)
+
+        if self.args["latex_preamble"] and (
+            self.args["tex_packages"]
+            or self.args["tikz_libraries"]
+            or self.args["pgfplots_libraries"]
         ):
             print(_EXTRAS_CONFLITS_ERR, file=sys.stderr)
             return
 
-        if (self.args.implicit_pic and self.args.full_document) or (
-            (self.args.implicit_pic or self.args.full_document)
-            and self.args.input_type != "standalone-document"
+        if (self.args["implicit_pic"] and self.args["full_document"]) or (
+            (self.args["implicit_pic"] or self.args["full_document"])
+            and self.args["input_type"] != "standalone-document"
         ):
             print(
                 _INPUT_TYPE_CONFLIT_ERR,
                 file=sys.stderr,
             )
             return
-        if self.args.print_jinja and self.args.print_tex:
+        if self.args["print_jinja"] and self.args["print_tex"]:
             print(
                 _PRINT_CONFLICT_ERR,
                 file=sys.stderr,
             )
             return
 
-        if self.args.implicit_pic:
+        if self.args["implicit_pic"]:
             self.input_type = "tikzpicture"
-        elif self.args.full_document:
+        elif self.args["full_document"]:
             self.input_type = "full-document"
         else:
-            self.input_type = self._get_input_type(self.args.input_type)
+            self.input_type = self._get_input_type(self.args["input_type"])
         if self.input_type is None:
             print(
-                f"`{self.args.input_type}` is not a valid input type.",
+                f'`{self.args["input_type"]}` is not a valid input type.',
                 "Valid input types are `full-document`, `standalone-document`, or `tikzpicture`.",
                 file=sys.stderr,
             )
@@ -695,58 +708,58 @@ class TikZMagics(Magics):
         local_ns = local_ns or {}
 
         if cell is None:
-            if self.args.code is None:
+            if self.args["code"] is None:
                 print('Use "%tikz?" for help', file=sys.stderr)
                 return
 
-            if self.args.code not in local_ns:
-                self.src: str = self.args.code
+            if self.args["code"] not in local_ns:
+                self.src: str = self.args["code"]
             else:
-                self.src: str = local_ns[self.args.code]
+                self.src: str = local_ns[self.args["code"]]
 
         if self.input_type == "full-document":
             self.tex_obj = TexDocument(
-                self.src, no_jinja=self.args.no_jinja, ns=local_ns
+                self.src, no_jinja=self.args["no_jinja"], ns=local_ns
             )
         else:
             implicit_tikzpicture = self.input_type == "tikzpicture"
             self.tex_obj = TexFragment(
                 self.src,
                 implicit_tikzpicture=implicit_tikzpicture,
-                preamble=self.args.latex_preamble,
-                tex_packages=self.args.tex_packages,
-                no_tikz=self.args.no_tikz,
-                tikz_libraries=self.args.tikz_libraries,
-                pgfplots_libraries=self.args.pgfplots_libraries,
-                scale=self.args.scale,
-                no_jinja=self.args.no_jinja,
+                preamble=self.args["latex_preamble"],
+                tex_packages=self.args["tex_packages"],
+                no_tikz=self.args["no_tikz"],
+                tikz_libraries=self.args["tikz_libraries"],
+                pgfplots_libraries=self.args["pgfplots_libraries"],
+                scale=self.args["scale"],
+                no_jinja=self.args["no_jinja"],
                 ns=local_ns,
             )
 
-        if self.args.print_jinja:
+        if self.args["print_jinja"]:
             print(self.tex_obj)
-        if self.args.print_tex:
+        if self.args["print_tex"]:
             print(self.tex_obj.full_latex)
 
         image = None
-        if not self.args.no_compile:
+        if not self.args["no_compile"]:
             image = self.tex_obj.run_latex(
-                tex_program=self.args.tex_program,
-                tex_args=self.args.tex_args,
-                rasterize=self.args.rasterize,
-                full_err=self.args.full_err,
-                keep_temp=self.args.keep_temp,
-                save_tikz=self.args.save_tikz,
-                save_tex=self.args.save_tex,
-                save_pdf=self.args.save_pdf,
-                save_image=self.args.save_image,
-                dpi=self.args.dpi,
-                grayscale=self.args.gray,
+                tex_program=self.args["tex_program"],
+                tex_args=self.args["tex_args"],
+                rasterize=self.args["rasterize"],
+                full_err=self.args["full_err"],
+                keep_temp=self.args["keep_temp"],
+                save_tikz=self.args["save_tikz"],
+                save_tex=self.args["save_tex"],
+                save_pdf=self.args["save_pdf"],
+                save_image=self.args["save_image"],
+                dpi=self.args["dpi"],
+                grayscale=self.args["gray"],
             )
             if image is None:
                 return None
 
-        if self.args.save_var:
-            local_ns[self.args.save_var] = str(self.tex_obj)
+        if self.args["save_var"]:
+            local_ns[self.args["save_var"]] = str(self.tex_obj)
 
         return image

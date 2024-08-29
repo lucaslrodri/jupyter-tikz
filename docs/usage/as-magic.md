@@ -79,7 +79,7 @@ options:
   -f, --full-document   Alias for `-as=full-document`.
   -p LATEX_PREAMBLE, --latex-preamble LATEX_PREAMBLE
                         LaTeX preamble to insert before the document, e.g.,
-                        `-p="$preamble"`, with the preamble being an IPython
+                        `-p "$preamble"`, with the preamble being an IPython
                         variable.
   -t TEX_PACKAGES, --tex-packages TEX_PACKAGES
                         Comma-separated list of TeX packages, e.g.,
@@ -108,8 +108,8 @@ options:
                         `-tp=xelatex` or `-tp=lualatex`. Defaults to
                         `-tp=pdflatex`.
   -ta TEX_ARGS, --tex-args TEX_ARGS
-                        Arguments to pass to the TeX program, e.g.,
-                        `-ta="$tex_args_ipython_variable"`.
+                        Arguments to pass to the TeX program, e.g., `-ta
+                        "$tex_args_ipython_variable"`.
   -nc, --no-compile     Do not compile the TeX code.
   -s SAVE_TIKZ, --save-tikz SAVE_TIKZ
                         Save the TikZ code to file, e.g., `-s filename.tikz`.
@@ -955,7 +955,7 @@ tex_params = "--enable-write18 --extra-mem-top=10000000"
 ```
 
 ```latex
-%%tikz -as=tikz -t=pgfplots -nt -tp=pdflatex --tex-args="$tex_params"
+%%tikz -as=tikz -t=pgfplots -nt -tp=pdflatex --tex-args "$tex_params"
 \begin{axis}[
   xlabel=$x$,
   ylabel={$f(x) = x^2 - x +4$}
@@ -963,6 +963,9 @@ tex_params = "--enable-write18 --extra-mem-top=10000000"
 \addplot {x^2 - x +4};
 \end{axis}
 ```
+<div class="result" markdown>
+![Another quadratic formula](../assets/tikz/another_quadratic.svg)
+</div>
 
 ## Logging and debugging
 

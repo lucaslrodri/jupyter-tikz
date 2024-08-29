@@ -1,6 +1,6 @@
 import pytest
 
-from jupyter_tikz.jupyter_tikz import _get_arg_params
+from jupyter_tikz.jupyter_tikz import _get_arg_params, _remove_wrapping_quotes
 
 
 @pytest.mark.parametrize(
@@ -21,7 +21,7 @@ from jupyter_tikz.jupyter_tikz import _get_arg_params
             {
                 "dest": "latex_preamble",
                 "default": None,
-                "help": 'LaTeX preamble to insert before the document, e.g., `-p="$preamble"`, with the preamble being an IPython variable.',
+                "help": 'LaTeX preamble to insert before the document, e.g., `-p "$preamble"`, with the preamble being an IPython variable.',
             },
         ),
         (
@@ -140,3 +140,59 @@ def test_get_arg_params(arg, expected_args, expected_kwargs):
     # Assert
     assert args == expected_args
     assert kwargs == expected_kwargs
+
+
+@pytest.mark.parametrize(
+    "input_string, expected_output",
+    [
+        ('"$preamble"', "$preamble"),
+        (
+            '"This is wrapped with quotation marks"',
+            "This is wrapped with quotation marks",
+        ),
+        (
+            "This is not wrapped with quotation marks",
+            "This is not wrapped with quotation marks",
+        ),
+        (
+            'This is not "wrapped" with quotation marks',
+            'This is not "wrapped" with quotation marks',
+        ),
+        (
+            'This is not wrapped with quotation "marks"',
+            'This is not wrapped with quotation "marks"',
+        ),
+        (
+            '"This is wrapped with quotation "marks""',
+            'This is wrapped with quotation "marks"',
+        ),
+        (
+            '"""This is wrapped with quotation marks"""',
+            '""This is wrapped with quotation marks""',
+        ),
+        (
+            '""This is wrapped with quotation marks""',
+            '"This is wrapped with quotation marks"',
+        ),
+        (
+            '"\\usepackage{tikz}\\usepackage{xcolor}\\definecolor{my_color}{RGB}{0,238,255}"',
+            "\\usepackage{tikz}\\usepackage{xcolor}\\definecolor{my_color}{RGB}{0,238,255}",
+        ),
+        (
+            '"\\usepackage{tikz}\n\\usepackage{xcolor}\n\\definecolor{my_color}{RGB}{0,238,255}\n"',
+            "\\usepackage{tikz}\n\\usepackage{xcolor}\n\\definecolor{my_color}{RGB}{0,238,255}\n",
+        ),
+        ('"amsmath,amsfonts"', "amsmath,amsfonts"),
+        ("amsmath,amsfonts", "amsmath,amsfonts"),
+        ('"amsmath, amsfonts"', "amsmath, amsfonts"),
+        ('"calc, arrows"', "calc, arrows"),
+        ('"groupplots,external"', "groupplots,external"),
+        ('"-shell-escape"', "-shell-escape"),
+        (
+            '""\\let\\ifmyflag\\iftrue\\input{myfile}""',
+            '"\\let\\ifmyflag\\iftrue\\input{myfile}"',
+        ),
+    ],
+)
+def test_remove_wrapping_quotes(input_string, expected_output):
+    assert _remove_wrapping_quotes(input_string) == expected_output
