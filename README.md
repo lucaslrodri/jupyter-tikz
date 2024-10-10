@@ -241,6 +241,12 @@ Contributions are welcome from everyone! Whether you're reporting bugs, submitti
 
 All notable changes to this project are presented below.
 
+## v0.5.6
+
+**✨ Improvements**
+
+- Docs: Added troubleshooting section to the Usage Guide.
+
 ## v0.5.5
 
 **🐞 Bug Fixes**

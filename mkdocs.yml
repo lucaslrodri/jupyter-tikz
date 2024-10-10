@@ -31,6 +31,7 @@ nav:
   - Usage guide: 
     - Usage as IPython Magics: usage/as-magic.md
     - Usage as a Python package: usage/as-package.md
+    - Troubleshooting: usage/troubleshooting.md
   - Additional options: arguments.md
   - API reference: api.md
   - About:
