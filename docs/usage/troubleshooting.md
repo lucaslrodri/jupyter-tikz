@@ -1,3 +1,5 @@
+{% include "templates/notebook-download.md" %}
+
 ## Troubleshooting pdflatex PATH Issues
 
 If you encounter issues with the `pdflatex` PATH and receive the following error message:
