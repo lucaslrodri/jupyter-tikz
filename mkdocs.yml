@@ -17,27 +17,28 @@ theme:
     repo: fontawesome/brands/github
   features:
     - content.code.copy
-    - content.code.annotate 
+    - content.code.annotate
     - navigation.tabs
     - navigation.footer
     - navigation.top
     - navigation.tracking
     - search.highlight
     - search.suggest
+    - toc.follow
 
 nav:
   - Getting started: index.md
   - Installation: installation.md
-  - Usage guide: 
-    - Usage as IPython Magics: usage/as-magic.md
-    - Usage as a Python package: usage/as-package.md
-    - Troubleshooting: usage/troubleshooting.md
+  - Usage guide:
+      - Usage as IPython Magics: usage/as-magic.md
+      - Usage as a Python package: usage/as-package.md
+      - Troubleshooting: usage/troubleshooting.md
   - Additional options: arguments.md
   - API reference: api.md
   - About:
-    - Development guide: about/development.md
-    - Changelog: about/changelog.md
-    - License: about/license.md
+      - Development guide: about/development.md
+      - Changelog: about/changelog.md
+      - License: about/license.md
 
 extra_css:
   - stylesheets/extra.css
@@ -47,7 +48,7 @@ extra_javascript:
 
 extra:
   social:
-    - icon: fontawesome/brands/github 
+    - icon: fontawesome/brands/github
       link: https://github.com/lucaslrodri/jupyter-tikz/
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/jupyter-tikz/
@@ -66,7 +67,7 @@ markdown_extensions:
 plugins:
   - search
   - macros
-  # - social
+  - social
   - mkdocstrings:
       default_handler: python
       handlers:
